@@ -2,10 +2,12 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.6'
     id 'io.spring.dependency-management' version '1.1.7'
+
+    id("io.freefair.lombok") version "9.5.0"
 }
 
 group = 'com.erichiroshi'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
 description = 'speech-ai-hexagonal'
 
 java {
@@ -18,10 +20,32 @@ repositories {
     mavenCentral()
 }
 
+ext{
+    mapstructVersion = '1.7.0.Beta1'
+    okhttpVersion    = '5.3.2'
+}
+
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    //Mapstruct
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+    testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+
+    // MockWebServer para simular o Speaches (Whisper) nos testes
+    testImplementation 'com.squareup.okhttp3:mockwebserver'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "com.squareup.okhttp3:okhttp-bom:${okhttpVersion}"
+    }
 }
 
 tasks.named('test') {

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speech AI Hexagonal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </div>
+          <span class="logo-text">Speech AI <span class="logo-tag">hexagonal</span></span>
+        </div>
+        <div class="header-meta">
+          <span class="badge badge-green">v1.0.0</span>
+          <span class="badge badge-blue">Speaches · Whisper</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="panel">
+
+        <!-- Upload -->
+        <section class="card" id="upload-card">
+          <div class="card-header">
+            <div class="card-icon card-icon--purple">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <h2 class="card-title">Transcrição</h2>
+          </div>
+
+          <div class="drop-zone" id="dropZone">
+            <div class="drop-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+              </svg>
+            </div>
+            <p class="drop-label">Arraste o áudio aqui</p>
+            <p class="drop-sub">WAV, MP3, MP4, WebM, OGG · máx. 5 MB</p>
+            <label class="btn btn-outline" for="fileInput">Selecionar arquivo</label>
+            <input type="file" id="fileInput" accept="audio/*" hidden />
+          </div>
+
+          <div class="file-info hidden" id="fileInfo">
+            <div class="file-info-row">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                <polyline points="13 2 13 9 20 9"/>
+              </svg>
+              <span id="fileName" class="file-name"></span>
+              <span id="fileSize" class="file-size"></span>
+              <button class="btn-ghost" id="clearFile" aria-label="Remover arquivo">✕</button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" id="transcribeBtn" disabled>
+            <span id="transcribeBtnText">Transcrever áudio</span>
+            <div id="transcribeLoader" class="loader hidden"></div>
+          </button>
+
+          <div class="result hidden" id="transcriptionResult">
+            <div class="result-header">
+              <span class="result-label">Texto transcrito</span>
+              <div id="transcriptionText"></div>
+              <div class="result-meta">
+                <span class="badge badge-green" id="cachedBadge" style="display:none">cache hit</span>
+                <button class="btn-ghost" id="copyText" title="Copiar texto">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="result-body" id="transcriptionText"></div>
+            <div class="result-footer">
+              <code class="hash-display" id="hashDisplay"></code>
+            </div>
+          </div>
+        </section>
+
+        <!-- Análise -->
+        <section class="card" id="analysis-card">
+          <div class="card-header">
+            <div class="card-icon card-icon--teal">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <h2 class="card-title">Resumo & Análise</h2>
+          </div>
+
+          <p class="hint">Realize a transcrição primeiro para habilitar o resumo por IA.</p>
+
+          <button class="btn btn-primary" id="analyzeBtn" disabled>
+            <span id="analyzeBtnText">Gerar resumo</span>
+            <div id="analyzeLoader" class="loader hidden"></div>
+          </button>
+
+          <div class="result hidden" id="analysisResult">
+            <div class="result-header">
+              <span class="result-label">Resumo inteligente</span>
+              <div class="result-meta">
+                <span class="badge badge-blue" id="modelBadge"></span>
+                <span class="badge badge-green" id="analysisCachedBadge" style="display:none">cache hit</span>
+              </div>
+            </div>
+            <div class="result-body" id="analysisText"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>Speech AI Hexagonal · Eric Hiroshi</span>
+      <a href="http://localhost:8080/swagger-ui.html" target="_blank" class="footer-link">Swagger UI</a>
+      <a href="http://localhost:8080/actuator/health" target="_blank" class="footer-link">Health</a>
+    </footer>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

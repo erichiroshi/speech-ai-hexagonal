@@ -1,0 +1,50 @@
+services:
+
+  speaches:
+    image: ghcr.io/speaches-ai/speaches:latest-cuda
+    container_name: speaches
+    ports:
+      - "8000:8000"
+    volumes:
+      - speaches_models:/home/ubuntu/.cache/huggingface
+    environment:
+      - DEFAULT_LANGUAGE=pt
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  speech-ai:
+    build: .
+    container_name: speech-ai-hexagonal
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      speaches:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health/readiness" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+volumes:
+  speaches_models:
+
+networks:
+  default:
+    name: speech-ai-network

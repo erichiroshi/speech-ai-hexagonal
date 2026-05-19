@@ -1,0 +1,36 @@
+services:
+
+  # ── Speaches (Whisper) ───────────────────────────────────────────────────────
+  speaches:
+    container_name: speaches-dev
+    # imagem com suporte a CUDA
+    image: ghcr.io/speaches-ai/speaches:latest-cuda
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - speaches_models:/home/ubuntu/.cache/huggingface/hub
+    environment:
+      - DEFAULT_LANGUAGE=pt
+    # suporte a GPU
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://0.0.0.0:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  speaches_models:
+
+networks:
+  default:
+    name: speech-ai-network

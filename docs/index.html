@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>speech-ai-hexagonal</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 14px; }
+    .stack-item { background: #0f172a; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+    .stack-item .name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .stack-item .desc { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: 99px; vertical-align: middle; margin-left: 5px; }
+    .done    { background: #0c2a1a; color: #22c55e; border: 1px solid #14532d; }
+    .planned { background: #0c1a2a; color: #60a5fa; border: 1px solid #1e3a5f; }
+    .phase-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .phase-row:last-child { border-bottom: none; }
+    .phase-num { font-size: 12px; font-weight: 600; color: var(--muted); min-width: 56px; }
+    .phase-desc { font-size: 13px; color: var(--text); flex: 1; }
+    .phase-ver { font-size: 11px; color: #60a5fa; font-family: 'Courier New', monospace; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎙️ speech-ai-hexagonal</h1>
+      <p class="subtitle">API de transcrição de áudio com <strong>arquitetura hexagonal</strong> — Java 25 · Spring Boot 4 · Speaches/Whisper</p>
+    </header>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="architecture.html">Arquitetura</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
+    </nav>
+
+    <section class="card">
+      <h2>🚀 Sobre o projeto</h2>
+      <p>
+        O <strong>speech-ai-hexagonal</strong> é uma API REST de transcrição de áudio construída com
+        <strong>arquitetura hexagonal (Ports &amp; Adapters)</strong>.
+        O domínio de negócio é completamente isolado da infraestrutura por meio de interfaces (portas),
+        permitindo trocar o motor de transcrição (Speaches → OpenAI), o cache (InMemory → Redis) ou
+        qualquer adapter sem alterar uma linha do use case.
+      </p>
+      <p style="margin-top:10px">
+        Cada fase adiciona uma camada de maturidade técnica: da base hexagonal até cache, observabilidade,
+        resiliência, Spring AI e mensageria assíncrona com RabbitMQ.
+      </p>
+      <div class="actions">
+        <a href="https://github.com/erichiroshi/speech-ai-hexagonal" class="btn btn-primary" target="_blank">GitHub</a>
+        <a href="architecture.html" class="btn btn-outline">Ver Arquitetura</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>📍 Roadmap</h2>
+      <div class="phase-row">
+        <span class="phase-num">Fase 1</span>
+        <span class="phase-desc">Base hexagonal — transcrição local com Speaches/Whisper · RestClient · Lombok · MapStruct</span>
+        <span class="badge done">✓</span>
+        <span class="phase-ver">v1.0.0</span>
+      </div>
+      <div class="phase-row">
+        <span class="phase-num">Fase 2</span>
+        <span class="phase-desc">Cache Redis com SHA-256 — RedisConfig · RedisCacheAdapter · Testcontainers</span>
+        <span class="badge planned">planejado</span>
+        <span class="phase-ver">v2.x</span>
+      </div>
+      <div class="phase-row">
+        <span class="phase-num">Fase 3</span>
+        <span class="phase-desc">Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC</span>
+        <span class="badge planned">planejado</span>
+        <span class="phase-ver">v3.x</span>
+      </div>
+      <div class="phase-row">
+        <span class="phase-num">Fase 4</span>
+        <span class="phase-desc">Resiliência — Circuit Breaker · Retry · Bulkhead (Resilience4j)</span>
+        <span class="badge planned">planejado</span>
+        <span class="phase-ver">v4.x</span>
+      </div>
+      <div class="phase-row">
+        <span class="phase-num">Fase 5</span>
+        <span class="phase-desc">Spring AI + OpenAI Whisper — segunda porta de saída (cloud)</span>
+        <span class="badge planned">planejado</span>
+        <span class="phase-ver">v5.x</span>
+      </div>
+      <div class="phase-row">
+        <span class="phase-num">Fase 6</span>
+        <span class="phase-desc">Spring AI + Ollama — resumo por LLM local ≤1B parâmetros</span>
+        <span class="badge planned">planejado</span>
+        <span class="phase-ver">v6.x</span>
+      </div>
+      <div class="phase-row">
+        <span class="phase-num">Fase 7</span>
+        <span class="phase-desc">RabbitMQ — TranscriptionCompletedEvent · DLQ · Consumer de auditoria</span>
+        <span class="badge planned">planejado</span>
+        <span class="phase-ver">v7.x</span>
+      </div>
+      <div class="phase-row">
+        <span class="phase-num">Fase 8</span>
+        <span class="phase-desc">CI/CD — GitHub Actions · SonarCloud · Codecov · Docker Hub · Multi-arch</span>
+        <span class="badge planned">planejado</span>
+        <span class="phase-ver">v8.x</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🛠️ Stack</h2>
+      <div class="stack-grid">
+        <div class="stack-item"><div class="name">Java 25</div><div class="desc">Linguagem + Records + Pattern Matching</div></div>
+        <div class="stack-item"><div class="name">Spring Boot 4.0.6</div><div class="desc">Framework web + DI</div></div>
+        <div class="stack-item"><div class="name">RestClient</div><div class="desc">Cliente HTTP síncrono (Spring 6.1+)</div></div>
+        <div class="stack-item"><div class="name">Speaches</div><div class="desc">Servidor Whisper local (latest-cuda)</div></div>
+        <div class="stack-item"><div class="name">faster-whisper-small</div><div class="desc">Modelo de transcrição local</div></div>
+        <div class="stack-item"><div class="name">Lombok</div><div class="desc">Redução de boilerplate</div></div>
+        <div class="stack-item"><div class="name">MapStruct</div><div class="desc">Mapeamento entre camadas</div></div>
+        <div class="stack-item"><div class="name">Springdoc OpenAPI</div><div class="desc">Swagger UI automático</div></div>
+        <div class="stack-item"><div class="name">JaCoCo</div><div class="desc">Cobertura de código (≥60%)</div></div>
+        <div class="stack-item"><div class="name">MockWebServer</div><div class="desc">Testes de adapters HTTP</div></div>
+        <div class="stack-item"><div class="name">Testcontainers</div><div class="desc">Testes de integração</div></div>
+        <div class="stack-item"><div class="name">Docker Compose</div><div class="desc">Orquestração local</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>⚡ Quick Start</h2>
+      <pre style="background:#020617;padding:16px;border-radius:8px;font-size:13px;overflow-x:auto;line-height:1.7"><code># Subir infra (Speaches)
+docker compose -f docker-compose.dev.yml up -d
+
+# Baixar modelo (1ª vez)
+uvx speaches-cli model download Systran/faster-whisper-small
+
+# Rodar a API
+./gradlew bootRun --args='--spring.profiles.active=dev'
+
+# Transcrever
+curl -X POST http://localhost:8080/api/transcriptions \
+  -F 'file=@audio.wav;type=audio/wav' | jq .
+
+# Swagger UI
+open http://localhost:8080/swagger-ui.html</code></pre>
+    </section>
+
+    <footer>
+      <p>speech-ai-hexagonal · <a href="https://github.com/erichiroshi" style="color:var(--primary)">Eric Hiroshi</a> · v1.0.0</p>
+    </footer>
+  </div>
+</body>
+</html>

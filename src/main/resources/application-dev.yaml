@@ -1,0 +1,23 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+    import: optional:file:.env.dev[.properties]
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,beans
+  endpoint:
+    health:
+      show-details: always
+
+speaches:
+  base-url: ${SPEACHES_BASE_URL}
+  model: ${SPEACHES_MODEL}
+
+logging:
+  level:
+    com.erichiroshi: DEBUG
+    org.springframework.web: DEBUG

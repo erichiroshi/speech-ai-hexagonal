@@ -1,3 +1,31 @@
 spring:
   application:
     name: speech-ai-hexagonal
+  config:
+    import: optional:file:.env[.properties]
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+
+speaches:
+  base-url: ${SPEACHES_BASE_URL}
+  model: ${SPEACHES_MODEL}
+
+logging:
+  level:
+    root: INFO
+    com.erichiroshi: INFO
