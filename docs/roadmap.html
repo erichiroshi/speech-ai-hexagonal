@@ -186,14 +186,14 @@
       {
         id: 2, label: "Fase 2", title: "Qualidade de código com SonarQube e JaCoCo",
         color: "#185FA5", badgeBg: "#0a1929", badgeColor: "#60a5fa",
-        version: "v2.1.0", taskCount: 5, done: false,
+        version: "v2.1.0", taskCount: 5, done: true,
         tasks: [
           {
             title: "2.1 — Infraestrutura Local (Docker Compose)",
             desc: "Atualização do compose.yml com serviço SonarQube e volumes persistentes",
             tags: ["Docker", "SonarQube", "DevOps"],
-            done: false,
-            version: null,
+            done: true,
+            version: "v2.1.0",
             detail: "Adição do serviço do SonarQube (imagem oficial LTS) no compose.yml. Configuração de limites de memória necessários (vm.max_map_count) e mapeamento de volumes locais para persistência de dados e plugins. Liberação da porta 9000 e validação do acesso inicial via localhost:9000.",
             snippet: "sonarqube:\n  image: sonarqube:lts-community\n  container_name: sonarqube_local\n  ports:\n    - \"9000:9000\"\n  volumes:\n    - sonar_data:/opt/sonarqube/data\n    - sonar_extensions:/opt/sonarqube/extensions\n    - sonar_logs:/opt/sonarqube/logs\n  ulimits:\n    nofile:\n      soft: 65536\n      hard: 65536"
           },
@@ -201,8 +201,8 @@
             title: "2.2 — Plugins, Dependências e Task Graph no Gradle",
             desc: "Aplicação dos plugins do JaCoCo e SonarQube no build.gradle e amarração de tasks",
             tags: ["Gradle", "JaCoCo", "Build-Tool"],
-            done: false,
-            version: null,
+            done: true,
+            version: "v2.2.0",
             detail: "Inclusão dos plugins 'jacoco' e 'org.sonarqube'. Configuração do grafo de execução do Gradle para que a task 'sonar' dependa obrigatoriamente de 'jacocoTestReport', e esta dependa de 'test'. Garante que a análise de código só ocorra após a geração dos relatórios de cobertura mais recentes.",
             snippet: "plugins {\n    id 'jacoco'\n    id 'org.sonarqube' version '5.1.0.4860'\n}\n\ntasks.named('sonar') {\n    dependsOn tasks.named('jacocoTestReport')\n}\ntasks.named('jacocoTestReport') {\n    dependsOn tasks.named('test')\n}"
           },
@@ -210,8 +210,8 @@
             title: "2.3 — Configuração de Thresholds e Exclusões do JaCoCo",
             desc: "Definição de regras de validação de cobertura mínima e exclusão de pacotes",
             tags: ["JaCoCo", "Quality-Gate", "TDD"],
-            done: false,
-            version: null,
+            done: true,
+            version: "v2.3.0",
             detail: "Configuração da task 'jacocoTestCoverageVerification' para validar o limite mínimo (threshold) de 60% de cobertura geral. Criação de regras de exclusão para ignorar pacotes de configuração (infrastructure/config), classes de bootstrap do Spring Boot e registros/DTOs que não possuem lógica de negócio.",
             snippet: "jacocoTestReport {\n    reports { xml.required = true }\n    afterEvaluate {\n        classDirectories.setFrom(files(classDirectories.files.collect {\n            fileTree(dir: it, exclude: ['**/config/**', '**/dto/**', '*Application*]')\n        }))\n    }}\n\njacocoTestCoverageVerification {\n    violationRules {\n        rule {\n            limit { minimum = 0.60 }\n        }\n    }\n}"
           },
@@ -219,8 +219,8 @@
             title: "2.4 — Variáveis de Ambiente e Propriedades do Sonar",
             desc: "Mapeamento das propriedades do SonarQube e chaves do projeto no build.gradle",
             tags: ["SonarQube", "Security", "Gradle"],
-            done: false,
-            version: null,
+            done: true,
+            version: "v2.4.0",
             detail: "Configuração do bloco 'sonar.properties' no Gradle. Definição da chave única do projeto, nome, caminhos dos fontes e apontamento dos relatórios XML gerados pelo JaCoCo. Parametrização da URL do servidor e token de autenticação via variáveis de ambiente para evitar credenciais expostas no repositório.",
             snippet: "sonar {\n    properties {\n        property \"sonar.projectName\", \"hexagonal-api\"\n        property \"sonar.projectKey\", \"hexagonal-api-key\"\n        property \"sonar.host.url\", System.getenv(\"SONAR_HOST_URL\") ?: \"http://localhost:9000\"\n        property \"sonar.token\", System.getenv(\"SONAR_TOKEN\")\n        property \"sonar.coverage.jacoco.xmlReportPaths\", \"${project.layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml\"\n    }\n}"
           },
@@ -228,10 +228,19 @@
             title: "2.5 — Validação do Pipeline Local",
             desc: "Execução do fluxo completo de testes, geração de relatórios e inspeção no dashboard",
             tags: ["Quality-Gate", "Testing", "SonarQube"],
-            done: false,
-            version: null,
+            done: true,
+            version: "v2.5.0",
             detail: "Execução do comando unificado de teste e análise. Verificação da quebra do build caso o threshold do JaCoCo não seja atingido. Acesso ao localhost:9000 para validação das métricas de Bugs, Vulnerabilidades, Code Smells e a árvore visual de cobertura gerada pela arquitetura hexagonal implementada na Fase 1.",
             snippet: "# Execução local passo a passo:\n# 1. export SONAR_TOKEN=seu_token_gerado_no_sonar\n# 2. ./gradlew test jacocoTestReport jacocoTestCoverageVerification sonar\n# 3. Abrir http://localhost:9000 no navegador para ver o dashboard"
+          },
+          {
+            title: "2.6 — Integração de Cobertura com Codecov",
+            desc: "Configurar envio de cobertura do JaCoCo para Codecov via GitHub Actions.",
+            tags: ["Codecov", "CI/CD", "GitHub Actions"],
+            done: true,
+            version: "v2.6.0",
+            detail: "Integrar o projeto ao Codecov utilizando os relatórios XML gerados pelo JaCoCo como fonte oficial de cobertura. Configurar upload automático no pipeline CI do GitHub Actions após execução dos testes, permitindo visualização histórica, métricas por pull request e análise incremental de cobertura. Definir fail conditions para cobertura mínima, habilitar comentários automáticos em PRs e preparar badges públicas para README. Garantir que segredos e tokens sejam isolados via GitHub Secrets e que a pipeline continue desacoplada da lógica de domínio.",
+            snippet: "uses: codecov/codecov-action@v5\nwith:\n files: build/reports/jacoco/test/jacocoTestReport.xml\n fail_ci_if_error: true"
           }
         ]
       },
