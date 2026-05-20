@@ -22,6 +22,7 @@
 | Fase | Descrição | Status |
 |------|-----------|--------|
 | **1** | Base hexagonal — transcrição local (Speaches/Whisper) · RestClient · Lombok · MapStruct | ✅ `v1.0.0` |
+| **2** | Qualidade de código com SonarQube e JaCoCo | 🔜 `v2.x` |
 | **2** | Cache Redis com SHA-256 — RedisConfig · RedisCacheAdapter · Testcontainers | 🔜 `v2.x` |
 | **3** | Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC | 🔜 `v3.x` |
 | **4** | Resiliência — Circuit Breaker · Retry · Bulkhead (Resilience4j) | 🔜 `v4.x` |
@@ -47,6 +48,14 @@
 | Speaches | latest-cuda | Servidor Whisper (transcrição local) |
 | Whisper | faster-whisper-small | Modelo de transcrição |
 | Docker Compose | v2+ | Orquestração local |
+| Build Tool | Gradle |
+| Arquitetura | Hexagonal |
+| IA local | Whisper |
+| Documentação API | Swagger/OpenAPI |
+| Qualidade | JaCoCo + SonarQube |
+| Observabilidade | Prometheus + Grafana |
+| Mensageria | RabbitMQ |
+| Cache | Redis |
 
 ---
 
@@ -110,6 +119,24 @@ uvx speaches-cli model download Systran/faster-whisper-small
 
 ```bash
 docker compose up -d
+```
+
+---
+
+## SonarQube local
+
+O ambiente local executa SonarQube via Docker Compose.
+
+### Subir infraestrutura
+
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+### Acessar dashboard
+
+```text
+http://localhost:9000
 ```
 
 ---
@@ -196,6 +223,9 @@ curl -X POST http://localhost:8080/api/transcriptions \
 |---------|--------|-----------|
 | `SPEACHES_BASE_URL` | `http://speaches:8000` | URL do servidor Speaches |
 | `SPEACHES_MODEL` | `Systran/faster-whisper-small` | Modelo Whisper |
+| SONAR_HOST_URL | `http://localhost:9000` | URL do servidor SonarQube |
+| SONAR_TOKEN | `local` | Token de autenticação |
+| SONAR_PROJECT_KEY | `speech-ai-hexagonal` | Chave do projeto |
 
 Copie `.env.example` para `.env` e ajuste conforme necessário.
 
@@ -278,7 +308,7 @@ Certifique-se de ter o NVIDIA Container Toolkit instalado. Em CPU, remova o bloc
 ---
 
 ## Autor
-
+S
 **Eric Hiroshi** — Backend Engineer
 
 [![GitHub](https://img.shields.io/badge/GitHub-erichiroshi-181717?logo=github)](https://github.com/erichiroshi)

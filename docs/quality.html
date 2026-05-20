@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Qualidade de Código — speech-ai-hexagonal</title>
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    .quality-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .quality-card {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .quality-card h3 {
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .quality-card p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .planned {
+      background: #0c1a2a;
+      color: #60a5fa;
+      border: 1px solid #1e3a5f;
+    }
+
+    .done {
+      background: #0c2a1a;
+      color: #22c55e;
+      border: 1px solid #14532d;
+    }
+
+    .terminal {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+
+    .terminal code {
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      color: #a5f3fc;
+      line-height: 1.8;
+    }
+
+    .flow {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 16px;
+      overflow-x: auto;
+      font-family: "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      color: #a5f3fc;
+    }
+
+    .highlight {
+      color: #22c55e;
+    }
+
+    .warn {
+      color: #fbbf24;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+
+    .table th {
+      text-align: left;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table td {
+      padding: 10px;
+      font-size: 13px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .table code {
+      font-size: 11px;
+    }
+
+    .alert {
+      background: #0f172a;
+      border-left: 3px solid #fbbf24;
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      margin-top: 16px;
+    }
+
+    .alert h4 {
+      font-size: 13px;
+      color: #fbbf24;
+      margin-bottom: 6px;
+    }
+
+    .alert p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .pipeline {
+  margin-top: 18px;
+}
+
+.pipeline-step {
+  background: #0f172a;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.pipeline-step p {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.pipeline-step ul {
+  margin-top: 10px;
+  padding-left: 18px;
+}
+
+.pipeline-step li {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.pipeline-title {
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #a5f3fc;
+}
+
+.pipeline-title.success {
+  color: #22c55e;
+}
+
+.pipeline-title.warning {
+  color: #fbbf24;
+}
+
+.pipeline-arrow {
+  text-align: center;
+  color: #475569;
+  font-size: 24px;
+  padding: 8px 0;
+}
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <header>
+      <h1>🧪 Qualidade de Código</h1>
+      <p class="subtitle">
+        speech-ai-hexagonal · Fase 2 · SonarQube + JaCoCo + Quality Gates
+      </p>
+    </header>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="architecture.html">Arquitetura</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="quality.html">Qualidade</a>
+      <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">
+        README
+      </a>
+    </nav>
+
+    <section class="card">
+      <h2>🎯 Objetivo da Fase 2</h2>
+
+      <p>
+        A Fase 2 adiciona uma camada de maturidade técnica focada em:
+      </p>
+
+      <div class="quality-grid">
+        <div class="quality-card">
+          <h3>JaCoCo</h3>
+          <p>
+            Geração automatizada de relatórios de cobertura para garantir
+            validação contínua dos casos de uso e regras de domínio.
+          </p>
+        </div>
+
+        <div class="quality-card">
+          <h3>SonarQube</h3>
+          <p>
+            Análise estática local para identificação de bugs,
+            vulnerabilidades, code smells e dívida técnica.
+          </p>
+        </div>
+
+        <div class="quality-card">
+          <h3>Coverage Gate</h3>
+          <p>
+            Threshold mínimo de cobertura aplicado no build para impedir
+            regressões silenciosas de qualidade.
+          </p>
+        </div>
+
+        <div class="quality-card">
+          <h3>Pipeline Local</h3>
+          <p>
+            Execução completa de qualidade diretamente no ambiente do desenvolvedor,
+            antes da CI remota.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>📍 Roadmap da Fase 2</h2>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Versão</th>
+            <th>Item</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td><code>v2.1.0</code></td>
+            <td>Infraestrutura Local (Docker Compose)</td>
+            <td><span class="badge planned">planejado</span></td>
+          </tr>
+
+          <tr>
+            <td><code>v2.2.0</code></td>
+            <td>Plugins, Dependências e Task Graph no Gradle</td>
+            <td><span class="badge planned">planejado</span></td>
+          </tr>
+
+          <tr>
+            <td><code>v2.3.0</code></td>
+            <td>Thresholds e Exclusões do JaCoCo</td>
+            <td><span class="badge planned">planejado</span></td>
+          </tr>
+
+          <tr>
+            <td><code>v2.4.0</code></td>
+            <td>Variáveis de Ambiente e Propriedades do Sonar</td>
+            <td><span class="badge planned">planejado</span></td>
+          </tr>
+
+          <tr>
+            <td><code>v2.5.0</code></td>
+            <td>Validação do Pipeline Local</td>
+            <td><span class="badge planned">planejado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+<section class="card">
+  <h2>⚙️ Fluxo de Qualidade</h2>
+
+  <div class="pipeline">
+
+    <div class="pipeline-step">
+      <div class="pipeline-title success">
+        ./gradlew clean test jacocoTestReport sonar
+      </div>
+
+      <p>
+        Pipeline completa de validação local da qualidade do projeto.
+      </p>
+    </div>
+
+    <div class="pipeline-arrow">↓</div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-title">
+        test
+      </div>
+
+      <ul>
+        <li>executa testes unitários</li>
+        <li>executa testes de integração</li>
+        <li>gera métricas iniciais de cobertura</li>
+      </ul>
+    </div>
+
+    <div class="pipeline-arrow">↓</div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-title">
+        jacocoTestReport
+      </div>
+
+      <ul>
+        <li>gera relatório HTML</li>
+        <li>gera relatório XML</li>
+        <li>exporta cobertura para o SonarQube</li>
+      </ul>
+    </div>
+
+    <div class="pipeline-arrow">↓</div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-title">
+        jacocoTestCoverageVerification
+      </div>
+
+      <ul>
+        <li>valida threshold mínimo ≥ 60%</li>
+        <li>interrompe build em caso de cobertura insuficiente</li>
+      </ul>
+    </div>
+
+    <div class="pipeline-arrow">↓</div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-title warning">
+        sonar
+      </div>
+
+      <ul>
+        <li>envia métricas para o SonarQube</li>
+        <li>executa análise estática</li>
+        <li>gera indicadores de qualidade</li>
+      </ul>
+    </div>
+
+    <div class="pipeline-arrow">↓</div>
+
+    <div class="pipeline-step">
+      <div class="pipeline-title success">
+        Dashboard SonarQube
+      </div>
+
+      <ul>
+        <li>bugs</li>
+        <li>vulnerabilidades</li>
+        <li>code smells</li>
+        <li>coverage</li>
+        <li>dívida técnica</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+    <section class="card">
+      <h2>🚫 Exclusões de cobertura</h2>
+
+      <p>
+        Algumas classes não entram no coverage gate por não possuírem
+        lógica de negócio relevante.
+      </p>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Pacote/Classe</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td><code>infrastructure/config</code></td>
+            <td>Configuração Spring</td>
+          </tr>
+
+          <tr>
+            <td><code>*Application.java</code></td>
+            <td>Bootstrap do Spring Boot</td>
+          </tr>
+
+          <tr>
+            <td><code>dto/</code></td>
+            <td>Objetos sem regra de negócio</td>
+          </tr>
+
+          <tr>
+            <td><code>record</code></td>
+            <td>Estruturas imutáveis sem comportamento</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>🔐 Variáveis de ambiente</h2>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Variável</th>
+            <th>Descrição</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td><code>SONAR_HOST_URL</code></td>
+            <td>URL do servidor SonarQube</td>
+          </tr>
+
+          <tr>
+            <td><code>SONAR_TOKEN</code></td>
+            <td>Token de autenticação</td>
+          </tr>
+
+          <tr>
+            <td><code>SONAR_PROJECT_KEY</code></td>
+            <td>Identificador do projeto</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="terminal">
+        <code>
+export SONAR_HOST_URL=http://localhost:9000
+export SONAR_TOKEN=local
+export SONAR_PROJECT_KEY=speech-ai-hexagonal
+        </code>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>⚠️ Troubleshooting</h2>
+
+      <div class="alert">
+        <h4>SonarQube não sobe</h4>
+        <p>
+          Linux exige configuração mínima de memória virtual.
+        </p>
+
+        <div class="terminal">
+          <code>
+sudo sysctl -w vm.max_map_count=524288
+          </code>
+        </div>
+      </div>
+
+      <div class="alert">
+        <h4>Build falhando no coverage</h4>
+        <p>
+          O threshold mínimo não foi atingido.
+          Adicione testes para:
+        </p>
+
+        <ul style="margin-top:10px; color:var(--muted); font-size:12px">
+          <li>use cases</li>
+          <li>domain services</li>
+          <li>adapters</li>
+          <li>mappers</li>
+        </ul>
+      </div>
+
+      <div class="alert">
+        <h4>Dashboard sem cobertura</h4>
+        <p>
+          Verifique se o XML do JaCoCo foi gerado corretamente.
+        </p>
+
+        <div class="terminal">
+          <code>
+./gradlew jacocoTestReport
+          </code>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>
+        speech-ai-hexagonal ·
+        <a href="https://github.com/erichiroshi" style="color:var(--primary)">
+          Eric Hiroshi
+        </a>
+        · Fase 2
+      </p>
+    </footer>
+
+  </div>
+</body>
+</html>

@@ -32,6 +32,7 @@
     <nav>
       <a href="index.html">Home</a>
       <a href="architecture.html">Arquitetura</a>
+      <a href="quality.html">Qualidade</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
     </nav>
@@ -67,29 +68,29 @@
       <pre>
 com.erichiroshi.speechaihexagonal/
 ├── SpeechAiHexagonalApplication.java
-└── transcription/                              <span class="comment">← bounded context</span>
-    ├── <span class="highlight">domain/</span>                                 <span class="comment">← zero dependência de framework</span>
+└── transcription/                           ← bounded context
+    ├── domain/                              ← zero dependência de framework
     │   ├── model/Transcription.java
     │   ├── exception/
     │   │   ├── AudioValidationException.java
     │   │   └── SpeechToTextException.java
     │   └── port/out/
-    │       └── SpeechToTextPort.java           <span class="comment">← porta de saída</span>
-    ├── <span class="highlight">application/</span>                            <span class="comment">← orquestra domínio, sem infra</span>
-    │   ├── TranscribeAudioUseCase.java         <span class="comment">← use case</span>
+    │       └── SpeechToTextPort.java           ← porta de saída
+    ├── application/                            ← orquestra domínio, sem infra 
+    │   ├── TranscribeAudioUseCase.java         ← use case 
     │   ├── port/in/
-    │   │   └── TranscribeAudioPort.java        <span class="comment">← porta de entrada</span>
+    │   │   └── TranscribeAudioPort.java        ← porta de entrada 
     │   ├── input/TranscriptionInput.java
     │   ├── output/TranscriptionOutput.java
-    │   └── mapper/TranscriptionMapper.java     <span class="comment">← domain → output</span>
-    └── <span class="highlight">infrastructure/</span>                         <span class="comment">← adapters concretos</span>
+    │   └── mapper/TranscriptionMapper.java      ← domain → output 
+    └── infrastructure/                          ← adapters concretos 
         ├── http/
-        │   ├── TranscriptionController.java    <span class="comment">← adapter IN</span>
+        │   ├── TranscriptionController.java     ← adapter IN 
         │   ├── handler/GlobalExceptionHandler.java
         │   ├── mapper/TranscriptionHttpMapper.java
         │   └── response/TranscriptionResponse.java
         └── speechtotext/speaches/
-            ├── SpeachesAdapter.java            <span class="comment">← adapter OUT</span>
+            ├── SpeachesAdapter.java             ← adapter OUT 
             ├── SpeachesProperties.java
             ├── config/RestClientConfig.java
             ├── mapper/SpeachesMapper.java
@@ -128,8 +129,8 @@ com.erichiroshi.speechaihexagonal/
             <td><code>TranscriptionCachePort</code></td>
             <td>Saída (driven)</td>
             <td>—</td>
-            <td><code>RedisCacheAdapter</code> (Fase 2)</td>
-            <td><span class="badge-plan">Fase 2</span></td>
+            <td><code>RedisCacheAdapter</code> (Fase 3)</td>
+            <td><span class="badge-plan">Fase 3</span></td>
           </tr>
           <tr>
             <td><code>EventPublisherPort</code></td>

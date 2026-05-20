@@ -30,6 +30,7 @@
     <nav>
       <a href="index.html">Home</a>
       <a href="architecture.html">Arquitetura</a>
+      <a href="quality.html">Qualidade</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
     </nav>
@@ -55,53 +56,86 @@
 
     <section class="card">
       <h2>📍 Roadmap</h2>
+
       <div class="phase-row">
         <span class="phase-num">Fase 1</span>
-        <span class="phase-desc">Base hexagonal — transcrição local com Speaches/Whisper · RestClient · Lombok · MapStruct</span>
+        <span class="phase-desc">
+          Base hexagonal — transcrição local com Speaches/Whisper · RestClient · Lombok · MapStruct
+        </span>
         <span class="badge done">✓</span>
         <span class="phase-ver">v1.0.0</span>
       </div>
+
       <div class="phase-row">
         <span class="phase-num">Fase 2</span>
-        <span class="phase-desc">Cache Redis com SHA-256 — RedisConfig · RedisCacheAdapter · Testcontainers</span>
+        <span class="phase-desc">
+          Qualidade de código — SonarQube · JaCoCo · Coverage Gate · análise estática · pipeline local
+        </span>
         <span class="badge planned">planejado</span>
         <span class="phase-ver">v2.x</span>
       </div>
+
       <div class="phase-row">
         <span class="phase-num">Fase 3</span>
-        <span class="phase-desc">Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC</span>
+        <span class="phase-desc">
+          Cache Redis — SHA-256 · RedisCacheAdapter · TTL configurável · Testcontainers
+        </span>
         <span class="badge planned">planejado</span>
         <span class="phase-ver">v3.x</span>
       </div>
+
       <div class="phase-row">
         <span class="phase-num">Fase 4</span>
-        <span class="phase-desc">Resiliência — Circuit Breaker · Retry · Bulkhead (Resilience4j)</span>
+        <span class="phase-desc">
+          Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC
+        </span>
         <span class="badge planned">planejado</span>
         <span class="phase-ver">v4.x</span>
       </div>
+
       <div class="phase-row">
         <span class="phase-num">Fase 5</span>
-        <span class="phase-desc">Spring AI + OpenAI Whisper — segunda porta de saída (cloud)</span>
+        <span class="phase-desc">
+          Resiliência — Circuit Breaker · Retry · Bulkhead (Resilience4j)
+        </span>
         <span class="badge planned">planejado</span>
         <span class="phase-ver">v5.x</span>
       </div>
+
       <div class="phase-row">
         <span class="phase-num">Fase 6</span>
-        <span class="phase-desc">Spring AI + Ollama — resumo por LLM local ≤1B parâmetros</span>
+        <span class="phase-desc">
+          Spring AI + OpenAI Whisper — segunda porta de saída (cloud)
+        </span>
         <span class="badge planned">planejado</span>
         <span class="phase-ver">v6.x</span>
       </div>
+
       <div class="phase-row">
         <span class="phase-num">Fase 7</span>
-        <span class="phase-desc">RabbitMQ — TranscriptionCompletedEvent · DLQ · Consumer de auditoria</span>
+        <span class="phase-desc">
+          Spring AI + Ollama — sumarização local via LLM ≤1B parâmetros
+        </span>
         <span class="badge planned">planejado</span>
         <span class="phase-ver">v7.x</span>
       </div>
+
       <div class="phase-row">
         <span class="phase-num">Fase 8</span>
-        <span class="phase-desc">CI/CD — GitHub Actions · SonarCloud · Codecov · Docker Hub · Multi-arch</span>
+        <span class="phase-desc">
+          RabbitMQ — eventos assíncronos · DLQ · auditoria de transcrições
+        </span>
         <span class="badge planned">planejado</span>
         <span class="phase-ver">v8.x</span>
+      </div>
+
+      <div class="phase-row">
+        <span class="phase-num">Fase 9</span>
+        <span class="phase-desc">
+          CI/CD — GitHub Actions · SonarCloud · Codecov · Docker Hub · multi-arch
+        </span>
+        <span class="badge planned">planejado</span>
+        <span class="phase-ver">v9.x</span>
       </div>
     </section>
 

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -90,16 +89,17 @@
 
     <h1 style="font-size:1.8rem; margin: 24px 0 6px;">Roadmap interativo do projeto speech-ai-hexagonal</h1>
     <p class="hint">Clique em uma fase para expandir · Clique em uma tarefa para ver detalhes</p>
-    
+
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>Fase 1 — concluída (v1.0.0)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#185FA5"></div>Fase 2 —  (v2.x)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#7F77DD"></div>Fase 3 —  (v3.x)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#0e7490"></div>Fase 4 —  (v4.x)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>Fase 5 —  (v5.x)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0F6E56"></div>Fase 5 —  (v5.x)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#15803d"></div>Fase 6 —  (v6.x)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>Fase 7 —  (v7.x)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#b45309"></div>Fase 8 —  (v8.x)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div>Fase 9 —  (v9.x)</div>
     </div>
 
     <div id="phases"></div>
@@ -110,376 +110,426 @@
     </footer>
   </div>
 
-<script>
-const phases = [
-  {
-    id: 1, label: "Fase 1", title: "Base hexagonal + transcrição local",
-    color: "#1D9E75", badgeBg: "#0c2a1a", badgeColor: "#22c55e",
-    version: "v1.0.0", taskCount: 7, done: true,
-    tasks: [
+  <script>
+    const phases = [
       {
-        title: "1.1 — Setup do projeto",
-        desc: "build.gradle, settings.gradle, estrutura de pacotes hexagonal",
-        tags: ["Gradle", "Spring Boot 4", "Java 25"],
-        done: true,
-        version: "v1.1.0",
-        detail: "Criação do projeto com estrutura hexagonal desde o início: domain/, application/port/in, , infrastructure/adapter/in|out, infrastructure/config/. Sem frameworks mágicos — portas são interfaces Java puras.",
-        snippet: "br.com.erichiroshi.speechai/\n├── domain/model/Transcription.java\n├── domain/port/out/SpeechToTextPort.java\n├── application/port/in/TranscribeAudioPort.java\n├── application/TranscribeAudioUseCase.java\n└── infrastructure/http/TranscriptionController.java"
+        id: 1, label: "Fase 1", title: "Base hexagonal + transcrição local",
+        color: "#1D9E75", badgeBg: "#0c2a1a", badgeColor: "#22c55e",
+        version: "v1.0.0", taskCount: 7, done: true,
+        tasks: [
+          {
+            title: "1.1 — Setup do projeto",
+            desc: "build.gradle, settings.gradle, estrutura de pacotes hexagonal",
+            tags: ["Gradle", "Spring Boot 4", "Java 25"],
+            done: true,
+            version: "v1.1.0",
+            detail: "Criação do projeto com estrutura hexagonal desde o início: domain/, application/port/in, , infrastructure/adapter/in|out, infrastructure/config/. Sem frameworks mágicos — portas são interfaces Java puras.",
+            snippet: "br.com.erichiroshi.speechai/\n├── domain/model/Transcription.java\n├── domain/port/out/SpeechToTextPort.java\n├── application/port/in/TranscribeAudioPort.java\n├── application/TranscribeAudioUseCase.java\n└── infrastructure/http/TranscriptionController.java"
+          },
+          {
+            title: "1.2 — Domínio + portas de entrada e saída",
+            desc: "Transcription (domínio), TranscribeAudioPort (porta in), SpeechToTextPort (portas out)",
+            tags: ["Hexagonal", "Domain", "Ports"],
+            done: true,
+            version: "v1.2.0",
+            detail: "Transcription é o agregado central. TranscribeAudioPort define o contrato de entrada. SpeechToTextPort abstrai qualquer motor de transcrição (Speaches hoje, OpenAI amanhã). Nenhuma classe do domínio importa Spring.",
+            snippet: "public interface SpeechToTextPort {\n    Transcription transcribe(byte[] audio, String filename);\n}\n\npublic interface TranscribeAudioPort {\n    TranscriptionOutput execute(TranscriptionInput input);\n}"
+          },
+          {
+            title: "1.3 — TranscribeAudioUseCase (use case)",
+            desc: "Orquestra: SpeechToTextPort → retorna",
+            tags: ["UseCase", "Service", "SRP"],
+            done: true,
+            version: "v1.3.0",
+            detail: "TranscribeAudioUseCase implementa TranscribeAudioPort. Delega para SpeechToTextPort. Retorna Transcription. Lógica de negócio 100% livre de Spring — testável sem contexto.",
+            snippet: "// Fluxo do use case:\n// 1. result = speechToText.transcribe(bytes, filename, contentType)"
+          },
+          {
+            title: "1.4 — SpeachesAdapter (RestClient)",
+            desc: "Implementa SpeechToTextPort via RestClient → POST /v1/audio/transcriptions",
+            tags: ["RestClient", "Speaches", "Adapter"],
+            done: true,
+            version: "v1.4.0",
+            detail: "SpeachesAdapter implements SpeechToTextPort. Constrói MultipartBodyBuilder com os bytes do áudio. Chama Speaches via RestClient (configurado em RestClientConfig). Mapeia SpeachesResponse → Transcription. Lança SpeechToTextException em falhas.",
+            snippet: "@Component\npublic class SpeachesAdapter implements SpeechToTextPort {\n    public Transcription transcribe(byte[] audio, String filename, String contentType) {\n        // RestClient → Speaches → SpeachesResponse → Transcription\n    }\n}"
+          },
+          {
+            title: "1.5 — TranscriptionController + GlobalExceptionHandler",
+            desc: "POST /api/transcriptions, validação multipart, ProblemDetail RFC 9457",
+            tags: ["REST", "ProblemDetail", "Validation"],
+            done: true,
+            version: "v1.5.0",
+            detail: "TranscriptionController recebe MultipartFile, valida tipo (wav/mpeg) e tamanho (5MB), chama o use case. GlobalExceptionHandler trata AudioValidationException → 400, SpeechToTextException → 502, genéricas → 500. Tudo em ProblemDetail (RFC 9457).",
+            snippet: "POST /api/transcriptions\nContent-Type: multipart/form-data\n\nResponse 200:\n{ \"audioTranscription\": \"...\" }\n\nResponse 400:\n{ \"type\": \"/errors/audio-validation\", \"title\": \"Arquivo inválido\" }"
+          },
+          {
+            title: "1.6 — Testes (Mockito + MockWebServer)",
+            desc: "TranscribeAudioUseCaseTest, TranscriptionControllerTest, SpeachesAdapterTest",
+            tags: ["JUnit 5", "Mockito", "MockWebServer", "WebMvcTest"],
+            done: true,
+            version: "v1.6.0",
+            detail: "TranscribeAudioUseCaseTest: Mockito puro (sem contexto Spring), testa caminho feliz, validações de bytes/tamanho/Content-Type. TranscriptionControllerTest: @WebMvcTest com @MockitoBean, testa 200/400/502/500. SpeachesAdapterTest: MockWebServer para simular Speaches, testa sucesso, erros HTTP e resposta vazia. Cobertura alvo: ≥60%.",
+            snippet: "// SpeachesAdapterTest — MockWebServer\nmockWebServer.enqueue(new MockResponse()\n  .setResponseCode(200)\n  .setBody(\"{\\\"text\\\": \\\"Olá, mundo.\\\"}\"));\n\nTranscription result = adapter.transcribe(bytes, \"audio.wav\", \"audio/wav\");\nassertThat(result.getText()).isEqualTo(\"Olá, mundo.\");"
+          },
+          {
+            title: "1.7 — Docker Compose + frontend + README",
+            desc: "compose.yml (app + speaches), compose.dev.yml (speaches apenas), Dockerfile multi-stage, frontend dark theme",
+            tags: ["Docker", "Frontend", "README"],
+            done: true,
+            version: "v1.7.0",
+            detail: "docker-compose.yml (prod): API + Speaches com healthcheck e depends_on. docker-compose.dev.yml: apenas Speaches para rodar a API via ./gradlew bootRun. Dockerfile multi-stage (builder + runtime). Frontend dark theme com tema atualizado. README profissional com badges, arquitetura, quick start.",
+            snippet: "# Dev:\ndocker compose -f docker-compose.dev.yml up -d\n./gradlew bootRun --args='--spring.profiles.active=dev'\n\n# Prod:\ndocker compose up -d"
+          }
+        ]
       },
       {
-        title: "1.2 — Domínio + portas de entrada e saída",
-        desc: "Transcription (domínio), TranscribeAudioPort (porta in), SpeechToTextPort (portas out)",
-        tags: ["Hexagonal", "Domain", "Ports"],
-        done: true,
-        version: "v1.2.0",
-        detail: "Transcription é o agregado central. TranscribeAudioPort define o contrato de entrada. SpeechToTextPort abstrai qualquer motor de transcrição (Speaches hoje, OpenAI amanhã). Nenhuma classe do domínio importa Spring.",
-        snippet: "public interface SpeechToTextPort {\n    Transcription transcribe(byte[] audio, String filename);\n}\n\npublic interface TranscribeAudioPort {\n    TranscriptionOutput execute(TranscriptionInput input);\n}"
+        id: 2, label: "Fase 2", title: "Qualidade de código com SonarQube e JaCoCo",
+        color: "#185FA5", badgeBg: "#0a1929", badgeColor: "#60a5fa",
+        version: "v2.1.0", taskCount: 5, done: false,
+        tasks: [
+          {
+            title: "2.1 — Infraestrutura Local (Docker Compose)",
+            desc: "Atualização do compose.yml com serviço SonarQube e volumes persistentes",
+            tags: ["Docker", "SonarQube", "DevOps"],
+            done: false,
+            version: null,
+            detail: "Adição do serviço do SonarQube (imagem oficial LTS) no compose.yml. Configuração de limites de memória necessários (vm.max_map_count) e mapeamento de volumes locais para persistência de dados e plugins. Liberação da porta 9000 e validação do acesso inicial via localhost:9000.",
+            snippet: "sonarqube:\\n  image: sonarqube:lts-community\\n  container_name: sonarqube_local\\n  ports:\\n    - \\\"9000:9000\\\"\\n  volumes:\\n    - sonar_data:/opt/sonarqube/data\\n    - sonar_extensions:/opt/sonarqube/extensions\\n    - sonar_logs:/opt/sonarqube/logs\\n  ulimits:\\n    nofile:\\n      soft: 65536\\n      hard: 65536"
+          },
+          {
+            title: "2.2 — Plugins, Dependências e Task Graph no Gradle",
+            desc: "Aplicação dos plugins do JaCoCo e SonarQube no build.gradle e amarração de tasks",
+            tags: ["Gradle", "JaCoCo", "Build-Tool"],
+            done: false,
+            version: null,
+            detail: "Inclusão dos plugins 'jacoco' e 'org.sonarqube'. Configuração do grafo de execução do Gradle para que a task 'sonar' dependa obrigatoriamente de 'jacocoTestReport', e esta dependa de 'test'. Garante que a análise de código só ocorra após a geração dos relatórios de cobertura mais recentes.",
+            snippet: "plugins {\\n    id 'jacoco'\\n    id 'org.sonarqube' version '5.1.0.4860'\\n}\\n\\ntasks.named('sonar') {\\n    dependsOn tasks.named('jacocoTestReport')\\n}\\ntasks.named('jacocoTestReport') {\\n    dependsOn tasks.named('test')\\n}"
+          },
+          {
+            title: "2.3 — Configuração de Thresholds e Exclusões do JaCoCo",
+            desc: "Definição de regras de validação de cobertura mínima e exclusão de pacotes",
+            tags: ["JaCoCo", "Quality-Gate", "TDD"],
+            done: false,
+            version: null,
+            detail: "Configuração da task 'jacocoTestCoverageVerification' para validar o limite mínimo (threshold) de 60% de cobertura geral. Criação de regras de exclusão para ignorar pacotes de configuração (infrastructure/config), classes de bootstrap do Spring Boot e registros/DTOs que não possuem lógica de negócio.",
+            snippet: "jacocoTestReport {\\n    reports { xml.required = true }\\n    afterEvaluate {\\n        classDirectories.setFrom(files(classDirectories.files.collect {\\n            fileTree(dir: it, exclude: ['**/config/**', '**/dto/**', '*Application*]')\\n        }))\\n    }}\\n\\njacocoTestCoverageVerification {\\n    violationRules {\\n        rule {\\n            limit { minimum = 0.60 }\\n        }\\n    }\\n}"
+          },
+          {
+            title: "2.4 — Variáveis de Ambiente e Propriedades do Sonar",
+            desc: "Mapeamento das propriedades do SonarQube e chaves do projeto no build.gradle",
+            tags: ["SonarQube", "Security", "Gradle"],
+            done: false,
+            version: null,
+            detail: "Configuração do bloco 'sonar.properties' no Gradle. Definição da chave única do projeto, nome, caminhos dos fontes e apontamento dos relatórios XML gerados pelo JaCoCo. Parametrização da URL do servidor e token de autenticação via variáveis de ambiente para evitar credenciais expostas no repositório.",
+            snippet: "sonar {\\n    properties {\\n        property \\\"sonar.projectName\\\", \\\"hexagonal-api\\\"\\n        property \\\"sonar.projectKey\\\", \\\"hexagonal-api-key\\\"\\n        property \\\"sonar.host.url\\\", System.getenv(\\\"SONAR_HOST_URL\\\") ?: \\\"http://localhost:9000\\\"\\n        property \\\"sonar.token\\\", System.getenv(\\\"SONAR_TOKEN\\\")\\n        property \\\"sonar.coverage.jacoco.xmlReportPaths\\\", \\\"${project.layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml\\\"\\n    }\\n}"
+          },
+          {
+            title: "2.5 — Validação do Pipeline Local",
+            desc: "Execução do fluxo completo de testes, geração de relatórios e inspeção no dashboard",
+            tags: ["Quality-Gate", "Testing", "SonarQube"],
+            done: false,
+            version: null,
+            detail: "Execução do comando unificado de teste e análise. Verificação da quebra do build caso o threshold do JaCoCo não seja atingido. Acesso ao localhost:9000 para validação das métricas de Bugs, Vulnerabilidades, Code Smells e a árvore visual de cobertura gerada pela arquitetura hexagonal implementada na Fase 1.",
+            snippet: "# Execução local passo a passo:\\n# 1. export SONAR_TOKEN=seu_token_gerado_no_sonar\\n# 2. ./gradlew test jacocoTestReport jacocoTestCoverageVerification sonar\\n# 3. Abrir http://localhost:9000 no navegador para ver o dashboard"
+          }
+        ]
       },
       {
-        title: "1.3 — TranscribeAudioUseCase (use case)",
-        desc: "Orquestra: SpeechToTextPort → retorna",
-        tags: ["UseCase", "Service", "SRP"],
-        done: true,
-        version: "v1.3.0",
-        detail: "TranscribeAudioUseCase implementa TranscribeAudioPort. Delega para SpeechToTextPort. Retorna Transcription. Lógica de negócio 100% livre de Spring — testável sem contexto.",
-        snippet: "// Fluxo do use case:\n// 1. result = speechToText.transcribe(bytes, filename, contentType)"
+        id: 3, label: "Fase 3", title: "Observabilidade",
+        color: "#7F77DD", badgeBg: "#1a1640", badgeColor: "#a5b4fc",
+        version: "v3.1.0–v3.4.0", taskCount: 4, done: false,
+        tasks: [
+          {
+            title: "3.1 — Micrometer + Prometheus",
+            desc: "micrometer-registry-prometheus, TranscriptionMetrics, Counter + Timer + container Prometheus",
+            tags: ["Micrometer", "Prometheus", "Actuator"],
+            done: false,
+            version: null,
+            detail: "Dependência micrometer-registry-prometheus. TranscriptionMetrics centraliza métricas: Counter (success/error), Timer (speaches.duration com p50/p95/p99), DistributionSummary (file.size.bytes). Container Prometheus no docker-compose.yml.",
+            snippet: "Counter.builder(\"transcription.requests.total\")\n  .tag(\"status\",\"success\").register(registry);\nTimer.builder(\"transcription.speaches.duration\")\n  .publishPercentiles(0.5,0.95,0.99).register(registry);" },
+          {
+            title: "3.2 — Grafana + dashboards",
+            desc: "Container Grafana, datasource Prometheus, dashboard de transcrições (throughput, latência, erros)",
+            tags: ["Grafana", "Dashboard", "Datasource"],
+            done: false,
+            version: null,
+            detail: "Container Grafana no docker-compose.yml com provisioning automático (datasource.yml + dashboard.json via volumes). Dashboard inclui: req/min, cache hit rate, latência p95, erros por tipo. Pronto para importar no Grafana Cloud.",
+            snippet: "volumes:\n  - ./observability/grafana/provisioning:/etc/grafana/provisioning\n  - ./observability/grafana/dashboards:/var/lib/grafana/dashboards" },
+          {
+            title: "3.3 — Zipkin + OpenTelemetry tracing",
+            desc: "micrometer-tracing-bridge-otel, opentelemetry-exporter-zipkin, spans por request",
+            tags: ["Zipkin", "OTel", "Tracing"],
+            done: false,
+            version: null,
+            detail: "micrometer-tracing-bridge-otel + opentelemetry-exporter-zipkin. Trace propagado: Controller → Service → SpeachesAdapter. MDC automaticamente populado com traceId/spanId. Container Zipkin no compose.",
+            snippet: "management.tracing.sampling.probability=1.0\nmanagement.zipkin.tracing.endpoint=http://zipkin:9411/api/v2/spans" },
+          {
+            title: "3.4 — Logs estruturados JSON + MDC",
+            desc: "logstash-logback-encoder, MdcLoggingFilter com requestId, traceId, fileName",
+            tags: ["Logback", "JSON", "MDC"],
+            done: false,
+            version: null,
+            detail: "logback-spring.xml: perfil prod → JSON (logstash-logback-encoder), dev → texto colorido. MdcLoggingFilter popula requestId (UUID), httpMethod, uri. TranscriptionService adiciona fileName, fileSizeBytes. Header X-Request-Id em todas as respostas.",
+            snippet: "// MDC fields in prod (JSON):\n// requestId, traceId, spanId, httpMethod, uri, fileName" }
+        ]
       },
       {
-        title: "1.4 — SpeachesAdapter (RestClient)",
-        desc: "Implementa SpeechToTextPort via RestClient → POST /v1/audio/transcriptions",
-        tags: ["RestClient", "Speaches", "Adapter"],
-        done: true,
-        version: "v1.4.0",
-        detail: "SpeachesAdapter implements SpeechToTextPort. Constrói MultipartBodyBuilder com os bytes do áudio. Chama Speaches via RestClient (configurado em RestClientConfig). Mapeia SpeachesResponse → Transcription. Lança SpeechToTextException em falhas.",
-        snippet: "@Component\npublic class SpeachesAdapter implements SpeechToTextPort {\n    public Transcription transcribe(byte[] audio, String filename, String contentType) {\n        // RestClient → Speaches → SpeachesResponse → Transcription\n    }\n}"
+        id: 4, label: "Fase 4", title: "Cache Redis (SHA-256)",
+        color: "#0e7490", badgeBg: "#083344", badgeColor: "#67e8f9",
+        version: "v4.1.0–v4.3.0", taskCount: 3, done: false,
+        tasks: [
+          {
+            title: "4.1 — Dependência + RedisConfig",
+            desc: "spring-data-redis, RedisTemplate<String,Transcription>, serialização JSON",
+            tags: ["Redis", "RedisConfig", "Jackson"],
+            done: false,
+            version: null,
+            detail: "Adiciona spring-boot-starter-data-redis. RedisConfig configura RedisTemplate com Jackson2JsonRedisSerializer para Transcription. Configura TTL padrão via AppProperties. Redis no docker-compose.dev.yml.",
+            snippet: "implementation 'org.springframework.boot:spring-boot-starter-data-redis'\n\n@Bean\nRedisTemplate<String, Transcription> redisTemplate(RedisConnectionFactory f) {...}"
+          },
+          {
+            title: "4.2 — RedisCacheAdapter",
+            desc: "Implementa TranscriptionCachePort com prefixo de chave e TTL configurável",
+            tags: ["Adapter", "TTL", "Port"],
+            done: false,
+            version: null,
+            detail: "RedisCacheAdapter implements TranscriptionCachePort. Chave: 'transcription:{hash}'. TTL configurável via @ConfigurationProperties. @Primary substitui InMemoryCacheAdapter em produção. InMemory continua ativo com @Profile('test').",
+            snippet: "// Chave: \"transcription:\" + hash\n// TTL: configurável via app.cache.transcription-ttl-hours\n// InMemory permanece para testes unitários"
+          },
+          {
+            title: "4.3 — Testes de integração com Testcontainers",
+            desc: "RedisContainer, RedisCacheAdapterIT, integração ponta-a-ponta com hash real",
+            tags: ["Testcontainers", "Integration", "Redis"],
+            done: false,
+            version: null,
+            detail: "RedisCacheAdapterIT usa @Testcontainers + RedisContainer. Testa save/findByHash/TTL com Redis real. RedisServiceIT sobe contexto completo com Speaches mockado e Redis via Testcontainers. Cobertura alvo: 65%.",
+            snippet: "@Testcontainers\nclass RedisCacheAdapterIT {\n  @Container\n  static RedisContainer redis = new RedisContainer(\"redis:7\");\n}"
+          }
+        ]
       },
       {
-        title: "1.5 — TranscriptionController + GlobalExceptionHandler",
-        desc: "POST /api/transcriptions, validação multipart, ProblemDetail RFC 9457",
-        tags: ["REST", "ProblemDetail", "Validation"],
-        done: true,
-        version: "v1.5.0",
-        detail: "TranscriptionController recebe MultipartFile, valida tipo (wav/mpeg) e tamanho (5MB), chama o use case. GlobalExceptionHandler trata AudioValidationException → 400, SpeechToTextException → 502, genéricas → 500. Tudo em ProblemDetail (RFC 9457).",
-        snippet: "POST /api/transcriptions\nContent-Type: multipart/form-data\n\nResponse 200:\n{ \"audioTranscription\": \"...\" }\n\nResponse 400:\n{ \"type\": \"/errors/audio-validation\", \"title\": \"Arquivo inválido\" }"
+        id: 5, label: "Fase 5", title: "Resiliência (Resilience4j)",
+        color: "#0F6E56", badgeBg: "#0c2a1a", badgeColor: "#22c55e",
+        version: "v5.1.0–v5.3.0", taskCount: 3, done: false,
+        tasks: [
+          {
+            title: "5.1 — Circuit Breaker",
+            desc: "CircuitBreaker no SpeachesAdapter, config por propriedade, métricas automáticas",
+            tags: ["CircuitBreaker", "Resilience4j"],
+            done: false,
+            version: null,
+            detail: "@CircuitBreaker em SpeachesAdapter. Estados: CLOSED → OPEN → HALF_OPEN. Config: slidingWindowSize, failureRateThreshold, waitDurationInOpenState. Fallback lança SpeechToTextException com mensagem clara. Métricas integradas ao Prometheus automaticamente.",
+            snippet: "@CircuitBreaker(name=\"speaches\", fallbackMethod=\"fallback\")\npublic Transcription transcribe(byte[] audio, String filename) {...}" },
+          {
+            title: "5.2 — Retry + Bulkhead",
+            desc: "@Retry com backoff exponencial, @Bulkhead para limitar concorrência ao Speaches",
+            tags: ["Retry", "Bulkhead", "Backoff"],
+            done: false,
+            version: null,
+            detail: "@Retry: maxAttempts=3, backoff exponencial (1s→2s→4s), retry apenas em IOException/TimeoutException. @Bulkhead: limita chamadas simultâneas ao Speaches (ex: 10 concurrent). Evita cascata de falhas quando Speaches está lento.",
+            snippet: "resilience4j.retry.instances.speaches:\n  maxAttempts: 3\n  waitDuration: 1s\n  enableExponentialBackoff: true" },
+          {
+            title: "5.3 — Métricas de resiliência + testes",
+            desc: "Dashboard Grafana com circuit state, retry count; testes com WireMock simulando falhas",
+            tags: ["WireMock", "Grafana", "Testes"],
+            done: false,
+            version: null,
+            detail: "Atualiza dashboard Grafana com painel de resiliência: estado do circuit breaker, tentativas de retry, chamadas rejeitadas pelo bulkhead. Testes com WireMock simulam Speaches lento/falhando para validar comportamento dos mecanismos.",
+            snippet: "// WireMock: simula timeout no Speaches\nwireMock.stubFor(post(\"/v1/audio/transcriptions\")\n  .willReturn(aResponse().withFixedDelay(5000)));" }
+        ]
       },
       {
-        title:"1.6 — Testes (Mockito + MockWebServer)",
-        desc:"TranscribeAudioUseCaseTest, TranscriptionControllerTest, SpeachesAdapterTest",
-        tags:["JUnit 5","Mockito","MockWebServer","WebMvcTest"],
-        done: true,
-        version:"v1.6.0",
-        detail:"TranscribeAudioUseCaseTest: Mockito puro (sem contexto Spring), testa caminho feliz, validações de bytes/tamanho/Content-Type. TranscriptionControllerTest: @WebMvcTest com @MockitoBean, testa 200/400/502/500. SpeachesAdapterTest: MockWebServer para simular Speaches, testa sucesso, erros HTTP e resposta vazia. Cobertura alvo: ≥60%.",
-        snippet:"// SpeachesAdapterTest — MockWebServer\nmockWebServer.enqueue(new MockResponse()\n  .setResponseCode(200)\n  .setBody(\"{\\\"text\\\": \\\"Olá, mundo.\\\"}\"));\n\nTranscription result = adapter.transcribe(bytes, \"audio.wav\", \"audio/wav\");\nassertThat(result.getText()).isEqualTo(\"Olá, mundo.\");"},
-   
-       {
-        title: "1.7 — Docker Compose + frontend + README",
-        desc: "compose.yml (app + speaches), compose.dev.yml (speaches apenas), Dockerfile multi-stage, frontend dark theme",
-        tags: ["Docker", "Frontend", "README"],
-        done: true,
-        version: "v1.7.0",
-        detail: "docker-compose.yml (prod): API + Speaches com healthcheck e depends_on. docker-compose.dev.yml: apenas Speaches para rodar a API via ./gradlew bootRun. Dockerfile multi-stage (builder + runtime). Frontend dark theme com tema atualizado. README profissional com badges, arquitetura, quick start.",
-        snippet: "# Dev:\ndocker compose -f docker-compose.dev.yml up -d\n./gradlew bootRun --args='--spring.profiles.active=dev'\n\n# Prod:\ndocker compose up -d"
+        id: 6, label: "Fase 6", title: "Spring AI — transcrição via OpenAI",
+        color: "#15803d", badgeBg: "#052e16", badgeColor: "#86efac",
+        version: "v6.1.0–v6.2.0", taskCount: 2, done: false,
+        tasks: [
+          {
+            title: "6.1 — OpenAiSpeechAdapter (segunda porta de saída)",
+            desc: "Implementa SpeechToTextPort via Spring AI + OpenAI Whisper, seleção por profile/config",
+            tags: ["Spring AI", "OpenAI", "Whisper-1"],
+            done: false,
+            version: null,
+            detail: "OpenAiSpeechAdapter implements SpeechToTextPort. Usa Spring AI AudioTranscriptionModel com OpenAI whisper-1. Seleção do adapter via @ConditionalOnProperty(speech.provider=openai). SpeachesAdapter permanece como padrão local. Domínio e use case não mudam uma linha.",
+            snippet: "@ConditionalOnProperty(name=\"speech.provider\", havingValue=\"openai\")\n@Primary\npublic class OpenAiSpeechAdapter implements SpeechToTextPort {...}\n\n// application.yml:\n# speech.provider: speaches  ← local (padrão)\n# speech.provider: openai    ← cloud" },
+          {
+            title: "6.2 — Testes + config de ambiente",
+            desc: "Testes com MockWebServer para OpenAI, .env atualizado com OPENAI_API_KEY, profile openai",
+            tags: ["MockWebServer", "Profile", "Config"],
+            done: false,
+            version: null,
+            detail: "OpenAiSpeechAdapterTest com MockWebServer simulando API OpenAI. Atualiza .env.example com OPENAI_API_KEY. Profile 'openai' no application-openai.yml. Documentação do trade-off: Speaches (gratuito/local/GPU) vs OpenAI (pago/cloud/sem infra).",
+            snippet: "OPENAI_API_KEY=sk-...\n\n# Ativar:\n./gradlew bootRun --args='--spring.profiles.active=dev,openai'" }
+        ]
+      },
+      {
+        id: 7, label: "Fase 7", title: "Spring AI — resumo via Ollama",
+        color: "#7c3aed", badgeBg: "#2e1065", badgeColor: "#c4b5fd",
+        version: "v7.1.0–v7.3.0", taskCount: 3, done: false,
+        tasks: [
+          {
+            title: "7.1 — Domínio analysis/ + LanguageModelPort",
+            desc: "Novo bounded context analysis/ hexagonal completo, SummarizeTranscriptionUseCase",
+            tags: ["Bounded Context", "Spring AI", "Ollama"],
+            done: false,
+            version: null,
+            detail: "Novo domínio analysis/ completamente separado do transcription/. LanguageModelPort define o contrato. SummarizeTranscriptionUseCase: busca texto no cache → prompt → LLM → armazena resumo → retorna. Ollama com modelo ≤1B (ex: qwen2.5:0.5b or tinyllama).",
+            snippet: "public interface LanguageModelPort {\n    String generate(String prompt);\n}\n\n// Trocar Ollama por OpenAI = novo adapter\n// Use case e domínio não mudam" },
+          {
+            title: "7.2 — OllamaLanguageModelAdapter + endpoint",
+            desc: "POST /api/transcriptions/{hash}/analysis, OllamaLanguageModelAdapter via Spring AI",
+            tags: ["Ollama", "Adapter", "REST"],
+            done: false,
+            version: null,
+            detail: "OllamaLanguageModelAdapter implements LanguageModelPort com Spring AI ChatClient + Ollama. Endpoint POST /{hash}/analysis busca texto no Redis via TranscriptionCachePort, gera prompt, chama LLM. GlobalExceptionHandler: AnalysisUnavailableException → 503.",
+            snippet: "POST /api/transcriptions/{audioHash}/analysis\n\nResponse 200:\n{ \"summary\": \"...\", \"audioHash\": \"...\", \"model\": \"qwen2.5:0.5b\", \"cached\": false }" },
+          {
+            title: "7.3 — Cache Redis para resumos + testes",
+            desc: "SummaryStorePort, RedisStoreAdapter (TTL 72h), testes Testcontainers",
+            tags: ["Redis", "Cache", "Testcontainers"],
+            done: false,
+            version: null,
+            detail: "SummaryStorePort como nova porta de saída. RedisStoreAdapter: chave 'summary:{hash}', TTL 72h configurável. RedisAnalysisConfig com RedisTemplate separado. Testes Testcontainers validam cache hit/miss para resumos.",
+            snippet: "// Fluxo com cache:\n// 1ª chamada: Ollama (~5-30s) → armazena Redis → cached: false\n// 2ª chamada: Redis hit (~15ms) → cached: true" }
+        ]
+      },
+      {
+        id: 8, label: "Fase 8", title: "Mensageria (RabbitMQ)",
+        color: "#b45309", badgeBg: "#451a03", badgeColor: "#fcd34d",
+        version: "v8.1.0–v8.2.0", taskCount: 2, done: false,
+        tasks: [
+          {
+            title: "8.1 — TranscriptionCompletedEvent + publisher",
+            desc: "EventPublisherPort, RabbitMqEventPublisher, TranscriptionCompletedEvent no use case",
+            tags: ["RabbitMQ", "Event", "Port"],
+            done: false,
+            version: null,
+            detail: "EventPublisherPort como nova porta de saída. RabbitMqEventPublisher implements EventPublisherPort. TranscriptionService publica TranscriptionCompletedEvent após cada transcrição bem-sucedida. RabbitMQ no Docker Compose.",
+            snippet: "public interface EventPublisherPort {\n    void publish(TranscriptionCompletedEvent event);\n}\n\n// TranscriptionService:\neventPublisher.publish(new TranscriptionCompletedEvent(hash, text, filename));" },
+          {
+            title: "8.2 — Consumer base + DLQ + testes",
+            desc: "Consumer de log/auditoria, Dead Letter Queue, testes com Testcontainers RabbitMQ",
+            tags: ["Consumer", "DLQ", "Testcontainers"],
+            done: false,
+            version: null,
+            detail: "Consumer de auditoria (loga eventos recebidos). DLQ configurada para mensagens que falham após 3 tentativas. Testes com RabbitMQContainer (Testcontainers). Base pronta para consumers de notificação (Fase 9).",
+            snippet: "spring.rabbitmq.listener.simple.retry.enabled=true\nspring.rabbitmq.listener.simple.retry.max-attempts=3\n# DLQ: transcription.events.dlq" }
+        ]
+      },
+      {
+        id: 9, label: "Fase 9", title: "CI/CD + qualidade de código",
+        color: "#8b5cf6", badgeBg: "#4c1d95", badgeColor: "#a78bfa",
+        version: "v9.1.0–v9.3.0", taskCount: 3, done: false,
+        tasks: [
+          {
+            title: "9.1 — GitHub Actions: build + testes + JaCoCo",
+            desc: "ci.yml: build, test, JaCoCo report, threshold 70%, artefato de cobertura",
+            tags: ["GitHub Actions", "JaCoCo", "CI"],
+            done: false,
+            version: null,
+            detail: "ci.yml: triggers em push/PR main. Steps: checkout → Java 25 → Gradle test → JaCoCo report → upload artefato. Threshold: 70% (sobe progressivamente). Badge de build no README.",
+            snippet: "- name: Run tests\n  run: ./gradlew test jacocoTestReport\n- name: Upload coverage\n  uses: actions/upload-artifact@v4\n  with: { path: build/reports/jacoco }" },
+          {
+            title: "9.2 — SonarCloud + Codecov",
+            desc: "sonar-project.properties, SONAR_TOKEN, codecov.yml, badges no README",
+            tags: ["SonarCloud", "Codecov", "Quality Gate"],
+            done: false,
+            version: null,
+            detail: "sonar-project.properties com qualitygate configurado. Secrets: SONAR_TOKEN, CODECOV_TOKEN. codecov.yml com threshold. ci.yml atualizado com steps de SonarCloud e Codecov. Badges de qualidade no README.",
+            snippet: "- name: SonarCloud\n  run: ./gradlew sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}\n- name: Codecov\n  uses: codecov/codecov-action@v4" },
+          {
+            title: "9.3 — Docker Hub + release automático",
+            desc: "docker.yml: build multi-arch, push Docker Hub, release.sh atualizado para o projeto",
+            tags: ["Docker Hub", "Multi-arch", "Release"],
+            done: false,
+            version: null,
+            detail: "docker.yml: trigger em tag v*. Build multi-arch (amd64/arm64) avec buildx. Push pour echichiroshi/speech-ai-hexagonal:$VERSION .",
+            snippet: "docker.yml (trigger: push tags v*):\n  docker buildx build --platform linux/amd64,linux/arm64 \\\n    -t echichiroshi/speech-ai-hexagonal:$VERSION ." }
+        ]
       }
-    ]
-  },
-  {
-    id: 2, label: "Fase 2", title: "Cache Redis (SHA-256)",
-    color: "#185FA5", badgeBg: "#0a1929", badgeColor: "#60a5fa",
-    version: "v2.1.0–v2.3.0", taskCount: 3, done: false,
-    tasks: [
-      {
-        title: "2.1 — Dependência + RedisConfig",
-        desc: "spring-data-redis, RedisTemplate<String,Transcription>, serialização JSON",
-        tags: ["Redis", "RedisConfig", "Jackson"],
-        done: false,
-        version: null,
-        detail: "Adiciona spring-boot-starter-data-redis. RedisConfig configura RedisTemplate com Jackson2JsonRedisSerializer para Transcription. Configura TTL padrão via AppProperties. Redis no docker-compose.dev.yml.",
-        snippet: "implementation 'org.springframework.boot:spring-boot-starter-data-redis'\n\n@Bean\nRedisTemplate<String, Transcription> redisTemplate(RedisConnectionFactory f) {...}"
-      },
-      {
-        title: "2.2 — RedisCacheAdapter",
-        desc: "Implementa TranscriptionCachePort com prefixo de chave e TTL configurável",
-        tags: ["Adapter", "TTL", "Port"],
-        done: false,
-        version: null,
-        detail: "RedisCacheAdapter implements TranscriptionCachePort. Chave: 'transcription:{hash}'. TTL configurável via @ConfigurationProperties. @Primary substitui InMemoryCacheAdapter em produção. InMemory continua ativo com @Profile('test').",
-        snippet: "// Chave: \"transcription:\" + hash\n// TTL: configurável via app.cache.transcription-ttl-hours\n// InMemory permanece para testes unitários"
-      },
-      {
-        title: "2.3 — Testes de integração com Testcontainers",
-        desc: "RedisContainer, RedisCacheAdapterIT, integração ponta-a-ponta com hash real",
-        tags: ["Testcontainers", "Integration", "Redis"],
-        done: false,
-        version: null,
-        detail: "RedisCacheAdapterIT usa @Testcontainers + RedisContainer. Testa save/findByHash/TTL com Redis real. TranscriptionServiceIT sobe contexto completo com Speaches mockado e Redis via Testcontainers. Cobertura alvo: 65%.",
-        snippet: "@Testcontainers\nclass RedisCacheAdapterIT {\n  @Container\n  static RedisContainer redis = new RedisContainer(\"redis:7\");\n}"
-      }
-    ]
-  },
-  {
-    id: 3, label: "Fase 3", title: "Observabilidade",
-    color: "#7F77DD", badgeBg: "#1a1640", badgeColor: "#a5b4fc",
-    version: "v3.1.0–v3.4.0", taskCount: 4, done: false,
-    tasks: [
-      { 
-        title: "3.1 — Micrometer + Prometheus",
-        desc: "micrometer-registry-prometheus, TranscriptionMetrics, Counter + Timer + container Prometheus",
-        tags: ["Micrometer", "Prometheus", "Actuator"],
-        done: false,
-        version: null,
-        detail: "Dependência micrometer-registry-prometheus. TranscriptionMetrics centraliza métricas: Counter (success/error), Timer (speaches.duration com p50/p95/p99), DistributionSummary (file.size.bytes). Container Prometheus no docker-compose.yml.",
-        snippet: "Counter.builder(\"transcription.requests.total\")\n  .tag(\"status\",\"success\").register(registry);\nTimer.builder(\"transcription.speaches.duration\")\n  .publishPercentiles(0.5,0.95,0.99).register(registry);" },
-      { 
-        title: "3.2 — Grafana + dashboards",
-        desc: "Container Grafana, datasource Prometheus, dashboard de transcrições (throughput, latência, erros)",
-        tags: ["Grafana", "Dashboard", "Datasource"],
-        done: false,
-        version: null,
-         detail: "Container Grafana no docker-compose.yml com provisioning automático (datasource.yml + dashboard.json via volumes). Dashboard inclui: req/min, cache hit rate, latência p95, erros por tipo. Pronto para importar no Grafana Cloud.",
-         snippet: "volumes:\n  - ./observability/grafana/provisioning:/etc/grafana/provisioning\n  - ./observability/grafana/dashboards:/var/lib/grafana/dashboards" },
-      { 
-        title: "3.3 — Zipkin + OpenTelemetry tracing",
-        desc: "micrometer-tracing-bridge-otel, opentelemetry-exporter-zipkin, spans por request",
-        tags: ["Zipkin", "OTel", "Tracing"],
-        done: false,
-        version: null,
-        detail: "micrometer-tracing-bridge-otel + opentelemetry-exporter-zipkin. Trace propagado: Controller → Service → SpeachesAdapter. MDC automaticamente populado com traceId/spanId. Container Zipkin no compose.",
-        snippet: "management.tracing.sampling.probability=1.0\nmanagement.zipkin.tracing.endpoint=http://zipkin:9411/api/v2/spans" },
-      { 
-        title: "3.4 — Logs estruturados JSON + MDC",
-        desc: "logstash-logback-encoder, MdcLoggingFilter com requestId, traceId, fileName",
-        tags: ["Logback", "JSON", "MDC"],
-        done: false,
-        version: null,
-        detail: "logback-spring.xml: perfil prod → JSON (logstash-logback-encoder), dev → texto colorido. MdcLoggingFilter popula requestId (UUID), httpMethod, uri. TranscriptionService adiciona fileName, fileSizeBytes. Header X-Request-Id em todas as respostas.",
-        snippet: "// MDC fields em prod (JSON):\n// requestId, traceId, spanId, httpMethod, uri, fileName" }
-    ]
-  },
-  {
-    id: 4, label: "Fase 4", title: "Resiliência (Resilience4j)",
-    color: "#0F6E56", badgeBg: "#0c2a1a", badgeColor: "#22c55e",
-    version: "v4.1.0–v4.3.0", taskCount: 3, done: false,
-    tasks: [
-      { 
-        title: "4.1 — Circuit Breaker",
-        desc: "CircuitBreaker no SpeachesAdapter, config por propriedade, métricas automáticas",
-        tags: ["CircuitBreaker", "Resilience4j"],
-        done: false,
-        version: null,
-        detail: "@CircuitBreaker em SpeachesAdapter. Estados: CLOSED → OPEN → HALF_OPEN. Config: slidingWindowSize, failureRateThreshold, waitDurationInOpenState. Fallback lança SpeechToTextException com mensagem clara. Métricas integradas ao Prometheus automaticamente.",
-        snippet: "@CircuitBreaker(name=\"speaches\", fallbackMethod=\"fallback\")\npublic Transcription transcribe(byte[] audio, String filename) {...}" },
-      { 
-        title: "4.2 — Retry + Bulkhead",
-        desc: "@Retry com backoff exponencial, @Bulkhead para limitar concorrência ao Speaches",
-        tags: ["Retry", "Bulkhead", "Backoff"],
-        done: false,
-        version: null,
-        detail: "@Retry: maxAttempts=3, backoff exponencial (1s→2s→4s), retry apenas em IOException/TimeoutException. @Bulkhead: limita chamadas simultâneas ao Speaches (ex: 10 concurrent). Evita cascata de falhas quando Speaches está lento.",
-        snippet: "resilience4j.retry.instances.speaches:\n  maxAttempts: 3\n  waitDuration: 1s\n  enableExponentialBackoff: true" },
-      { 
-        title: "4.3 — Métricas de resiliência + testes",
-        desc: "Dashboard Grafana com circuit state, retry count; testes com WireMock simulando falhas",
-        tags: ["WireMock", "Grafana", "Testes"],
-        done: false,
-        version: null,
-        detail: "Atualiza dashboard Grafana com painel de resiliência: estado do circuit breaker, tentativas de retry, chamadas rejeitadas pelo bulkhead. Testes com WireMock simulam Speaches lento/falhando para validar comportamento dos mecanismos.",
-        snippet: "// WireMock: simula timeout no Speaches\nwireMock.stubFor(post(\"/v1/audio/transcriptions\")\n  .willReturn(aResponse().withFixedDelay(5000)));" }
-    ]
-  },
-  {
-    id: 5, label: "Fase 5", title: "Spring AI — transcrição via OpenAI",
-    color: "#0e7490", badgeBg: "#083344", badgeColor: "#67e8f9",
-    version: "v5.1.0–v5.2.0", taskCount: 2, done: false,
-    tasks: [
-      {
-         title: "5.1 — OpenAiSpeechAdapter (segunda porta de saída)",
-         desc: "Implementa SpeechToTextPort via Spring AI + OpenAI Whisper, seleção por profile/config",
-         tags: ["Spring AI", "OpenAI", "Whisper-1"],
-         done: false,
-         version: null,
-         detail: "OpenAiSpeechAdapter implements SpeechToTextPort. Usa Spring AI AudioTranscriptionModel com OpenAI whisper-1. Seleção do adapter via @ConditionalOnProperty(speech.provider=openai). SpeachesAdapter permanece como padrão local. Domínio e use case não mudam uma linha.",
-         snippet: "@ConditionalOnProperty(name=\"speech.provider\", havingValue=\"openai\")\n@Primary\npublic class OpenAiSpeechAdapter implements SpeechToTextPort {...}\n\n// application.yml:\n# speech.provider: speaches  ← local (padrão)\n# speech.provider: openai    ← cloud" },
-      { 
-        title: "5.2 — Testes + config de ambiente",
-        desc: "Testes com MockWebServer para OpenAI, .env atualizado com OPENAI_API_KEY, profile openai",
-        tags: ["MockWebServer", "Profile", "Config"],
-        done: false,
-        version: null,
-        detail: "OpenAiSpeechAdapterTest com MockWebServer simulando API OpenAI. Atualiza .env.example com OPENAI_API_KEY. Profile 'openai' no application-openai.yml. Documentação do trade-off: Speaches (gratuito/local/GPU) vs OpenAI (pago/cloud/sem infra).",
-        snippet: "OPENAI_API_KEY=sk-...\n\n# Ativar:\n./gradlew bootRun --args='--spring.profiles.active=dev,openai'" }
-    ]
-  },
-  {
-    id: 6, label: "Fase 6", title: "Spring AI — resumo via Ollama",
-    color: "#15803d", badgeBg: "#052e16", badgeColor: "#86efac",
-    version: "v6.1.0–v6.3.0", taskCount: 3, done: false,
-    tasks: [
-      { 
-        title: "6.1 — Domínio analysis/ + LanguageModelPort",
-        desc: "Novo bounded context analysis/ hexagonal completo, SummarizeTranscriptionUseCase",
-        tags: ["Bounded Context", "Spring AI", "Ollama"],
-        done: false,
-        version: null,
-        detail: "Novo domínio analysis/ completamente separado do transcription/. LanguageModelPort define o contrato. SummarizeTranscriptionUseCase: busca texto no cache → prompt → LLM → armazena resumo → retorna. Ollama com modelo ≤1B (ex: qwen2.5:0.5b ou tinyllama).",
-        snippet: "public interface LanguageModelPort {\n    String generate(String prompt);\n}\n\n// Trocar Ollama por OpenAI = novo adapter\n// Use case e domínio não mudam" },
-      { 
-        title: "6.2 — OllamaLanguageModelAdapter + endpoint",
-        desc: "POST /api/transcriptions/{hash}/analysis, OllamaLanguageModelAdapter via Spring AI",
-        tags: ["Ollama", "Adapter", "REST"],
-        done: false,
-        version: null,
-        detail: "OllamaLanguageModelAdapter implements LanguageModelPort com Spring AI ChatClient + Ollama. Endpoint POST /{hash}/analysis busca texto no Redis via TranscriptionCachePort, gera prompt, chama LLM. GlobalExceptionHandler: AnalysisUnavailableException → 503.",
-        snippet: "POST /api/transcriptions/{audioHash}/analysis\n\nResponse 200:\n{ \"summary\": \"...\", \"audioHash\": \"...\", \"model\": \"qwen2.5:0.5b\", \"cached\": false }" },
-      { 
-        title: "6.3 — Cache Redis para resumos + testes",
-        desc: "SummaryStorePort, RedisSummaryStoreAdapter (TTL 72h), testes Testcontainers",
-        tags: ["Redis", "Cache", "Testcontainers"],
-        done: false,
-        version: null,
-        detail: "SummaryStorePort como nova porta de saída. RedisSummaryStoreAdapter: chave 'summary:{hash}', TTL 72h configurável. RedisAnalysisConfig com RedisTemplate separado. Testes Testcontainers validam cache hit/miss para resumos.",
-        snippet: "// Fluxo com cache:\n// 1ª chamada: Ollama (~5-30s) → armazena Redis → cached: false\n// 2ª chamada: Redis hit (~15ms) → cached: true" }
-    ]
-  },
-  {
-    id: 7, label: "Fase 7", title: "Mensageria (RabbitMQ)",
-    color: "#7c3aed", badgeBg: "#2e1065", badgeColor: "#c4b5fd",
-    version: "v7.1.0–v7.2.0", taskCount: 2, done: false,
-    tasks: [
-      { 
-        title: "7.1 — TranscriptionCompletedEvent + publisher",
-        desc: "EventPublisherPort, RabbitMqEventPublisher, TranscriptionCompletedEvent no use case",
-        tags: ["RabbitMQ", "Event", "Port"],
-        done: false,
-        version: null,
-        detail: "EventPublisherPort como nova porta de saída. RabbitMqEventPublisher implements EventPublisherPort. TranscriptionService publica TranscriptionCompletedEvent após cada transcrição bem-sucedida. RabbitMQ no Docker Compose.",
-        snippet: "public interface EventPublisherPort {\n    void publish(TranscriptionCompletedEvent event);\n}\n\n// TranscriptionService:\neventPublisher.publish(new TranscriptionCompletedEvent(hash, text, filename));" },
-      { 
-        title: "7.2 — Consumer base + DLQ + testes",
-        desc: "Consumer de log/auditoria, Dead Letter Queue, testes com Testcontainers RabbitMQ",
-        tags: ["Consumer", "DLQ", "Testcontainers"],
-        done: false,
-        version: null,
-        detail: "Consumer de auditoria (loga eventos recebidos). DLQ configurada para mensagens que falham após 3 tentativas. Testes com RabbitMQContainer (Testcontainers). Base pronta para consumers de notificação (Fase 9).",
-        snippet: "spring.rabbitmq.listener.simple.retry.enabled=true\nspring.rabbitmq.listener.simple.retry.max-attempts=3\n# DLQ: transcription.events.dlq" }
-    ]
-  },
-  {
-    id: 8, label: "Fase 8", title: "CI/CD + qualidade de código",
-    color: "#b45309", badgeBg: "#451a03", badgeColor: "#fcd34d",
-    version: "v8.1.0–v8.3.0", taskCount: 3, done: false,
-    tasks: [
-      { 
-        title: "8.1 — GitHub Actions: build + testes + JaCoCo",
-        desc: "ci.yml: build, test, JaCoCo report, threshold 70%, artefato de cobertura",
-        tags: ["GitHub Actions", "JaCoCo", "CI"],
-        done: false,
-        version: null,
-        detail: "ci.yml: triggers em push/PR main. Steps: checkout → Java 25 → Gradle test → JaCoCo report → upload artefato. Threshold: 70% (sobe progressivamente). Badge de build no README.",
-        snippet: "- name: Run tests\n  run: ./gradlew test jacocoTestReport\n- name: Upload coverage\n  uses: actions/upload-artifact@v4\n  with: { path: build/reports/jacoco }" },
-      { 
-        title: "8.2 — SonarCloud + Codecov",
-        desc: "sonar-project.properties, SONAR_TOKEN, codecov.yml, badges no README",
-        tags: ["SonarCloud", "Codecov", "Quality Gate"],
-        done: false,
-        version: null,
-        detail: "sonar-project.properties com qualitygate configurado. Secrets: SONAR_TOKEN, CODECOV_TOKEN. codecov.yml com threshold. ci.yml atualizado com steps de SonarCloud e Codecov. Badges de qualidade no README.",
-        snippet: "- name: SonarCloud\n  run: ./gradlew sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}\n- name: Codecov\n  uses: codecov/codecov-action@v4" },
-      { 
-        title: "8.3 — Docker Hub + release automático",
-        desc: "docker.yml: build multi-arch, push Docker Hub, release.sh atualizado para o projeto",
-        tags: ["Docker Hub", "Multi-arch", "Release"],
-        done: false,
-        version: null,
-        detail: "docker.yml: trigger em tag v*. Build multi-arch (amd64/arm64) com buildx. Push para erichiroshi/speech-ai-hexagonal. release.sh adaptado do dio-speech-ai com stack e nome do projeto corretos. VERSIONING.md incluído no repo.",
-        snippet: "docker.yml (trigger: push tags v*):\n  docker buildx build --platform linux/amd64,linux/arm64 \\\n    -t erichiroshi/speech-ai-hexagonal:$VERSION ." }
-    ]
-  }
     ];
 
     let openPhases = new Set([1]);
     let activeTask = null;
 
+    function renderPhases() {
+      const container = document.getElementById('phases');
+      container.innerHTML = '';
+      phases.forEach(phase => {
+        const isOpen = openPhases.has(phase.id);
+        const wrapper = document.createElement('div');
+        wrapper.style.marginBottom = '8px';
 
-function renderPhases() {
-  const container = document.getElementById('phases');
-  container.innerHTML = '';
-  phases.forEach(phase => {
-    const isOpen = openPhases.has(phase.id);
-    const wrapper = document.createElement('div');
-    wrapper.style.marginBottom = '8px';
+        const doneBadge = phase.done ? `<span class="done-badge">✓ concluída</span>` : '';
+        const versionBadge = phase.version ? `<span style="font-size:11px;color:#60a5fa;margin-left:4px">${phase.version}</span>` : '';
 
-    const doneBadge = phase.done ? `<span class="done-badge">✓ concluída</span>` : '';
-    const versionBadge = phase.version ? `<span style="font-size:11px;color:#60a5fa;margin-left:4px">${phase.version}</span>` : '';
+        const header = document.createElement('div');
+        header.className = 'phase-header';
+        header.innerHTML = `
+          <span class="phase-badge" style="background:${phase.badgeBg};color:${phase.badgeColor}">${phase.label}</span>
+          <span class="phase-title">${phase.title}${doneBadge}${versionBadge}</span>
+          <span class="phase-meta">${phase.taskCount} tarefas</span>
+          <span class="chevron ${isOpen ? 'open' : ''}">▶</span>
+        `;
+        header.onclick = () => {
+          if (openPhases.has(phase.id)) openPhases.delete(phase.id);
+          else openPhases.add(phase.id);
+          renderPhases();
+        };
 
-    const header = document.createElement('div');
-    header.className = 'phase-header';
-    header.innerHTML = `
-      <span class="phase-badge" style="background:${phase.badgeBg};color:${phase.badgeColor}">${phase.label}</span>
-      <span class="phase-title">${phase.title}${doneBadge}${versionBadge}</span>
-      <span class="phase-meta">${phase.taskCount} tarefas</span>
-      <span class="chevron ${isOpen ? 'open' : ''}">▶</span>
-    `;
-    header.onclick = () => {
-      if (openPhases.has(phase.id)) openPhases.delete(phase.id);
-      else openPhases.add(phase.id);
-      renderPhases();
-    };
+        const tasks = document.createElement('div');
+        tasks.className = 'tasks';
+        tasks.style.maxHeight = isOpen ? '3000px' : '0';
 
-    const tasks = document.createElement('div');
-    tasks.className = 'tasks';
-    tasks.style.maxHeight = isOpen ? '3000px' : '0';
+        phase.tasks.forEach((task, ti) => {
+          const item = document.createElement('div');
+          item.className = 'task-item';
+          const isActive = activeTask && activeTask.phaseId === phase.id && activeTask.taskIdx === ti;
+          if (isActive) item.style.background = '#0a1929';
 
-    phase.tasks.forEach((task, ti) => {
-      const item = document.createElement('div');
-      item.className = 'task-item';
-      const isActive = activeTask && activeTask.phaseId === phase.id && activeTask.taskIdx === ti;
-      if (isActive) item.style.background = '#0a1929';
+          const vTag = task.version ? `<span style="font-size:10px;color:#22c55e;background:#0c2a1a;border:1px solid #14532d;padding:0 5px;border-radius:99px;margin-left:4px">${task.version} ✓</span>` : '';
 
-      const vTag = task.version ? `<span style="font-size:10px;color:#22c55e;background:#0c2a1a;border:1px solid #14532d;padding:0 5px;border-radius:99px;margin-left:4px">${task.version} ✓</span>` : '';
+          item.innerHTML = `
+            <div class="task-dot" style="background:${phase.color}${task.done ? '' : '55'}"></div>
+            <div class="task-body">
+              <div class="task-title" style="${task.done ? 'text-decoration:line-through;color:#6b7280' : ''}">${task.title}${vTag}</div>
+              <div class="task-desc">${task.desc}</div>
+              ${task.tags ? `<div class="task-tags">${task.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
+            </div>
+          `;
+          item.onclick = () => {
+            if (task.detail) {
+              activeTask = (isActive) ? null : { phaseId: phase.id, taskIdx: ti, task, phase };
+              renderPhases();
+              renderDetail();
+            }
+          };
+          tasks.appendChild(item);
+        });
 
-      item.innerHTML = `
-        <div class="task-dot" style="background:${phase.color}${task.done ? '' : '55'}"></div>
-        <div class="task-body">
-          <div class="task-title" style="${task.done ? 'text-decoration:line-through;color:#6b7280' : ''}">${task.title}${vTag}</div>
-          <div class="task-desc">${task.desc}</div>
-          ${task.tags ? `<div class="task-tags">${task.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
+        wrapper.appendChild(header);
+        wrapper.appendChild(tasks);
+        container.appendChild(wrapper);
+      });
+    }
+
+    function renderDetail() {
+      const container = document.getElementById('detail-container');
+      if (!activeTask) { container.innerHTML = ''; return; }
+      const { task } = activeTask;
+      container.innerHTML = `
+        <div class="detail-panel">
+          <span class="close-btn" id="close-detail">✕</span>
+          <h3>${task.title}</h3>
+          <p>${task.detail}</p>
+          ${task.deps ? `<div style="font-size:12px;color:#9ca3af;margin-bottom:6px">Dependências:</div><div class="dep-list">${task.deps.map(d=>`<span class="dep-tag">${d}</span>`).join('')}</div>` : ''}
+          ${task.snippet ? `<div class="code-block"><pre style="white-space:pre-wrap">${task.snippet}</pre></div>` : ''}
         </div>
       `;
-      item.onclick = () => {
-        if (task.detail) {
-          activeTask = (isActive) ? null : { phaseId: phase.id, taskIdx: ti, task, phase };
-          renderPhases();
-          renderDetail();
-        }
-      };
-      tasks.appendChild(item);
-    });
+      document.getElementById('close-detail').onclick = () => { activeTask = null; renderPhases(); renderDetail(); };
+    }
 
-    wrapper.appendChild(header);
-    wrapper.appendChild(tasks);
-    container.appendChild(wrapper);
-  });
-}
-
-function renderDetail() {
-  const container = document.getElementById('detail-container');
-  if (!activeTask) { container.innerHTML = ''; return; }
-  const { task } = activeTask;
-  container.innerHTML = `
-    <div class="detail-panel">
-      <span class="close-btn" id="close-detail">✕</span>
-      <h3>${task.title}</h3>
-      <p>${task.detail}</p>
-      ${task.deps ? `<div style="font-size:12px;color:#9ca3af;margin-bottom:6px">Dependências:</div><div class="dep-list">${task.deps.map(d=>`<span class="dep-tag">${d}</span>`).join('')}</div>` : ''}
-      ${task.snippet ? `<div class="code-block"><pre style="white-space:pre-wrap">${task.snippet}</pre></div>` : ''}
-    </div>
-  `;
-  document.getElementById('close-detail').onclick = () => { activeTask = null; renderPhases(); renderDetail(); };
-}
-
-renderPhases();
-renderDetail();
-</script>
+    renderPhases();
+    renderDetail();
+  </script>
 </body>
-
 </html>
