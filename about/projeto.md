@@ -21,6 +21,19 @@ Resultado prático:
 - WebClient → qualquer HTTP client: troca o adapter, nada muda
 ```
 
+## Bounded Context: `transcription/`
+
+O projeto está organizado por **bounded context** dentro de `com.erichiroshi.speechaihexagonal`:
+
+```
+transcription/
+├── domain/          → entidades e exceções — zero Spring
+├── application/     → use case + portas — apenas interfaces + domain
+└── infrastructure/  → adapters concretos + config Spring
+```
+
+**Regra de ouro:** `domain` não importa `application`. `application` não importa `infrastructure`.
+
 ## Estrutura de camadas
 
 ```
@@ -35,6 +48,16 @@ infrastructure/   → SpeachesAdapter, InMemoryCacheAdapter (adapters de saída)
                     TranscriptionController, GlobalExceptionHandler (adapter de entrada)
                     WebClientConfig, AppProperties (config Spring)
 ```
+
+## Portas e Adapters
+
+| Porta | Tipo | Adapter Fase 1 | Adapter Futuro |
+|-------|------|----------------|----------------|
+| `TranscribeAudioPort` | Entrada (driving) | `TranscribeAudioUseCase` | — |
+| `SpeechToTextPort` | Saída (driven) | `SpeachesAdapter` | `OpenAiSpeechAdapter` (Fase 5) |
+| `TranscriptionCachePort` | Saída (driven) | — | `RedisCacheAdapter` (Fase 2) |
+| `EventPublisherPort` | Saída (driven) | — | `RabbitMqEventPublisher` (Fase 7) |
+| `LanguageModelPort` | Saída (driven) | — | `OllamaLanguageModelAdapter` (Fase 6) |
 
 ## Roadmap de fases
 
@@ -51,23 +74,28 @@ infrastructure/   → SpeachesAdapter, InMemoryCacheAdapter (adapters de saída)
 
 ## Stack
 
-| Tecnologia | Versão | Papel |
-|-----------|--------|-------|
-| Java | 25 | Linguagem |
-| Spring Boot | 4.0.6 | Framework |
-| Speaches | latest-cuda | Servidor Whisper (transcrição) |
-| Whisper | faster-whisper-small | Modelo de transcrição |
-| Redis | 7 | Cache (Fase 2) |
-| RabbitMQ | 3 | Mensageria (Fase 7) |
-| Prometheus | — | Métricas (Fase 3) |
-| Grafana | — | Dashboards (Fase 3) |
-| Zipkin | — | Tracing distribuído (Fase 3) |
-| Testcontainers | 1.21.x | Testes de integração |
-| MockWebServer | 4.12.x | Testes de adapters HTTP |
-| JaCoCo | — | Cobertura de código |
-| SonarCloud | — | Qualidade de código |
-| GitHub Actions | — | CI/CD |
-| Docker Hub | — | Registro de imagens |
+| Tecnologia | Versão               | Papel                                |
+|-----------|----------------------|--------------------------------------|
+| Java | 25                   | Linguagem                            |
+| Spring Boot | 4.0.6                | Framework                            |
+| Spring MVC (webmvc) | —                    | Camada HTTP                          |
+| RestClient | Spring 6.1+          | Cliente HTTP síncrono                |
+| Speaches | latest-cuda          | Servidor Whisper local (transcrição) |
+| Whisper | faster-whisper-small | Modelo de transcrição                |
+| Lombok | —                    | Redução de boilerplate               |
+| MapStruct | 1.7.0.Beta1          | Mapeamento entre camadas             |
+| Springdoc OpenAPI | 3.0.1                | Swagger UI                           |
+| Redis | 7                    | Cache (Fase 2)                       |
+| RabbitMQ | 3                    | Mensageria (Fase 7)                  |
+| Prometheus | —                    | Métricas (Fase 3)                    |
+| Grafana | —                    | Dashboards (Fase 3)                  |
+| Zipkin | —                    | Tracing distribuído (Fase 3)         |
+| Testcontainers | 1.21.x               | Testes de integração                 |
+| MockWebServer | 4.12.x               | Testes de adapters HTTP              |
+| JaCoCo | —                    | Cobertura de código (≥60%)               |
+| SonarCloud | —                    | Qualidade de código                  |
+| GitHub Actions | —                    | CI/CD                                |
+| Docker Hub | —                    | Registro de imagens                  |
 
 ## Autor
 

@@ -16,6 +16,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+/**
+ * Adapter de entrada REST para o use case de transcrição.
+ * Responsável apenas por receber a requisição HTTP e delegar ao use case via porta.
+ */
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/transcriptions")
@@ -27,7 +31,9 @@ public class TranscriptionController {
     @PostMapping
     public ResponseEntity<TranscriptionResponse> transcription(@RequestPart(name = "file") MultipartFile file) {
 
-        TranscriptionOutput output = transcribeAudioPort.execute(toTranscriptionInput(file));
+        TranscriptionInput input = toTranscriptionInput(file);
+
+        TranscriptionOutput output = transcribeAudioPort.execute(input);
 
         return ResponseEntity.ok(mapper.toResponse(output));
     }
@@ -40,6 +46,9 @@ public class TranscriptionController {
     }
 
     private byte[] extractBytes(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new AudioValidationException("file", "Nenhum arquivo foi enviado");
+        }
         try {
             return file.getBytes();
         } catch (IOException ex) {

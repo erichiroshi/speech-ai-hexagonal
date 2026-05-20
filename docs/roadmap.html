@@ -76,10 +76,16 @@
 </head>
 <body>
   <div class="container">
+    <header>
+      <h1>🗺️ Roadmap</h1>
+      <p class="subtitle">speech-ai-hexagonal · evolução incremental com qualidade de produção</p>
+    </header>
+
     <nav>
       <a href="index.html">Home</a>
       <a href="architecture.html">Arquitetura</a>
-      <a href="https://github.com/erichiroshi/dio-speech-ai/blob/main/README.md">README</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
     </nav>
 
     <h1 style="font-size:1.8rem; margin: 24px 0 6px;">Roadmap interativo do projeto speech-ai-hexagonal</h1>
@@ -109,7 +115,7 @@ const phases = [
   {
     id: 1, label: "Fase 1", title: "Base hexagonal + transcrição local",
     color: "#1D9E75", badgeBg: "#0c2a1a", badgeColor: "#22c55e",
-    version: "v1.0.0", taskCount: 6, done: true,
+    version: "v1.0.0", taskCount: 7, done: true,
     tasks: [
       {
         title: "1.1 — Setup do projeto",
@@ -156,12 +162,21 @@ const phases = [
         detail: "TranscriptionController recebe MultipartFile, valida tipo (wav/mpeg) e tamanho (5MB), chama o use case. GlobalExceptionHandler trata AudioValidationException → 400, SpeechToTextException → 502, genéricas → 500. Tudo em ProblemDetail (RFC 9457).",
         snippet: "POST /api/transcriptions\nContent-Type: multipart/form-data\n\nResponse 200:\n{ \"audioTranscription\": \"...\" }\n\nResponse 400:\n{ \"type\": \"/errors/audio-validation\", \"title\": \"Arquivo inválido\" }"
       },
+      {
+        title:"1.6 — Testes (Mockito + MockWebServer)",
+        desc:"TranscribeAudioUseCaseTest, TranscriptionControllerTest, SpeachesAdapterTest",
+        tags:["JUnit 5","Mockito","MockWebServer","WebMvcTest"],
+        done: true,
+        version:"v1.6.0",
+        detail:"TranscribeAudioUseCaseTest: Mockito puro (sem contexto Spring), testa caminho feliz, validações de bytes/tamanho/Content-Type. TranscriptionControllerTest: @WebMvcTest com @MockitoBean, testa 200/400/502/500. SpeachesAdapterTest: MockWebServer para simular Speaches, testa sucesso, erros HTTP e resposta vazia. Cobertura alvo: ≥60%.",
+        snippet:"// SpeachesAdapterTest — MockWebServer\nmockWebServer.enqueue(new MockResponse()\n  .setResponseCode(200)\n  .setBody(\"{\\\"text\\\": \\\"Olá, mundo.\\\"}\"));\n\nTranscription result = adapter.transcribe(bytes, \"audio.wav\", \"audio/wav\");\nassertThat(result.getText()).isEqualTo(\"Olá, mundo.\");"},
+   
        {
-        title: "1.6 — Docker Compose + frontend + README",
+        title: "1.7 — Docker Compose + frontend + README",
         desc: "compose.yml (app + speaches), compose.dev.yml (speaches apenas), Dockerfile multi-stage, frontend dark theme",
         tags: ["Docker", "Frontend", "README"],
         done: true,
-        version: "v1.6.0",
+        version: "v1.7.0",
         detail: "docker-compose.yml (prod): API + Speaches com healthcheck e depends_on. docker-compose.dev.yml: apenas Speaches para rodar a API via ./gradlew bootRun. Dockerfile multi-stage (builder + runtime). Frontend dark theme com tema atualizado. README profissional com badges, arquitetura, quick start.",
         snippet: "# Dev:\ndocker compose -f docker-compose.dev.yml up -d\n./gradlew bootRun --args='--spring.profiles.active=dev'\n\n# Prod:\ndocker compose up -d"
       }

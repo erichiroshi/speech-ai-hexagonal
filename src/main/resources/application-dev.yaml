@@ -14,8 +14,8 @@ management:
       show-details: always
 
 speaches:
-  base-url: ${SPEACHES_BASE_URL}
-  model: ${SPEACHES_MODEL}
+  base-url: ${SPEACHES_BASE_URL:http://localhost:8000}
+  model: ${SPEACHES_MODEL:Systran/faster-whisper-small}
 
 logging:
   level:

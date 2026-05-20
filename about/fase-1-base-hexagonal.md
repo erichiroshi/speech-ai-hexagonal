@@ -1,6 +1,6 @@
 # Fase 1 — Base Hexagonal + Transcrição Local
 
-**Versão:** `v1.0.0`
+**Versão:** `v1.0.0`  
 **Status:** ✅ Concluída
 
 ---
@@ -41,41 +41,33 @@ br.com.erichiroshi.speechai/
 
 ### Domínio (`domain/`)
 
-- **`Transcription`**: agregado central com builder imutável. Campos: `audioHash`, `text`, `filename`, `createdAt`, `cached`. Método `asCached()` retorna nova instância marcada como hit de cache.
-- **`AudioValidationException`**: lançada para arquivo vazio, tipo inválido ou tamanho excedido → HTTP 400.
-- **`SpeechToTextException`**: lançada quando o motor de transcrição falha → HTTP 502.
+- **`Transcription`**: modelo simples com `text` — sem anotações Spring
+- **`AudioValidationException`**: campo `field` + mensagem → HTTP 400
+- **`SpeechToTextException`**: falha no motor → HTTP 502
+- **`SpeechToTextPort`**: `transcribe(byte[], String filename, String contentType)` — preparado para Fase 5
 
 ### Portas (`application/port/`)
 
 - **`TranscribeAudioUseCase`** (entrada): contrato que o controller usa. Implementado por `TranscriptionService`.
 - **`SpeechToTextPort`** (saída): abstrai o motor de transcrição. Implementado por `SpeachesAdapter` (Fase 1) e, futuramente, `OpenAiSpeechAdapter` (Fase 5).
-- **`TranscriptionCachePort`** (saída): abstrai o cache. Implementado por `InMemoryCacheAdapter` (Fase 1) e `RedisCacheAdapter` (Fase 2).
 
-### Use Case (`TranscriptionService`)
+### Use Case (`TranscribeAudioUseCase`)
 
-Fluxo orquestrado:
-1. Validação: tamanho (≤5MB), Content-Type permitido, não-nulo
-2. `SHA-256(audioBytes)` → chave de cache
-3. `cache.findByHash(hash)` → se hit, retorna `transcription.asCached()`
-4. `speechToText.transcribe(bytes, filename, contentType)` → nova transcrição
-5. `cache.save(hash, transcription)` → armazena
-6. Retorna transcrição
+Implementa `TranscribeAudioPort`. Valida:
+- `audioBytes` não nulo e não vazio → `AudioValidationException`
+- tamanho ≤ 5 MB → `AudioValidationException`
+- `contentType` ∈ `{audio/wav, audio/wave, audio/mpeg, audio/mp3, audio/mp4, audio/webm, audio/ogg}` → `AudioValidationException`
 
-Nenhuma importação de classes Spring no use case. Testável com Mockito puro.
+Delega para `SpeechToTextPort`. Mapeia `Transcription → TranscriptionOutput` via `TranscriptionMapper`.
 
-### Adapters de saída
+### Adapter de saída (`SpeachesAdapter`)
 
-**`SpeachesAdapter`** — implementa `SpeechToTextPort`:
-- WebClient → `POST /v1/audio/transcriptions` (compatível OpenAI API)
-- `MultipartBodyBuilder` com bytes do áudio + model + response_format=json
-- Mapeamento `SpeachesResponse → Transcription`
-- Erro 4xx/5xx → `SpeechToTextException` com status code
-- Timeout configurável via `AppProperties`
-
-**`InMemoryCacheAdapter`** — implementa `TranscriptionCachePort`:
-- `ConcurrentHashMap` — sem TTL, sem persistência
-- Substituído por `RedisCacheAdapter` na Fase 2 via `@Primary`
-- Permanece ativo em testes unitários
+Implementa `SpeechToTextPort` via `RestClient`:
+- `POST /v1/audio/transcriptions` (API compatível OpenAI)
+- `ByteArrayResource` com `filename` preservado do arquivo original
+- `onStatus(isError)` → `SpeechToTextException` com status + body
+- Resposta vazia → `SpeechToTextException`
+- `SpeachesMapper` (MapStruct) mapeia `SpeachesResponse → Transcription`
 
 ### Adapter de entrada
 
@@ -115,35 +107,27 @@ about/projeto.md / about/fase-1-base-hexagonal.md
 
 ## Decisões de arquitetura e trade-offs
 
-### Por que portas como interfaces Java e não anotações Spring?
+### Por que `TranscribeAudioPort` como interface?
 
-**Decisão:** as portas `SpeechToTextPort` e `TranscriptionCachePort` são interfaces Java puras, sem `@Component` ou qualquer anotação Spring.
+`TranscribeAudioUseCase` é um `@Service` Spring — um detalhe de infraestrutura.  
+O `TranscriptionController` não deve depender de detalhes de infraestrutura.  
+A porta de entrada (`TranscribeAudioPort`) é a abstração que isola o Controller do use case concreto, permitindo `@WebMvcTest` com simples `@MockitoBean` sem subir contexto completo.
 
-**Raciocínio:** se o domínio depende de Spring, ele não pode ser testado sem contexto Spring. Com interfaces puras, `TranscriptionServiceTest` roda em <100ms sem levantar contexto.
+### Por que `SpeechToTextPort` recebe `filename` e `contentType`?
 
-**Trade-off:** mais verboso (precisa de `@Component` no adapter). Vale pelo isolamento.
+Decisão prospectiva para a Fase 5: `OpenAiSpeechAdapter` precisa do `filename` para o multipart e do `contentType` para validação. Projetar a porta sem esses parâmetros forçaria uma quebra de contrato na Fase 5 — algo que a arquitetura hexagonal deve evitar.
 
-### Por que `InMemoryCacheAdapter` em vez de desabilitar o cache?
+### Por que `RestClient` e não `WebClient`?
 
-**Decisão:** implementar um adapter real com `ConcurrentHashMap` como placeholder.
+Transcrição de áudio é uma operação inerentemente síncrona e bloqueante (aguarda a GPU processar o áudio). Não há ganho real em usar programação reativa aqui. `RestClient` (Spring 6.1+) é mais simples, não requer a dependência do WebFlux e produz código mais legível.
 
-**Raciocínio:** força o `TranscriptionService` a ser escrito corretamente contra a porta, desde o início. Na Fase 2, basta adicionar `@Primary` no `RedisCacheAdapter` — zero mudança no use case.
+### Por que MapStruct?
 
-**Trade-off:** memória não persistida entre reinicializações em dev. Aceitável para desenvolvimento local.
+MapStruct gera código em tempo de compilação — zero reflexão em runtime. Cada camada tem seu mapper dedicado: `SpeachesMapper` (infra→domain), `TranscriptionMapper` (domain→output), `TranscriptionHttpMapper` (output→HTTP response). Erros de mapeamento são detectados na compilação, não em runtime.
 
-### Por que SHA-256 e não UUID?
+### Por que validação no use case?
 
-**Decisão:** chave de cache baseada no conteúdo do arquivo (SHA-256), não em um identificador aleatório.
-
-**Raciocínio:** mesmo arquivo enviado duas vezes → mesmo hash → cache hit. Com UUID, dois uploads idênticos gerariam duas chamadas ao Speaches. O hash é idempotente.
-
-**Trade-off:** custo de CPU para calcular SHA-256 a cada request (~0.1ms para 5MB). Desprezível.
-
-### Por que `asCached()` em vez de campo mutável?
-
-**Decisão:** `Transcription` é imutável. `asCached()` retorna nova instância com `cached=true`.
-
-**Raciocínio:** evita efeitos colaterais. O objeto armazenado no cache nunca é modificado.
+Validação de tamanho e Content-Type é regra de negócio de transcrição, não responsabilidade HTTP. Se existir futuramente um adapter de entrada via fila (RabbitMQ), a mesma validação se aplica — e ela estará no lugar certo.
 
 ---
 
@@ -169,3 +153,22 @@ O browser às vezes envia `audio/x-wav` em vez de `audio/wav`. Adicionar ao `ALL
 ### `SpeechToTextException` em chamadas ao MockWebServer nos testes
 
 Verificar se o `MockWebServer` foi inicializado antes do `WebClient` (o `baseUrl` precisa apontar para a porta do mock).
+
+### `TranscriptionHttpMapper` não encontrado no contexto
+
+Verificar que `componentModel = "spring"` está em **minúsculo**. `"Spring"` (maiúsculo) não é reconhecido pelo MapStruct e o bean não é gerado.
+
+### Modelo não encontrado no Speaches
+
+O modelo precisa ser baixado antes da primeira transcrição:
+```bash
+uvx speaches-cli model download Systran/faster-whisper-small
+```
+
+### `SpeachesAdapter` retorna `SpeechToTextException` com status 404
+
+O endpoint correto é `/v1/audio/transcriptions`. Verificar se o Speaches subiu corretamente:
+```bash
+docker compose -f docker-compose.dev.yml logs speaches
+curl http://localhost:8000/health
+```

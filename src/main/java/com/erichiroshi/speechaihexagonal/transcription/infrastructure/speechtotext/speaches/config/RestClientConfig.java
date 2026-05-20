@@ -7,9 +7,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
+/**
+ * Configura o {@link RestClient} apontando para o Speaches.
+ * O {@code RestClient.Builder} é provido automaticamente pelo Spring Boot — não precisa ser declarado.
+ */
+@Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties(SpeachesProperties.class)
-@Configuration
 public class RestClientConfig {
 
     private final SpeachesProperties properties;
@@ -20,5 +24,4 @@ public class RestClientConfig {
                 .baseUrl(properties.baseUrl())
                 .build();
     }
-
 }

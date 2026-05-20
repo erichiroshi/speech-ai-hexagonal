@@ -2,14 +2,14 @@
   <img width="25%" src="./images/logo eric hiroshi.png" alt="Eric Hiroshi Logo">
 </p>
 
-<h1 align="center">🎙️ Speech-to-Text API</h1>
+<h1 align="center">🎙️ Speech Ai Hexagonal</h1>
 
 > API REST de transcrição de áudio construída com **arquitetura hexagonal** (Ports & Adapters), Java 25 e Spring Boot 4.
 
 
 <p align="center">
   <img src="https://img.shields.io/badge/Java-25-red?style=flat-square&logo=openjdk" alt="Java 25">
-  <img src="https://img.shields.io/badge/Spring%20Boot-4.x-6DB33F?style=flat-square&logo=springboot&logoColor=white" alt="Spring Boot 4">
+  <img src="https://img.shields.io/badge/Spring%20Boot-4.0.6-6DB33F?style=flat-square&logo=springboot&logoColor=white" alt="Spring Boot 4.0.6">
   <img src="https://img.shields.io/badge/Speaches-Whisper-4A90D9?style=flat-square" alt="Speaches Whisper">
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="MIT License">
@@ -21,14 +21,14 @@
 
 | Fase | Descrição | Status |
 |------|-----------|--------|
-| **1** | Base hexagonal + transcrição local (Speaches/Whisper) | ✅ Concluída `v1.0.0` |
-| **2** | Cache Redis com SHA-256 | 🔜 `v2.x` |
-| **3** | Observabilidade (Prometheus · Grafana · Zipkin · Logs JSON) | 🔜 `v3.x` |
-| **4** | Resiliência (Circuit Breaker · Retry · Bulkhead) | 🔜 `v4.x` |
-| **5** | Spring AI + OpenAI Whisper (segunda porta de saída) | 🔜 `v5.x` |
-| **6** | Spring AI + Ollama — resumo por LLM local ≤1B | 🔜 `v6.x` |
-| **7** | RabbitMQ — mensageria assíncrona | 🔜 `v7.x` |
-| **8** | CI/CD — GitHub Actions · SonarCloud · Codecov · Docker Hub | 🔜 `v8.x` |
+| **1** | Base hexagonal — transcrição local (Speaches/Whisper) · RestClient · Lombok · MapStruct | ✅ `v1.0.0` |
+| **2** | Cache Redis com SHA-256 — RedisConfig · RedisCacheAdapter · Testcontainers | 🔜 `v2.x` |
+| **3** | Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC | 🔜 `v3.x` |
+| **4** | Resiliência — Circuit Breaker · Retry · Bulkhead (Resilience4j) | 🔜 `v4.x` |
+| **5** | Spring AI + OpenAI Whisper — segunda porta de saída (cloud) | 🔜 `v5.x` |
+| **6** | Spring AI + Ollama — resumo por LLM local ≤1B parâmetros | 🔜 `v6.x` |
+| **7** | RabbitMQ — TranscriptionCompletedEvent · DLQ · Consumer de auditoria | 🔜 `v7.x` |
+| **8** | CI/CD — GitHub Actions · SonarCloud · Codecov · Docker Hub · Multi-arch | 🔜 `v8.x` |
 
 ---
 
@@ -54,27 +54,28 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        HEXÁGONO                                 │
-│                                                                 │
-│  Adapter IN          Application             Adapters OUT       │
-│  ──────────         ────────────            ────────────        │
-│                                                                 │
-│  TranscriptionController                    SpeachesAdapter     │
-│       │                                     (Whisper local)     │
-│       ▼          TranscribeAudioUseCase ◄── SpeechToTextPort    │
-│  TranscriptionService ──────────────────►                       │
-│       │                                     InMemoryCacheAdapter│
-│       ▼          TranscriptionCachePort ◄── (→ Redis Fase 2)    │
-│                                                                 │
-│  domain/model/Transcription  ← sem Spring, sem infra            │
-└─────────────────────────────────────────────────────────────────┘
+│                 BOUNDED CONTEXT: transcription/                 │
+├──────────────────┬────────────────────────┬─────────────────────┤
+│   ADAPTER IN     │     APPLICATION        │    ADAPTER OUT      │
+│                  │                        │                     │
+│  Transcription   │  TranscribeAudioPort   │  SpeachesAdapter    │
+│  Controller      │  (interface)           │  implements         │
+│   │ injeta       │    ↑ implements        │  SpeechToTextPort   │
+│   ▼              │  TranscribeAudioUseCase│                     │
+│  TranscribeAudio │  + validação           │  → Fase 5:          │
+│  Port (interface)│  + mapeamento          │  OpenAiSpeechAdapter│
+│                  │                        │                     │
+│            domain/model/Transcription     │                     │
+│            (zero dependência de Spring)   │                     │
+└──────────────────┴────────────────────────┴─────────────────────┘
 ```
 
 ### Por que hexagonal?
 
-- **Trocar Speaches por OpenAI Whisper**: implementa `SpeechToTextPort` → zero mudança no domínio
-- **Trocar InMemory por Redis**: implementa `TranscriptionCachePort` → zero mudança no use case
-- **Testes do `TranscriptionService`**: Mockito puro, sem contexto Spring, execução < 100ms
+- **Trocar Speaches por OpenAI Whisper** → novo `OpenAiSpeechAdapter` implements `SpeechToTextPort`. Domínio não muda.
+- **Adicionar cache Redis** → novo `RedisCacheAdapter` implements `TranscriptionCachePort`. Use case não muda.
+- **Testar o Controller** → `@WebMvcTest` + `@MockitoBean TranscribeAudioPort`. Sem contexto completo.
+- **Testar o use case** → Mockito puro. Execução < 100ms. Sem Spring.
 
 ---
 
@@ -133,11 +134,11 @@ curl -X POST http://localhost:8080/api/transcriptions \
 
 ```json
 {
-  "audioTranscription": "Olá, este é o texto transcrito do áudio.",
+  "audioTranscription": "Olá, este é o texto transcrito do áudio."
 }
 ```
 
-**Tipos aceitos:** `audio/wav`, `audio/wave`, `audio/mpeg`, `audio/mp3`, `audio/mp4`, `audio/webm`, `audio/ogg`
+**Tipos aceitos:** `audio/wav`, `audio/wave`, `audio/mpeg`, `audio/mp3`, `audio/mp4`, `audio/webm`, `audio/ogg`  
 **Tamanho máximo:** 5 MB
 
 ---
@@ -171,12 +172,21 @@ curl -X POST http://localhost:8080/api/transcriptions \
 ```
 
 ```bash
-# Rodar testes
+# Rodar todos os testes
 ./gradlew test
 
 # Relatório de cobertura (build/reports/jacoco/test/html/index.html)
 ./gradlew test jacocoTestReport
 ```
+
+### Estratégia de testes
+
+| Classe | Tipo | Ferramentas |
+|--------|------|-------------|
+| `TranscribeAudioUseCaseTest` | Unitário | JUnit 5 + Mockito |
+| `TranscriptionControllerTest` | Slice test | `@WebMvcTest` + `@MockitoBean` |
+| `SpeachesAdapterTest` | Unitário + HTTP mock | JUnit 5 + MockWebServer |
+| `SpeechAiHexagonalApplicationTests` | Smoke test | `@SpringBootTest` |
 
 ---
 
@@ -226,8 +236,7 @@ TranscriptionResponse { audioTranscription }
 
 ```
 speech-ai-hexagonal/
-├── src/main/java/br/com/erichiroshi/speechai/
-│   ├── SpeechAiApplication.java
+├── src/main/java/.../transcription
 │   ├── domain/
 │   │   ├── model/Transcription.java
 │   │   ├── port/out/SpeechToTextPort.java
@@ -235,22 +244,22 @@ speech-ai-hexagonal/
 │   │                 SpeechToTextException.java
 │   ├── application/
 │   │   ├── port/in/TranscribeAudioPort.java
-│   │   └── TranscribeAudioUseCase.java
+│   │   ├── TranscribeAudioUseCase.java
+│   │   └── input|output|mapper/
 │   └── infrastructure/
 │       ├── http/TranscriptionController.java
-│       │        response/TranscriptionResponse.java
-│       │        handler/GlobalExceptionHandler.java
+│       │    ├── response/TranscriptionResponse.java
+│       │    └── handler/GlobalExceptionHandler.java
 │       └── speechtotext/speaches/SpeachesAdapter.java
-│                                 SpeachesProperties.java
-│                                 config/RestClientConfig.java
-│                                 response/SpeachesResponse.java
+│                            ├──  SpeachesProperties.java
+│                            ├──  config/RestClientConfig.java
+│                            └──  response/SpeachesResponse.java
 ├── frontend/         ← UI dark theme (HTML/CSS/JS)
 ├── about/            ← documentação por fase
-├── docs/             ← GitHub Pages (MkDocs Material)
+├── docs/             ← GitHub Pages
 ├── docker-compose.yml
 ├── docker-compose.dev.yml
-├── Dockerfile
-└── CLAUDE.md
+└── Dockerfile
 ```
 
 ---

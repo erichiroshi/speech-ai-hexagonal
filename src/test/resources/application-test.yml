@@ -1,0 +1,12 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+speaches:
+  base-url: http://localhost:9999
+  model: Systran/faster-whisper-small
+
+logging:
+  level:
+    com.erichiroshi: DEBUG

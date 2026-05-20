@@ -17,9 +17,18 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-@RequiredArgsConstructor
+/**
+ * Adapter de saída que implementa {@link SpeechToTextPort} via Speaches (Whisper local).
+ *
+ * <p>Endpoint alvo: {@code POST /v1/audio/transcriptions} (compatível OpenAI API).
+ *
+ * <p>Trade-off: gratuito, privado, sem latência de rede externa.
+ * Requer container Speaches rodando localmente (GPU/CPU).
+ * A Fase 5 adicionará {@code OpenAiSpeechAdapter} como alternativa cloud.
+ */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 @EnableConfigurationProperties(SpeachesProperties.class)
 public class SpeachesAdapter implements SpeechToTextPort {
 
@@ -35,7 +44,7 @@ public class SpeachesAdapter implements SpeechToTextPort {
         ByteArrayResource resource = new ByteArrayResource(audioBytes) {
             @Override
             public String getFilename() {
-                return (fileName != null ? fileName : "audio.wav");
+                return ((fileName != null && !fileName.isBlank()) ? fileName : "audio.wav");
             }
         };
 
@@ -43,7 +52,8 @@ public class SpeachesAdapter implements SpeechToTextPort {
         body.add("file", resource);
         body.add("model", properties.model());
 
-        log.debug("Chamando Speaches | model={} | bytes={}", properties.model(), audioBytes.length);
+        log.debug("Chamando Speaches | model={} | filename={} | bytes={}",
+                properties.model(), fileName, audioBytes.length);
 
         try {
             SpeachesResponse speachesResponse = restClient.post()
@@ -54,18 +64,18 @@ public class SpeachesAdapter implements SpeechToTextPort {
                     .onStatus(HttpStatusCode::isError,
                             (_, resp) -> {
                                 String errorMsg = new String(resp.getBody().readAllBytes());
-                                throw new SpeechToTextException("Speaches retornou erro %s: %s"
-                                        .formatted(resp.getStatusText(), errorMsg));
+                                throw new SpeechToTextException(
+                                        "Speaches retornou erro %s: %s".formatted(resp.getStatusText(), errorMsg));
                             }
                     )
                     .body(SpeachesResponse.class);
 
             // Garantia técnica de infraestrutura caso o client retorne nulo de forma inesperada
-            if (speachesResponse == null) {
-                throw new SpeechToTextException("Resposta nula recebida do servidor Speaches");
+            if (speachesResponse == null || speachesResponse.text() == null || speachesResponse.text().isBlank()) {
+                throw new SpeechToTextException("Speaches retornou resposta vazia ou nula");
             }
 
-            log.debug("Resposta Speaches recebida com sucesso | chars={}", speachesResponse.text().length());
+            log.debug("Resposta Speaches | chars={}", speachesResponse.text().length());
 
             return mapper.toDomain(speachesResponse);
 
