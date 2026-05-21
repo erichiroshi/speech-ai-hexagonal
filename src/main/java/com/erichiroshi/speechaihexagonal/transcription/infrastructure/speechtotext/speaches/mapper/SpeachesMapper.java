@@ -7,6 +7,13 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface SpeachesMapper {
 
-    Transcription toDomain(SpeachesResponse speachesResponse);
+    // Provide a default implementation so MapStruct won't try to pick an ambiguous constructor
+    default Transcription toDomain(SpeachesResponse speachesResponse) {
+        if (speachesResponse == null) {
+            return null;
+        }
+        // Use the domain factory method to create the Transcription instance
+        return Transcription.newTranscription(null, speachesResponse.text());
+    }
 
 }

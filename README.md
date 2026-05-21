@@ -6,14 +6,46 @@
 
 > API REST de transcrição de áudio construída com **arquitetura hexagonal** (Ports & Adapters), Java 25 e Spring Boot 4.
 
+[![SonarQube + Codecov](https://github.com/erichiroshi/speech-ai-hexagonal/actions/workflows/sonar.yml/badge.svg?branch=main)](https://github.com/erichiroshi/speech-ai-hexagonal/actions/workflows/sonar.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=erichiroshi_speech-ai-hexagonal&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=erichiroshi_speech-ai-hexagonal)
+[![codecov](https://codecov.io/gh/erichiroshi/speech-ai-hexagonal/graph/badge.svg?token=8pOCWyVDRE)](https://codecov.io/gh/erichiroshi/speech-ai-hexagonal)
 
 <p align="center">
   <img src="https://img.shields.io/badge/Java-25-red?style=flat-square&logo=openjdk" alt="Java 25">
   <img src="https://img.shields.io/badge/Spring%20Boot-4.0.6-6DB33F?style=flat-square&logo=springboot&logoColor=white" alt="Spring Boot 4.0.6">
   <img src="https://img.shields.io/badge/Speaches-Whisper-4A90D9?style=flat-square" alt="Speaches Whisper">
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose">
+  <img src="https://img.shields.io/badge/Jacoco-70%25-brightgreen?style=flat-square" alt="Jacoco">
+  <img src="https://img.shields.io/badge/SonarCloud-passing-4E9BCD?style=flat-square&logo=sonarcloud&logoColor=white" alt="SonarCloud">
+  <img src="https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?style=flat-square&logo=githubactions&logoColor=white" alt="GitHub Actions">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="MIT License">
 </p>
+
+- [🗺️ Roadmap](#️-roadmap)
+- [🌐 Documentação](#-documentação)
+- [🛠️ Stack](#️-stack)
+- [🏗️ Arquitetura](#️-arquitetura)
+  - [Por que hexagonal?](#por-que-hexagonal)
+- [⚙️ Pré-requisitos](#️-pré-requisitos)
+- [🚀 Quick Start](#-quick-start)
+  - [Modo desenvolvimento (API local + Speaches via Docker)](#modo-desenvolvimento-api-local--speaches-via-docker)
+  - [Modo produção (tudo via Docker)](#modo-produção-tudo-via-docker)
+- [SonarQube local](#sonarqube-local)
+  - [Subir infraestrutura](#subir-infraestrutura)
+  - [Acessar dashboard](#acessar-dashboard)
+- [📄 Swagger UI](#-swagger-ui)
+- [📡 Endpoint de transcrição](#-endpoint-de-transcrição)
+  - [`POST /api/transcriptions`](#post-apitranscriptions)
+- [Persistência](#persistência)
+  - [Tecnologias](#tecnologias)
+- [📊 Observabilidade](#-observabilidade)
+- [🧪 Testando a API](#-testando-a-api)
+  - [Estratégia de testes](#estratégia-de-testes)
+- [🔧 Variáveis de ambiente](#-variáveis-de-ambiente)
+- [🔀 Fluxo real de execução](#-fluxo-real-de-execução)
+- [📁 Estrutura do projeto](#-estrutura-do-projeto)
+- [⚠️ Troubleshooting](#️-troubleshooting)
+- [Autor](#autor)
 
 ---
 
@@ -22,20 +54,33 @@
 | Fase | Descrição | Status |
 |------|-----------|--------|
 | **1** | Base hexagonal — transcrição local (Speaches/Whisper) · RestClient · Lombok · MapStruct | ✅ `v1.0.0` |
-| **2** | Qualidade de código com SonarQube e JaCoCo | 🔜 `v2.x` |
-| **2** | Cache Redis com SHA-256 — RedisConfig · RedisCacheAdapter · Testcontainers | 🔜 `v2.x` |
-| **3** | Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC | 🔜 `v3.x` |
-| **4** | Resiliência — Circuit Breaker · Retry · Bulkhead (Resilience4j) | 🔜 `v4.x` |
-| **5** | Spring AI + OpenAI Whisper — segunda porta de saída (cloud) | 🔜 `v5.x` |
-| **6** | Spring AI + Ollama — resumo por LLM local ≤1B parâmetros | 🔜 `v6.x` |
-| **7** | RabbitMQ — TranscriptionCompletedEvent · DLQ · Consumer de auditoria | 🔜 `v7.x` |
-| **8** | CI/CD — GitHub Actions · SonarCloud · Codecov · Docker Hub · Multi-arch | 🔜 `v8.x` |
+| **2** | Qualidade de código com SonarQube e JaCoCo | ✅ `v2.0.0` |
+| **3** | Setup PostgreSQL + JPA + Flyway | ✅ `v3.1.0` |
+| **4** | Cache Redis com SHA-256 — RedisConfig · RedisCacheAdapter · Testcontainers | 🔜 `v2.x` |
+| **5** | Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC | 🔜 `v3.x` |
+| **6** | Resiliência — Circuit Breaker · Retry · Bulkhead (Resilience4j) | 🔜 `v4.x` |
+| **7** | Spring AI + OpenAI Whisper — segunda porta de saída (cloud) | 🔜 `v5.x` |
+| **8** | Spring AI + Ollama — resumo por LLM local ≤1B parâmetros | 🔜 `v6.x` |
+| **9** | RabbitMQ — TranscriptionCompletedEvent · DLQ · Consumer de auditoria | 🔜 `v7.x` |
+| **10** | CI/CD — GitHub Actions · SonarCloud · Codecov · Docker Hub · Multi-arch | 🔜 `v8.x` |
 
 ---
 
 ## 🌐 Documentação
 
-> GitHub Pages — em construção a partir da Fase 3.
+
+👉 https://github.com/erichiroshi/speech-ai-hexagonal
+ 
+| Página | Descrição |
+|---|---|
+| [Home](https://erichiroshi.github.io/speech-ai-hexagonal/) | Visão geral e quick start |
+| [Arquitetura](https://erichiroshi.github.io/speech-ai-hexagonal/architecture.html) | C4 Model — Contexto, Containers, Componentes |
+| [Qualidade](https://erichiroshi.github.io/speech-ai-hexagonal/quality.html)| Jacoco + SonarCloud + Codecov |
+| [Persistência](https://erichiroshi.github.io/speech-ai-hexagonal/persistence.html)| Postgres + Flyway |
+| [Roadmap](https://erichiroshi.github.io/speech-ai-hexagonal/roadmap.html)| Roadmap do projeto |
+| [Observabilidade]() | - |
+| [Resiliência]() | - |
+| [API Reference]() | - |
 
 ---
 
@@ -170,6 +215,21 @@ curl -X POST http://localhost:8080/api/transcriptions \
 
 ---
 
+## Persistência
+
+A aplicação agora possui infraestrutura PostgreSQL integrada com Spring Data JPA e Flyway.  
+[Documentação](https://erichiroshi.github.io/speech-ai-hexagonal/persistence.html)
+
+### Tecnologias
+
+- PostgreSQL 16
+- Spring Data JPA
+- Hibernate
+- Flyway
+- HikariCP
+
+---
+
 ## 📊 Observabilidade
 
 > Disponível a partir da Fase 3.
@@ -226,6 +286,9 @@ curl -X POST http://localhost:8080/api/transcriptions \
 | SONAR_HOST_URL | `http://localhost:9000` | URL do servidor SonarQube |
 | SONAR_TOKEN | `local` | Token de autenticação |
 | SONAR_PROJECT_KEY | `speech-ai-hexagonal` | Chave do projeto |
+| SPRING_DATASOURCE_URL | `jdbc:postgresql://localhost:5432/speech_ai` | RUL do banco de dados
+| SPRING_DATASOURCE_USERNAME | `postgres` | Username do postgres
+| SPRING_DATASOURCE_PASSWORD | `postgres` | Password do postgres
 
 Copie `.env.example` para `.env` e ajuste conforme necessário.
 

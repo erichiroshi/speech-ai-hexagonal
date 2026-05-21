@@ -1,27 +1,110 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Arquitetura — speech-ai-hexagonal</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    .arch-diagram { background:#020617; border:1px solid var(--border); border-radius:10px; padding:20px; font-family:'Courier New',monospace; font-size:12px; line-height:1.8; color:#a5f3fc; overflow-x:auto; margin:14px 0; }
-    .arch-diagram .comment { color:#475569; }
-    .arch-diagram .highlight { color:#22c55e; }
-    .arch-diagram .warn { color:#fbbf24; }
-    .table { width:100%; border-collapse:collapse; margin-top:14px; }
-    .table th { text-align:left; font-size:12px; color:var(--muted); padding:6px 10px; border-bottom:1px solid var(--border); }
-    .table td { font-size:13px; padding:8px 10px; border-bottom:1px solid var(--border); color:var(--text); vertical-align:top; }
-    .table td code { font-size:11px; }
-    .badge-done { background:#0c2a1a; color:#22c55e; border:1px solid #14532d; font-size:10px; padding:1px 7px; border-radius:99px; font-weight:600; }
-    .badge-plan { background:#0c1a2a; color:#60a5fa; border:1px solid #1e3a5f; font-size:10px; padding:1px 7px; border-radius:99px; font-weight:600; }
-    .decision { background:#0f172a; border-left:3px solid #22c55e; padding:12px 16px; border-radius:0 8px 8px 0; margin:10px 0; }
-    .decision h4 { font-size:13px; color:#22c55e; margin-bottom:6px; }
-    .decision p { font-size:12px; color:var(--muted); margin-bottom:4px; }
-    .tradeoff { font-size:11px; color:#fbbf24; }
+    .arch-diagram {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      color: #a5f3fc;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+
+    .arch-diagram .comment {
+      color: #475569;
+    }
+
+    .arch-diagram .highlight {
+      color: #22c55e;
+    }
+
+    .arch-diagram .warn {
+      color: #fbbf24;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+    }
+
+    .table th {
+      text-align: left;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table td {
+      font-size: 13px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: top;
+    }
+
+    .table td code {
+      font-size: 11px;
+    }
+
+    .badge-done {
+      background: #0c2a1a;
+      color: #22c55e;
+      border: 1px solid #14532d;
+      font-size: 10px;
+      padding: 1px 7px;
+      border-radius: 99px;
+      font-weight: 600;
+    }
+
+    .badge-plan {
+      background: #0c1a2a;
+      color: #60a5fa;
+      border: 1px solid #1e3a5f;
+      font-size: 10px;
+      padding: 1px 7px;
+      border-radius: 99px;
+      font-weight: 600;
+    }
+
+    .decision {
+      background: #0f172a;
+      border-left: 3px solid #22c55e;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 10px 0;
+    }
+
+    .decision h4 {
+      font-size: 13px;
+      color: #22c55e;
+      margin-bottom: 6px;
+    }
+
+    .decision p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .tradeoff {
+      font-size: 11px;
+      color: #fbbf24;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <header>
@@ -147,61 +230,61 @@ com.erichiroshi.speechaihexagonal/
             <td><code>OllamaLanguageModelAdapter</code> (Fase 6)</td>
             <td><span class="badge-plan">Fase 6</span></td>
           </tr>
-            <tr>
-        <td><code>TranscriptionGateway</code></td>
-        <td>—</td>
-        <td>—</td>
-        <td><code>JpaTranscriptionAdapter</code></td>
-        <td><span class="badge-plan">Fase 3</span></td>
-      </tr>
+          <tr>
+            <td><code>TranscriptionGateway</code></td>
+            <td>—</td>
+            <td>—</td>
+            <td><code>JpaTranscriptionAdapter</code></td>
+            <td><span class="badge-plan">Fase 3</span></td>
+          </tr>
 
-      <tr>
-        <td><code>MetricsPort</code></td>
-        <td>—</td>
-        <td>—</td>
-        <td><code>PrometheusMetricsAdapter</code></td>
-        <td><span class="badge-plan">Fase 4</span></td>
-      </tr>
+          <tr>
+            <td><code>MetricsPort</code></td>
+            <td>—</td>
+            <td>—</td>
+            <td><code>PrometheusMetricsAdapter</code></td>
+            <td><span class="badge-plan">Fase 4</span></td>
+          </tr>
 
-      <tr>
-        <td><code>TracingPort</code></td>
-        <td>—</td>
-        <td>—</td>
-        <td><code>OpenTelemetryTracingAdapter</code></td>
-        <td><span class="badge-plan">Fase 4</span></td>
-      </tr>
+          <tr>
+            <td><code>TracingPort</code></td>
+            <td>—</td>
+            <td>—</td>
+            <td><code>OpenTelemetryTracingAdapter</code></td>
+            <td><span class="badge-plan">Fase 4</span></td>
+          </tr>
 
-      <tr>
-        <td><code>ResiliencePort</code></td>
-        <td>—</td>
-        <td>—</td>
-        <td><code>Resilience4jAdapter</code></td>
-        <td><span class="badge-plan">Fase 5</span></td>
-      </tr>
+          <tr>
+            <td><code>ResiliencePort</code></td>
+            <td>—</td>
+            <td>—</td>
+            <td><code>Resilience4jAdapter</code></td>
+            <td><span class="badge-plan">Fase 5</span></td>
+          </tr>
 
-      <tr>
-        <td><code>CloudTranscriptionPort</code></td>
-        <td>—</td>
-        <td>—</td>
-        <td><code>OpenAiWhisperAdapter</code></td>
-        <td><span class="badge-plan">Fase 6</span></td>
-      </tr>
+          <tr>
+            <td><code>CloudTranscriptionPort</code></td>
+            <td>—</td>
+            <td>—</td>
+            <td><code>OpenAiWhisperAdapter</code></td>
+            <td><span class="badge-plan">Fase 6</span></td>
+          </tr>
 
-      <tr>
-        <td><code>SummarizationPort</code></td>
-        <td>—</td>
-        <td>—</td>
-        <td><code>OllamaSummarizationAdapter</code></td>
-        <td><span class="badge-plan">Fase 7</span></td>
-      </tr>
+          <tr>
+            <td><code>SummarizationPort</code></td>
+            <td>—</td>
+            <td>—</td>
+            <td><code>OllamaSummarizationAdapter</code></td>
+            <td><span class="badge-plan">Fase 7</span></td>
+          </tr>
 
-      <tr>
-        <td><code>TranscriptionEventPort</code></td>
-        <td>—</td>
-        <td>—</td>
-        <td><code>RabbitMqEventAdapter</code></td>
-        <td><span class="badge-plan">Fase 8</span></td>
-      </tr>
+          <tr>
+            <td><code>TranscriptionEventPort</code></td>
+            <td>—</td>
+            <td>—</td>
+            <td><code>RabbitMqEventAdapter</code></td>
+            <td><span class="badge-plan">Fase 8</span></td>
+          </tr>
         </tbody>
       </table>
     </section>
@@ -211,78 +294,143 @@ com.erichiroshi.speechaihexagonal/
 
       <div class="decision">
         <h4>Por que porta de entrada como interface?</h4>
-        <p>O <code>TranscribeAudioPort</code> é uma interface, não uma classe. O Controller injeta a porta, não o use case concreto. Isso permite testar o Controller com um mock simples sem subir o contexto Spring completo.</p>
+        <p>O <code>TranscribeAudioPort</code> é uma interface, não uma classe. O Controller injeta a porta, não o use
+          case concreto. Isso permite testar o Controller com um mock simples sem subir o contexto Spring completo.</p>
         <p class="tradeoff">Trade-off: mais verboso. Recompensa: Controller testável isoladamente com @WebMvcTest.</p>
       </div>
 
       <div class="decision">
         <h4>Por que SpeechToTextPort recebe filename e contentType?</h4>
-        <p>A porta foi projetada pensando na Fase 5: <code>OpenAiSpeechAdapter</code> precisa do filename para o multipart e do contentType para validar o formato. Se a porta aceitasse apenas <code>byte[]</code>, seria necessário quebrar o contrato na Fase 5.</p>
-        <p class="tradeoff">Trade-off: interface ligeiramente mais ampla. Recompensa: zero mudança no domínio na Fase 5.</p>
+        <p>A porta foi projetada pensando na Fase 5: <code>OpenAiSpeechAdapter</code> precisa do filename para o
+          multipart e do contentType para validar o formato. Se a porta aceitasse apenas <code>byte[]</code>, seria
+          necessário quebrar o contrato na Fase 5.</p>
+        <p class="tradeoff">Trade-off: interface ligeiramente mais ampla. Recompensa: zero mudança no domínio na Fase 5.
+        </p>
       </div>
 
       <div class="decision">
         <h4>Por que RestClient e não WebClient?</h4>
-        <p>RestClient (Spring 6.1+) é o substituto moderno e síncrono do <code>RestTemplate</code>. Para transcrição de áudio, a chamada ao Speaches é naturalmente bloqueante (aguarda o processamento da GPU). Não há ganho real em usar WebClient/reativo aqui.</p>
-        <p class="tradeoff">Trade-off: sem backpressure reativo. Recompensa: código mais simples, sem dependência do WebFlux.</p>
+        <p>RestClient (Spring 6.1+) é o substituto moderno e síncrono do <code>RestTemplate</code>. Para transcrição de
+          áudio, a chamada ao Speaches é naturalmente bloqueante (aguarda o processamento da GPU). Não há ganho real em
+          usar WebClient/reativo aqui.</p>
+        <p class="tradeoff">Trade-off: sem backpressure reativo. Recompensa: código mais simples, sem dependência do
+          WebFlux.</p>
       </div>
 
       <div class="decision">
         <h4>Por que MapStruct para mapeamento?</h4>
-        <p>MapStruct gera código em tempo de compilação — zero reflexão em runtime, zero penalidade de performance. Cada camada tem seu próprio mapper: <code>SpeachesMapper</code> (infra→domain), <code>TranscriptionMapper</code> (domain→output), <code>TranscriptionHttpMapper</code> (output→response HTTP).</p>
-        <p class="tradeoff">Trade-off: anotação de processamento adicional no build. Recompensa: mapeamentos tipados, detectáveis em compilação.</p>
+        <p>MapStruct gera código em tempo de compilação — zero reflexão em runtime, zero penalidade de performance. Cada
+          camada tem seu próprio mapper: <code>SpeachesMapper</code> (infra→domain), <code>TranscriptionMapper</code>
+          (domain→output), <code>TranscriptionHttpMapper</code> (output→response HTTP).</p>
+        <p class="tradeoff">Trade-off: anotação de processamento adicional no build. Recompensa: mapeamentos tipados,
+          detectáveis em compilação.</p>
       </div>
 
       <div class="decision">
         <h4>Por que validação no use case e não no controller?</h4>
-        <p>A validação de tamanho e Content-Type é regra de negócio do domínio de transcrição, não responsabilidade HTTP. Se amanhã existir um adapter de entrada via mensageria (RabbitMQ), a validação se aplicaria igualmente.</p>
-        <p class="tradeoff">Trade-off: o Controller pode receber erros de domínio. Recompensa: regras centralizadas, testáveis sem contexto Spring.</p>
+        <p>A validação de tamanho e Content-Type é regra de negócio do domínio de transcrição, não responsabilidade
+          HTTP. Se amanhã existir um adapter de entrada via mensageria (RabbitMQ), a validação se aplicaria igualmente.
+        </p>
+        <p class="tradeoff">Trade-off: o Controller pode receber erros de domínio. Recompensa: regras centralizadas,
+          testáveis sem contexto Spring.</p>
       </div>
     </section>
 
     <section class="card">
       <h2>Fluxo de execução — v1.0.0</h2>
       <pre>
-POST /api/transcriptions (multipart/form-data)
-        │
-        ▼
-<span class="highlight">TranscriptionController</span>
-  - extrai bytes do MultipartFile
-  - lança AudioValidationException se vazio
-  - cria TranscriptionInput(bytes, filename, contentType)
-        │
-        ▼
-<span class="highlight">TranscribeAudioUseCase.execute(input)</span>
-  - valida: bytes não nulo/vazio
-  - valida: tamanho ≤ 5 MB
-  - valida: contentType ∈ {audio/wav, audio/mpeg, audio/mp4...}
-        │
-        ▼
-<span class="highlight">SpeechToTextPort.transcribe(bytes, filename, contentType)</span>
-        │
-        ▼
-<span class="warn">SpeachesAdapter</span> (implementação)
-  - ByteArrayResource com filename correto
-  - MultiValueMap: file + model
-  - RestClient → POST http://speaches:8000/v1/audio/transcriptions
-  - onStatus(isError) → lança SpeechToTextException
-  - valida resposta não vazia → lança SpeechToTextException
-  - SpeachesMapper.toDomain(SpeachesResponse) → Transcription
-        │
-        ▼
-<span class="highlight">TranscriptionMapper.toOutput(Transcription)</span> → TranscriptionOutput
-        │
-        ▼
-<span class="highlight">TranscriptionHttpMapper.toResponse(output)</span> → TranscriptionResponse
-        │
-        ▼
-HTTP 200 { "audioTranscription": "texto transcrito..." }
-      </pre>
+    POST /api/transcriptions (multipart/form-data)
+            │
+            ▼
+    <span class="highlight">TranscriptionController</span>
+      - extrai bytes do MultipartFile
+      - lança AudioValidationException se vazio
+      - cria TranscriptionInput(bytes, filename, contentType)
+            │
+            ▼
+    <span class="highlight">TranscribeAudioUseCase.execute(input)</span>
+      - valida: bytes não nulo/vazio
+      - valida: tamanho ≤ 5 MB
+      - valida: contentType ∈ {audio/wav, audio/mpeg, audio/mp4...}
+            │
+            ▼
+    <span class="highlight">SpeechToTextPort.transcribe(bytes, filename, contentType)</span>
+            │
+            ▼
+    <span class="warn">SpeachesAdapter</span> (implementação)
+      - ByteArrayResource com filename correto
+      - MultiValueMap: file + model
+      - RestClient → POST http://speaches:8000/v1/audio/transcriptions
+      - onStatus(isError) → lança SpeechToTextException
+      - valida resposta não vazia → lança SpeechToTextException
+      - SpeachesMapper.toDomain(SpeachesResponse) → Transcription
+            │
+            ▼
+    <span class="highlight">TranscriptionMapper.toOutput(Transcription)</span> → TranscriptionOutput
+            │
+            ▼
+    <span class="highlight">TranscriptionHttpMapper.toResponse(output)</span> → TranscriptionResponse
+            │
+            ▼
+    HTTP 200 { "audioTranscription": "texto transcrito..." }
+          </pre>
+    </section>
+
+    <section class="card">
+      <h2>Persistência e Migrations</h2>
+
+      <p>
+        A infraestrutura de persistência foi introduzida utilizando PostgreSQL,
+        Spring Data JPA e Flyway mantendo a separação arquitetural entre domínio,
+        portas e adapters.
+      </p>
+
+      <div class="code-block">
+        <pre>
+    Domain
+      └── Ports
+            └── Persistence SPI
+                    └── JPA Adapter
+                            └── PostgreSQL
+    </pre>
+      </div>
+      <p>
+        O domínio permanece completamente desacoplado do Hibernate e da infraestrutura.
+        Toda responsabilidade de persistência fica restrita aos adapters de saída.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Domínio de Transcrição</h2>
+
+      <p>
+        A camada de domínio agora possui a entidade
+        <strong>Transcription</strong> e portas SPI responsáveis
+        por abstrair persistência sem acoplamento ao framework.
+      </p>
+
+      <div class="code-block">
+        <pre>
+          Domain
+          ├── Transcription
+          └── TranscriptionGateway (SPI)
+
+          Adapters
+          └── Implementações futuras JPA/Cache
+        </pre>
+      </div>
+
+      <p>
+        O domínio permanece isolado de Hibernate, PostgreSQL e Spring,
+        preservando a independência arquitetural da camada de negócio.
+      </p>
     </section>
 
     <footer>
-      <p>speech-ai-hexagonal · <a href="https://github.com/erichiroshi" style="color:var(--primary)">Eric Hiroshi</a> · v1.0.0</p>
+      <p>speech-ai-hexagonal · <a href="https://github.com/erichiroshi" style="color:var(--primary)">Eric Hiroshi</a> ·
+        v1.0.0</p>
     </footer>
   </div>
 </body>
+
 </html>

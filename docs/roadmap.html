@@ -254,19 +254,19 @@
             title: "3.1 — Setup PostgreSQL + JPA + Flyway",
             desc: "Adicionar PostgreSQL, Spring Data JPA, Flyway e configurações iniciais da persistência.",
             tags: ["PostgreSQL", "JPA", "Flyway"],
-            done: false,
+            done: true,
             version: "3.1.0",
-            detail: "Configurar infraestrutura de persistência utilizando PostgreSQL com volume persistente no docker-compose. Adicionar dependências Spring Data JPA, PostgreSQL Driver e Flyway no build.gradle. Configurar datasource, pool de conexões, dialect do Hibernate e estratégia de migrations versionadas via Flyway. Garantir isolamento da infraestrutura na camada adapter e preparar ambiente para evolução futura com cache e mensageria.",
-            snippet: "services:\n postgres:\n image: postgres:16\n environment:\n POSTGRES_DB: speech_ai\n volumes:\n - postgres_data:/var/lib/postgresql/data"
+            detail: "Configurar infraestrutura de persistência utilizando PostgreSQL com volume persistente no docker-compose. Adicionar dependências Spring Data JPA, PostgreSQL Driver e Flyway no build.gradle. Configurar datasource, pool de conexões HikariCP, dialect do Hibernate e estratégia de migrations versionadas via Flyway. Garantir isolamento da infraestrutura na camada adapter preservando o domínio desacoplado do ORM e do banco de dados.",
+            snippet: "services:\n postgres:\n image: postgres:16\n environment:\n POSTGRES_DB: speech_ai\n POSTGRES_USER: postgres\n POSTGRES_PASSWORD: postgres\n ports:\n - \"5432:5432\"\n volumes:\n - postgres_data:/var/lib/postgresql/data\n\nspring:\n datasource:\n url: jdbc:postgresql://localhost:5432/speech_ai\n username: postgres\n jpa:\n hibernate:\n ddl-auto: validate"
           },
           {
             title: "3.2 — Entidade de Domínio e Portas de Persistência",
             desc: "Criar entidade Transcription e portas orientadas ao domínio para persistência e consulta.",
             tags: ["Hexagonal", "Domain", "Ports"],
-            done: false,
+            done: true,
             version: "3.2.0",
-            detail: "Criar entidade de domínio responsável por representar uma transcrição persistida contendo UUID, hash SHA-256 do áudio, conteúdo transcrito e timestamp de criação. Definir portas de saída desacopladas de framework para consulta por hash e persistência da transcrição. A modelagem prepara a aplicação para futura reutilização inteligente de transcrições sem acoplamento ao banco ou cache.",
-            snippet: "public interface TranscriptionGateway {\n Optional<Transcription> findByAudioHash(String hash);\n Transcription save(Transcription transcription);\n}"
+            detail: "Criar entidade de domínio responsável por representar uma transcrição persistida contendo UUID, hash SHA-256 do áudio, conteúdo transcrito e timestamp de criação. Definir portas de saída desacopladas de framework para consulta por hash e persistência da transcrição. A modelagem preserva o domínio puro sem dependência de JPA ou Spring e prepara a aplicação para futura reutilização inteligente de transcrições sem acoplamento ao banco ou cache.",
+            snippet: "public interface TranscriptionGateway {\n\n Optional<Transcription> findByAudioHash(String hash);\n\n Transcription save(Transcription transcription);\n}\n\npublic class Transcription {\n\n private UUID id;\n private String audioHash;\n private String content;\n private Instant createdAt;\n}"
           },
           {
             title: "3.3 — Serviço de Geração de AudioHash",
