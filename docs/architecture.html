@@ -426,6 +426,29 @@ com.erichiroshi.speechaihexagonal/
       </p>
     </section>
 
+    <section class="card">
+      <h2>Serviço de AudioHash</h2>
+    
+      <p>
+        A geração do hash SHA-256 foi isolada em um serviço reutilizável
+        da camada de aplicação para evitar dependência criptográfica direta
+        dentro do domínio.
+      </p>
+    
+      <div class="code-block">
+        <pre>
+    Application
+     └── AudioHashService
+            └── SHA-256
+    </pre>
+      </div>
+    
+      <p>
+        A abordagem mantém a arquitetura hexagonal desacoplada e prepara
+        a aplicação para deduplicação futura de transcrições.
+      </p>
+    </section>
+
     <footer>
       <p>speech-ai-hexagonal · <a href="https://github.com/erichiroshi" style="color:var(--primary)">Eric Hiroshi</a> ·
         v1.0.0</p>

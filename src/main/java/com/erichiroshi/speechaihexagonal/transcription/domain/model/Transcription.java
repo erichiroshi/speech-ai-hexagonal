@@ -3,6 +3,7 @@ package com.erichiroshi.speechaihexagonal.transcription.domain.model;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException;
 
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * Entidade de domínio que representa uma transcrição persistida.
@@ -11,11 +12,13 @@ import java.time.Instant;
  */
 public class Transcription {
 
+    private final UUID id;
     private final String audioHash;
     private final String text;
     private final Instant createdAt;
 
     public Transcription(String text) {
+        this.id = null;
         this.audioHash = null;
         this.text = text;
         this.createdAt = null;
@@ -25,10 +28,11 @@ public class Transcription {
     /**
      * Construtor para restauração a partir da persistência (todos os campos já existem).
      */
-    public Transcription(String audioHash, String text, Instant createdAt) {
+    public Transcription(UUID id, String audioHash, String text, Instant createdAt) {
         if (text == null || text.isBlank()) {
             throw new SpeechToTextException("A transcrição retornada está vazia");
         }
+        this.id = id;
         this.audioHash = audioHash;
         this.text = text;
         this.createdAt = createdAt;
@@ -39,7 +43,11 @@ public class Transcription {
      * Gera UUID e timestamp automaticamente.
      */
     public static Transcription newTranscription(String audioHash, String text) {
-        return new Transcription(audioHash, text, Instant.now());
+        return new Transcription(UUID.randomUUID(), audioHash, text, Instant.now());
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public String getAudioHash() {

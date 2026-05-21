@@ -38,6 +38,9 @@
   - [`POST /api/transcriptions`](#post-apitranscriptions)
 - [Persistência](#persistência)
   - [Tecnologias](#tecnologias)
+- [Audio Hash](#audio-hash)
+  - [Objetivos](#objetivos)
+  - [Exemplo](#exemplo)
 - [📊 Observabilidade](#-observabilidade)
 - [🧪 Testando a API](#-testando-a-api)
   - [Estratégia de testes](#estratégia-de-testes)
@@ -227,6 +230,29 @@ A aplicação agora possui infraestrutura PostgreSQL integrada com Spring Data J
 - Hibernate
 - Flyway
 - HikariCP
+
+---
+
+## Audio Hash
+
+A aplicação agora possui um serviço dedicado para geração determinística do `audioHash` utilizando SHA-256 hexadecimal.
+
+### Objetivos
+
+- Identificação única do conteúdo binário
+- Preparação para deduplicação futura
+- Reutilização entre use cases
+- Encapsulamento da lógica criptográfica
+
+### Exemplo
+
+```java
+MessageDigest md = MessageDigest.getInstance("SHA-256");
+
+byte[] hash = md.digest(audioBytes);
+
+return HexFormat.of().formatHex(hash);
+```
 
 ---
 

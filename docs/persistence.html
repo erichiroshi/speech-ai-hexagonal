@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Persistência — speech-ai-hexagonal</title>
 
@@ -97,15 +98,19 @@
         Cada áudio será convertido para um hash SHA-256 determinístico.
       </p>
 
-      <pre><code>audio bytes
-   ↓
-SHA-256
-   ↓
-audioHash
-   ↓
-consulta persistência
-   ↓
-reutiliza ou processa IA</code></pre>
+      <pre>
+        <code>
+        audio bytes
+          ↓
+        SHA-256
+          ↓
+        audioHash
+          ↓
+        consulta persistência
+          ↓
+        reutiliza ou processa IA
+      </code>
+    </pre>
 
       <p>
         O hash será utilizado futuramente como:
@@ -117,6 +122,31 @@ reutiliza ou processa IA</code></pre>
         <li>lookup rápido</li>
         <li>proteção contra reprocessamento</li>
       </ul>
+    </section>
+
+    <section class="card">
+      <h2>AudioHash e Deduplicação</h2>
+
+      <p>
+        O sistema agora possui um serviço dedicado para geração determinística
+        do <strong>audioHash</strong> utilizando SHA-256 hexadecimal baseado
+        no conteúdo binário do áudio.
+      </p>
+
+      <div class="code-block">
+        <pre>
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    
+    byte[] hash = md.digest(audioBytes);
+    
+    return HexFormat.of().formatHex(hash);
+    </pre>
+      </div>
+
+      <p>
+        O hash será utilizado futuramente para deduplicação de transcrições,
+        reuso inteligente e integração com mecanismos de cache.
+      </p>
     </section>
 
     <section class="card">
@@ -242,4 +272,5 @@ Persistir resultado</code></pre>
 
   </div>
 </body>
+
 </html>

@@ -272,19 +272,10 @@
             title: "3.3 — Serviço de Geração de AudioHash",
             desc: "Implementar serviço responsável por gerar SHA-256 hexadecimal do conteúdo binário.",
             tags: ["SHA-256", "Service", "Domain"],
-            done: false,
+            done: true,
             version: "3.3.0",
-            detail: "Criar componente isolado responsável pela geração determinística do audioHash utilizando SHA-256 hexadecimal baseado no conteúdo binário do áudio. O serviço será reutilizado pelos use cases de persistência e consulta, garantindo consistência na deduplicação futura e evitando dependência direta de bibliotecas criptográficas no domínio.",
+            detail: "Criar componente isolado responsável pela geração determinística do audioHash utilizando SHA-256 hexadecimal baseado no conteúdo binário do áudio. O serviço é reutilizável pelos use cases de persistência e consulta, garantindo consistência na deduplicação futura e evitando dependência direta de bibliotecas criptográficas no domínio.",
             snippet: "MessageDigest md = MessageDigest.getInstance(\"SHA-256\");\nbyte[] hash = md.digest(audioBytes);\nreturn HexFormat.of().formatHex(hash);"
-          },
-          {
-            title: "3.4 — SaveTranscriptionUseCase",
-            desc: "Implementar use case responsável pela persistência síncrona da transcrição.",
-            tags: ["UseCase", "Application", "SRP"],
-            done: false,
-            version: "3.4.0",
-            detail: "Implementar caso de uso dedicado exclusivamente à persistência da transcrição seguindo SRP. O fluxo deve receber o conteúdo do áudio, gerar audioHash, criar entidade de domínio e persistir utilizando a porta TranscriptionGateway. O use case permanece isolado de detalhes de infraestrutura e preparado para futura composição com cache ou mensageria.",
-            snippet: "// Fluxo:\n// 1. gerar hash SHA-256\n// 2. criar entidade Transcription\n// 3. salvar via gateway"
           },
           {
             title: "3.5 — GetTranscriptionByHashUseCase",
