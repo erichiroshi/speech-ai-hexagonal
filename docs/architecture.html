@@ -33,6 +33,7 @@
       <a href="index.html">Home</a>
       <a href="architecture.html">Arquitetura</a>
       <a href="quality.html">Qualidade</a>
+      <a href="persistence.html">Persistência</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
     </nav>
@@ -146,6 +147,61 @@ com.erichiroshi.speechaihexagonal/
             <td><code>OllamaLanguageModelAdapter</code> (Fase 6)</td>
             <td><span class="badge-plan">Fase 6</span></td>
           </tr>
+            <tr>
+        <td><code>TranscriptionGateway</code></td>
+        <td>—</td>
+        <td>—</td>
+        <td><code>JpaTranscriptionAdapter</code></td>
+        <td><span class="badge-plan">Fase 3</span></td>
+      </tr>
+
+      <tr>
+        <td><code>MetricsPort</code></td>
+        <td>—</td>
+        <td>—</td>
+        <td><code>PrometheusMetricsAdapter</code></td>
+        <td><span class="badge-plan">Fase 4</span></td>
+      </tr>
+
+      <tr>
+        <td><code>TracingPort</code></td>
+        <td>—</td>
+        <td>—</td>
+        <td><code>OpenTelemetryTracingAdapter</code></td>
+        <td><span class="badge-plan">Fase 4</span></td>
+      </tr>
+
+      <tr>
+        <td><code>ResiliencePort</code></td>
+        <td>—</td>
+        <td>—</td>
+        <td><code>Resilience4jAdapter</code></td>
+        <td><span class="badge-plan">Fase 5</span></td>
+      </tr>
+
+      <tr>
+        <td><code>CloudTranscriptionPort</code></td>
+        <td>—</td>
+        <td>—</td>
+        <td><code>OpenAiWhisperAdapter</code></td>
+        <td><span class="badge-plan">Fase 6</span></td>
+      </tr>
+
+      <tr>
+        <td><code>SummarizationPort</code></td>
+        <td>—</td>
+        <td>—</td>
+        <td><code>OllamaSummarizationAdapter</code></td>
+        <td><span class="badge-plan">Fase 7</span></td>
+      </tr>
+
+      <tr>
+        <td><code>TranscriptionEventPort</code></td>
+        <td>—</td>
+        <td>—</td>
+        <td><code>RabbitMqEventAdapter</code></td>
+        <td><span class="badge-plan">Fase 8</span></td>
+      </tr>
         </tbody>
       </table>
     </section>

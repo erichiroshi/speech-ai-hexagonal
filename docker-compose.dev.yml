@@ -1,5 +1,25 @@
 services:
 
+  # ── PostgreSQL ───────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16
+    container_name: postgres-dev
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-speech_ai}
+      POSTGRES_USER: ${DB_USERNAME:-speech_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-speech_pass}
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME:-speech_user} -d ${POSTGRES_DB:-speech_ai}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
   # ── Speaches (Whisper) ───────────────────────────────────────────────────────
   speaches:
     container_name: speaches-dev
@@ -20,7 +40,6 @@ services:
             - driver: nvidia
               count: all
               capabilities: [ gpu ]
-
     healthcheck:
       test: [ "CMD", "curl", "--fail", "http://0.0.0.0:8000/health" ]
       interval: 30s
@@ -33,11 +52,8 @@ services:
     container_name: sonarqube
     image: sonarqube:latest
     restart: unless-stopped
-
     ports:
-      - "9000:9000" # UI: http://localhost:9000   (admin/admin no primeiro acesso)
-
-    # Mapeando os diretórios para volumes com nomes fixos
+      - "9000:9000" # UI: http://localhost:9000 (admin/admin no primeiro acesso)
     volumes:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_extensions:/opt/sonarqube/extensions
@@ -51,6 +67,7 @@ services:
       start_period: 20s
 
 volumes:
+  postgres_data_dev:
   speaches_models:
   sonarqube_data:
   sonarqube_extensions:

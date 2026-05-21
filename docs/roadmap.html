@@ -84,6 +84,7 @@
       <a href="index.html">Home</a>
       <a href="architecture.html">Arquitetura</a>
       <a href="quality.html">Qualidade</a>
+      <a href="persistence.html">Persistência</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
     </nav>
@@ -245,6 +246,85 @@
         ]
       },
       {
+        id: 3, label: "Fase 3", title: "Persistência de Transcrições e Deduplicação por Hash",
+        color: "#7F77DD", badgeBg: "#1a1640", badgeColor: "#a5b4fc",
+        version: "v3.1.0–v3.7.0", taskCount: 7, done: false,
+        tasks: [
+          {
+            title: "3.1 — Setup PostgreSQL + JPA + Flyway",
+            desc: "Adicionar PostgreSQL, Spring Data JPA, Flyway e configurações iniciais da persistência.",
+            tags: ["PostgreSQL", "JPA", "Flyway"],
+            done: false,
+            version: "3.1.0",
+            detail: "Configurar infraestrutura de persistência utilizando PostgreSQL com volume persistente no docker-compose. Adicionar dependências Spring Data JPA, PostgreSQL Driver e Flyway no build.gradle. Configurar datasource, pool de conexões, dialect do Hibernate e estratégia de migrations versionadas via Flyway. Garantir isolamento da infraestrutura na camada adapter e preparar ambiente para evolução futura com cache e mensageria.",
+            snippet: "services:\n postgres:\n image: postgres:16\n environment:\n POSTGRES_DB: speech_ai\n volumes:\n - postgres_data:/var/lib/postgresql/data"
+          },
+          {
+            title: "3.2 — Entidade de Domínio e Portas de Persistência",
+            desc: "Criar entidade Transcription e portas orientadas ao domínio para persistência e consulta.",
+            tags: ["Hexagonal", "Domain", "Ports"],
+            done: false,
+            version: "3.2.0",
+            detail: "Criar entidade de domínio responsável por representar uma transcrição persistida contendo UUID, hash SHA-256 do áudio, conteúdo transcrito e timestamp de criação. Definir portas de saída desacopladas de framework para consulta por hash e persistência da transcrição. A modelagem prepara a aplicação para futura reutilização inteligente de transcrições sem acoplamento ao banco ou cache.",
+            snippet: "public interface TranscriptionGateway {\n Optional<Transcription> findByAudioHash(String hash);\n Transcription save(Transcription transcription);\n}"
+          },
+          {
+            title: "3.3 — Serviço de Geração de AudioHash",
+            desc: "Implementar serviço responsável por gerar SHA-256 hexadecimal do conteúdo binário.",
+            tags: ["SHA-256", "Service", "Domain"],
+            done: false,
+            version: "3.3.0",
+            detail: "Criar componente isolado responsável pela geração determinística do audioHash utilizando SHA-256 hexadecimal baseado no conteúdo binário do áudio. O serviço será reutilizado pelos use cases de persistência e consulta, garantindo consistência na deduplicação futura e evitando dependência direta de bibliotecas criptográficas no domínio.",
+            snippet: "MessageDigest md = MessageDigest.getInstance(\"SHA-256\");\nbyte[] hash = md.digest(audioBytes);\nreturn HexFormat.of().formatHex(hash);"
+          },
+          {
+            title: "3.4 — SaveTranscriptionUseCase",
+            desc: "Implementar use case responsável pela persistência síncrona da transcrição.",
+            tags: ["UseCase", "Application", "SRP"],
+            done: false,
+            version: "3.4.0",
+            detail: "Implementar caso de uso dedicado exclusivamente à persistência da transcrição seguindo SRP. O fluxo deve receber o conteúdo do áudio, gerar audioHash, criar entidade de domínio e persistir utilizando a porta TranscriptionGateway. O use case permanece isolado de detalhes de infraestrutura e preparado para futura composição com cache ou mensageria.",
+            snippet: "// Fluxo:\n// 1. gerar hash SHA-256\n// 2. criar entidade Transcription\n// 3. salvar via gateway"
+          },
+          {
+            title: "3.5 — GetTranscriptionByHashUseCase",
+            desc: "Implementar use case responsável pela busca de transcrição reutilizando audioHash.",
+            tags: ["UseCase", "Cache Strategy", "Application"],
+            done: false,
+            version: "3.5.0",
+            detail: "Implementar caso de uso focado exclusivamente na recuperação de transcrições por audioHash. O fluxo será utilizado futuramente como primeira camada de deduplicação antes do envio para IA, reduzindo chamadas desnecessárias e custo computacional. O comportamento permanece orientado ao domínio sem acoplamento direto ao PostgreSQL.",
+            snippet: "Optional<Transcription> result =\n gateway.findByAudioHash(audioHash);"
+          },
+          {
+            title: "3.6 — Adapter JPA + Repository PostgreSQL",
+            desc: "Implementar adapter de persistência utilizando Spring Data JPA e PostgreSQL.",
+            tags: ["Adapter", "JPA", "PostgreSQL"],
+            done: false,
+            version: "3.6.0",
+            detail: "Criar adapter de saída responsável por implementar a porta TranscriptionGateway utilizando Spring Data JPA. Mapear entidade JPA separada da entidade de domínio para preservar isolamento arquitetural. Implementar repository com busca indexada por audioHash e persistência transacional. Configurar unique constraint no hash para garantir reutilização consistente.",
+            snippet: "@Entity\n@Table(name = \"transcriptions\")\npublic class TranscriptionEntity {\n @Id UUID id;\n String audioHash;\n}"
+          },
+          {
+            title: "3.7 — Migration Flyway Inicial",
+            desc: "Criar migration inicial da tabela de transcrições e índices de busca.",
+            tags: ["Flyway", "Database", "Migration"],
+            done: false,
+            version: "3.7.0",
+            detail: "Criar migration versionada responsável pela estrutura inicial da tabela transcriptions contendo UUID, audio_hash, transcription e created_at. Configurar índice único para audio_hash visando otimização futura de deduplicação e busca rápida. Garantir rastreabilidade e evolução segura do schema desde o início do projeto.",
+            snippet: "CREATE TABLE transcriptions (\n id UUID PRIMARY KEY,\n audio_hash VARCHAR(64) UNIQUE,\n transcription TEXT\n);"
+          },
+          {
+            title: "3.8 — Endpoint de Persistência e Recuperação",
+            desc: "Adaptar endpoints para salvar e recuperar transcrições persistidas.",
+            tags: ["REST", "Controller", "API"],
+            done: false,
+            version: "3.8.0",
+            detail: "Atualizar camada de entrada HTTP para integrar os novos use cases de persistência e consulta por hash. O fluxo inicial deve verificar existência prévia da transcrição antes de processar novo áudio, preparando a aplicação para futura camada cache-first. Garantir desacoplamento entre controller e infraestrutura utilizando exclusivamente portas de entrada.",
+            snippet: "// Fluxo controller:\n// 1. gerar audioHash\n// 2. consultar transcrição existente\n// 3. reutilizar ou processar IA"
+          }
+        ]
+      },
+       {
         id: 3, label: "Fase 3", title: "Observabilidade",
         color: "#7F77DD", badgeBg: "#1a1640", badgeColor: "#a5b4fc",
         version: "v3.1.0–v3.4.0", taskCount: 4, done: false,
@@ -458,7 +538,7 @@
       }
     ];
 
-    let openPhases = new Set([1]);
+    let openPhases = new Set([3]);
     let activeTask = null;
 
     function renderPhases() {

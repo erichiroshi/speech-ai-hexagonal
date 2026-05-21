@@ -3,6 +3,9 @@ spring:
     activate:
       on-profile: test
 
+  flyway:
+    enabled: false
+
 speaches:
   base-url: http://localhost:9999
   model: Systran/faster-whisper-small

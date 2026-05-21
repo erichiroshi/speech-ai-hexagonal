@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Persistência — speech-ai-hexagonal</title>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="container">
+
+    <header>
+      <h1>🗄️ Persistência e Deduplicação</h1>
+
+      <p class="subtitle">
+        Fase 3 · PostgreSQL · Flyway · JPA · SHA-256
+      </p>
+    </header>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="architecture.html">Arquitetura</a>
+      <a href="quality.html">Qualidade</a>
+      <a href="persistence.html">Persistência</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
+    </nav>
+
+    <section class="card">
+      <h2>🎯 Objetivo</h2>
+
+      <p>
+        A Fase 3 introduz persistência desacoplada para transcrições,
+        permitindo reutilização futura baseada em hash SHA-256 do áudio.
+      </p>
+
+      <p>
+        A estratégia prepara o sistema para:
+      </p>
+
+      <ul>
+        <li>deduplicação de transcrições</li>
+        <li>redução de processamento de IA</li>
+        <li>cache-first futuro</li>
+        <li>event sourcing posterior</li>
+        <li>integração assíncrona com RabbitMQ</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>🏗️ Estratégia Arquitetural</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Camada</th>
+            <th>Responsabilidade</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>Domain</td>
+            <td>Entidade Transcription e regras de deduplicação</td>
+          </tr>
+
+          <tr>
+            <td>Application</td>
+            <td>Use cases de persistência e recuperação</td>
+          </tr>
+
+          <tr>
+            <td>Port</td>
+            <td>TranscriptionGateway desacoplado do banco</td>
+          </tr>
+
+          <tr>
+            <td>Adapter</td>
+            <td>Implementação JPA/PostgreSQL</td>
+          </tr>
+
+          <tr>
+            <td>Infrastructure</td>
+            <td>Datasource, Flyway e pool de conexões</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>🔐 Estratégia de Deduplicação</h2>
+
+      <p>
+        Cada áudio será convertido para um hash SHA-256 determinístico.
+      </p>
+
+      <pre><code>audio bytes
+   ↓
+SHA-256
+   ↓
+audioHash
+   ↓
+consulta persistência
+   ↓
+reutiliza ou processa IA</code></pre>
+
+      <p>
+        O hash será utilizado futuramente como:
+      </p>
+
+      <ul>
+        <li>chave de cache</li>
+        <li>identificador de deduplicação</li>
+        <li>lookup rápido</li>
+        <li>proteção contra reprocessamento</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>🧱 Estrutura da tabela</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Descrição</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>id</td>
+            <td>UUID</td>
+            <td>Identificador da transcrição</td>
+          </tr>
+
+          <tr>
+            <td>audio_hash</td>
+            <td>VARCHAR(64)</td>
+            <td>Hash SHA-256 único</td>
+          </tr>
+
+          <tr>
+            <td>transcription</td>
+            <td>TEXT</td>
+            <td>Conteúdo transcrito</td>
+          </tr>
+
+          <tr>
+            <td>created_at</td>
+            <td>TIMESTAMP</td>
+            <td>Data de persistência</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>🧩 Fluxo planejado</h2>
+
+      <pre><code>HTTP Request
+      ↓
+GetTranscriptionByHashUseCase
+      ↓
+TranscriptionGateway
+      ↓
+PostgreSQL
+
+(se não existir)
+
+Processar IA
+      ↓
+SaveTranscriptionUseCase
+      ↓
+Persistir resultado</code></pre>
+    </section>
+
+    <section class="card">
+      <h2>📍 Roadmap da Fase 3</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Versão</th>
+            <th>Item</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>3.1.0</td>
+            <td>Setup PostgreSQL + JPA + Flyway</td>
+          </tr>
+
+          <tr>
+            <td>3.2.0</td>
+            <td>Entidade de domínio e portas</td>
+          </tr>
+
+          <tr>
+            <td>3.3.0</td>
+            <td>Serviço de geração SHA-256</td>
+          </tr>
+
+          <tr>
+            <td>3.4.0</td>
+            <td>SaveTranscriptionUseCase</td>
+          </tr>
+
+          <tr>
+            <td>3.5.0</td>
+            <td>GetTranscriptionByHashUseCase</td>
+          </tr>
+
+          <tr>
+            <td>3.6.0</td>
+            <td>Migration Flyway inicial</td>
+          </tr>
+
+          <tr>
+            <td>3.7.0</td>
+            <td>Adapter JPA + Repository PostgreSQL</td>
+          </tr>
+
+          <tr>
+            <td>3.8.0</td>
+            <td>Endpoints de persistência e recuperação</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      <p>
+        speech-ai-hexagonal · Fase 3 · Persistência desacoplada
+      </p>
+    </footer>
+
+  </div>
+</body>
+</html>
