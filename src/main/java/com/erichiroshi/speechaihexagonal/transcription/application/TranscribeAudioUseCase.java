@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class TranscribeAudioUseCase implements TranscribeAudioPort {
 
-    private static final long MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+    private static final long MAX_FILE_SIZE_BYTES = 5L * 1024 * 1024; // 5 MB
     private static final java.util.Set<String> ALLOWED_CONTENT_TYPES = java.util.Set.of(
             "audio/wav", "audio/wave", "audio/mpeg", "audio/mp3", "audio/mp4", "audio/webm", "audio/ogg");
 

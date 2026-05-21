@@ -92,8 +92,9 @@ class TranscribeAudioUseCaseTest {
         @Test
         @DisplayName("deve lançar AudioValidationException quando audioBytes é nulo")
         void deveLancarQuandoNulo() {
-            assertThatThrownBy(() ->
-                    useCase.execute(new TranscriptionInput(null, FILENAME, CONTENT_TYPE)))
+            var input = new TranscriptionInput(null, FILENAME, CONTENT_TYPE);
+
+            assertThatThrownBy(() ->  useCase.execute(input))
                     .isInstanceOf(AudioValidationException.class)
                     .hasMessageContaining("vazio");
 
@@ -103,8 +104,9 @@ class TranscribeAudioUseCaseTest {
         @Test
         @DisplayName("deve lançar AudioValidationException quando audioBytes está vazio")
         void deveLancarQuandoVazio() {
-            assertThatThrownBy(() ->
-                    useCase.execute(new TranscriptionInput(new byte[0], FILENAME, CONTENT_TYPE)))
+            var input = new TranscriptionInput(new byte[0], FILENAME, CONTENT_TYPE);
+
+            assertThatThrownBy(() -> useCase.execute(input))
                     .isInstanceOf(AudioValidationException.class)
                     .hasMessageContaining("vazio");
         }
@@ -113,9 +115,9 @@ class TranscribeAudioUseCaseTest {
         @DisplayName("deve lançar AudioValidationException quando arquivo excede 5 MB")
         void deveLancarQuandoExcede5MB() {
             byte[] grande = new byte[6 * 1024 * 1024];
+            var input = new TranscriptionInput(grande, FILENAME, CONTENT_TYPE);
 
-            assertThatThrownBy(() ->
-                    useCase.execute(new TranscriptionInput(grande, FILENAME, CONTENT_TYPE)))
+            assertThatThrownBy(() -> useCase.execute(input))
                     .isInstanceOf(AudioValidationException.class)
                     .hasMessageContaining("5 MB");
         }
@@ -128,8 +130,9 @@ class TranscribeAudioUseCaseTest {
         @Test
         @DisplayName("deve lançar AudioValidationException quando Content-Type é inválido")
         void deveLancarParaContentTypeInvalido() {
-            assertThatThrownBy(() ->
-                    useCase.execute(new TranscriptionInput(VALID_AUDIO, "video.mp4", "video/mp4")))
+            var input = new TranscriptionInput(VALID_AUDIO, "video.mp4", "video/mp4");
+
+            assertThatThrownBy(() -> useCase.execute(input))
                     .isInstanceOf(AudioValidationException.class)
                     .hasMessageContaining("Content-Type não suportado");
         }
@@ -137,16 +140,17 @@ class TranscribeAudioUseCaseTest {
         @Test
         @DisplayName("deve lançar AudioValidationException quando Content-Type é nulo")
         void deveLancarParaContentTypeNulo() {
-            assertThatThrownBy(() ->
-                    useCase.execute(new TranscriptionInput(VALID_AUDIO, FILENAME, null)))
+            var input = new TranscriptionInput(VALID_AUDIO, FILENAME, null);
+
+            assertThatThrownBy(() -> useCase.execute(input))
                     .isInstanceOf(AudioValidationException.class);
         }
 
         @Test
         @DisplayName("deve lançar AudioValidationException quando Content-Type é application/octet-stream")
         void deveLancarParaOctetStream() {
-            assertThatThrownBy(() ->
-                    useCase.execute(new TranscriptionInput(VALID_AUDIO, FILENAME, "application/octet-stream")))
+            var input = new TranscriptionInput(VALID_AUDIO, FILENAME, "application/octet-stream");
+            assertThatThrownBy(() -> useCase.execute(input))
                     .isInstanceOf(AudioValidationException.class)
                     .hasMessageContaining("Content-Type não suportado");
         }
