@@ -1,18 +1,21 @@
 package com.erichiroshi.speechaihexagonal.transcription.application;
 
 import com.erichiroshi.speechaihexagonal.transcription.application.input.TranscriptionInput;
-import com.erichiroshi.speechaihexagonal.transcription.application.mapper.TranscriptionMapper;
 import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
+import com.erichiroshi.speechaihexagonal.transcription.domain.SpeechToTextPort;
+import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionRepository;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
-import com.erichiroshi.speechaihexagonal.transcription.domain.port.out.SpeechToTextPort;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,65 +26,71 @@ import static org.mockito.Mockito.*;
 @DisplayName("TranscribeAudioUseCase")
 class TranscribeAudioUseCaseTest {
 
-    @Mock
-    private SpeechToTextPort speechToTextPort;
-
-    @Mock
-    private TranscriptionMapper mapper;
-
-    @InjectMocks
-    private TranscribeAudioUseCase useCase;
-
     private static final byte[] VALID_AUDIO = "fake-audio-bytes".getBytes();
     private static final String FILENAME = "audio.wav";
     private static final String CONTENT_TYPE = "audio/wav";
+    @Mock
+    private SpeechToTextPort speechToTextPort;
+    @Mock
+    private TranscriptionRepository transcriptionRepository;
+    @InjectMocks
+    private TranscribeAudioUseCase useCase;
+
+    private static Transcription fakeDomain(String text) {
+        return new Transcription("a".repeat(64), text);
+    }
 
     @Nested
-    @DisplayName("caminho feliz")
-    class CaminhoFeliz {
+    @DisplayName("deduplicação")
+    class Deduplicacao {
 
         @Test
-        @DisplayName("deve transcrever e retornar output quando input é válido")
-        void deveTranscreveERetornarOutput() {
-            Transcription domain = new Transcription("Olá mundo");
-            TranscriptionOutput expected = new TranscriptionOutput("Olá mundo");
+        @DisplayName("deve retornar transcrição existente sem chamar IA quando hash já existe")
+        void deveReutilizarQuandoHashExiste() {
+            Transcription existing = fakeDomain("texto reutilizado");
 
-            when(speechToTextPort.transcribe(VALID_AUDIO, FILENAME, CONTENT_TYPE)).thenReturn(domain);
-            when(mapper.toOutput(domain)).thenReturn(expected);
+            when(transcriptionRepository.findByAudioHash(anyString())).thenReturn(Optional.of(existing));
 
             TranscriptionOutput result = useCase.execute(new TranscriptionInput(VALID_AUDIO, FILENAME, CONTENT_TYPE));
 
-            assertThat(result.text()).isEqualTo("Olá mundo");
+            assertThat(result.text()).isEqualTo("texto reutilizado");
+            verifyNoInteractions(speechToTextPort);
+            verify(transcriptionRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("deve chamar IA e persistir quando hash não existe")
+        void deveTranscreverEPersistirQuandoHashNaoExiste() {
+            Transcription fromAI = fakeDomain("texto novo da IA");
+            Transcription saved = fakeDomain("texto novo da IA");
+
+            when(transcriptionRepository.findByAudioHash(anyString())).thenReturn(Optional.empty());
+            when(speechToTextPort.transcribe(any(), any(), any())).thenReturn(fromAI);
+            when(transcriptionRepository.save(any())).thenReturn(saved);
+
+            TranscriptionOutput result = useCase.execute(new TranscriptionInput(VALID_AUDIO, FILENAME, CONTENT_TYPE));
+
+            assertThat(result.text()).isEqualTo("texto novo da IA");
             verify(speechToTextPort).transcribe(VALID_AUDIO, FILENAME, CONTENT_TYPE);
-            verify(mapper).toOutput(domain);
+            verify(transcriptionRepository).save(any());
         }
 
         @Test
-        @DisplayName("deve aceitar audio/mpeg como Content-Type válido")
-        void deveAceitarAudioMpeg() {
-            Transcription domain = new Transcription("texto mp3");
-            TranscriptionOutput expected = new TranscriptionOutput("texto mp3");
+        @DisplayName("deve persistir com o mesmo audioHash gerado para os bytes do áudio")
+        void devePersistirComHashCorreto() {
+            Transcription fromAI = fakeDomain("texto");
+            Transcription saved = fakeDomain("texto");
 
-            when(speechToTextPort.transcribe(any(), any(), eq("audio/mpeg"))).thenReturn(domain);
-            when(mapper.toOutput(domain)).thenReturn(expected);
+            when(transcriptionRepository.findByAudioHash(anyString())).thenReturn(Optional.empty());
+            when(speechToTextPort.transcribe(any(), any(), any())).thenReturn(fromAI);
+            when(transcriptionRepository.save(any())).thenReturn(saved);
 
-            TranscriptionOutput result = useCase.execute(
-                    new TranscriptionInput(VALID_AUDIO, "audio.mp3", "audio/mpeg"));
+            useCase.execute(new TranscriptionInput(VALID_AUDIO, FILENAME, CONTENT_TYPE));
 
-            assertThat(result.text()).isEqualTo("texto mp3");
-        }
+            ArgumentCaptor<Transcription> captor = ArgumentCaptor.forClass(Transcription.class);
+            verify(transcriptionRepository).save(captor.capture());
 
-        @Test
-        @DisplayName("deve aceitar audio/mp4 como Content-Type válido")
-        void deveAceitarAudioMp4() {
-            Transcription domain = new Transcription("texto mp4");
-            when(speechToTextPort.transcribe(any(), any(), eq("audio/mp4"))).thenReturn(domain);
-            when(mapper.toOutput(domain)).thenReturn(new TranscriptionOutput("texto mp4"));
-
-            TranscriptionOutput result = useCase.execute(
-                    new TranscriptionInput(VALID_AUDIO, "audio.mp4", "audio/mp4"));
-
-            assertThat(result.text()).isEqualTo("texto mp4");
+            assertThat(captor.getValue().getAudioHash()).hasSize(64).matches("[0-9a-f]+");
         }
     }
 
@@ -94,7 +103,7 @@ class TranscribeAudioUseCaseTest {
         void deveLancarQuandoNulo() {
             var input = new TranscriptionInput(null, FILENAME, CONTENT_TYPE);
 
-            assertThatThrownBy(() ->  useCase.execute(input))
+            assertThatThrownBy(() -> useCase.execute(input))
                     .isInstanceOf(AudioValidationException.class)
                     .hasMessageContaining("vazio");
 

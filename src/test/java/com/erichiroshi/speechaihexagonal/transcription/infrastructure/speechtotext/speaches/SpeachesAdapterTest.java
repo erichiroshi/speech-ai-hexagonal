@@ -2,7 +2,6 @@ package com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtot
 
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
-import com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtotext.speaches.mapper.SpeachesMapperImpl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -38,7 +37,7 @@ class SpeachesAdapterTest {
                 .baseUrl(properties.baseUrl())
                 .build();
 
-        adapter = new SpeachesAdapter(restClient, properties, new SpeachesMapperImpl());
+        adapter = new SpeachesAdapter(restClient, properties);
     }
 
     @AfterEach
@@ -47,7 +46,7 @@ class SpeachesAdapterTest {
     }
 
     @Nested
-    @DisplayName("caminho feliz")
+    @DisplayName("Cenários de sucesso (Caminho Feliz)")
     class CaminhoFeliz {
 
         @Test

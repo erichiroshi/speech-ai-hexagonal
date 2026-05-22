@@ -1,9 +1,9 @@
 package com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtotext.speaches;
 
+import com.erichiroshi.speechaihexagonal.transcription.domain.SpeechToTextPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
-import com.erichiroshi.speechaihexagonal.transcription.domain.port.out.SpeechToTextPort;
-import com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtotext.speaches.mapper.SpeachesMapper;
+import com.erichiroshi.speechaihexagonal.transcription.domain.service.AudioHashService;
 import com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtotext.speaches.response.SpeachesResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,15 +17,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-/**
- * Adapter de saída que implementa {@link SpeechToTextPort} via Speaches (Whisper local).
- *
- * <p>Endpoint alvo: {@code POST /v1/audio/transcriptions} (compatível OpenAI API).
- *
- * <p>Trade-off: gratuito, privado, sem latência de rede externa.
- * Requer container Speaches rodando localmente (GPU/CPU).
- * A Fase 5 adicionará {@code OpenAiSpeechAdapter} como alternativa cloud.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -36,7 +27,6 @@ public class SpeachesAdapter implements SpeechToTextPort {
 
     private final RestClient restClient;
     private final SpeachesProperties properties;
-    private final SpeachesMapper mapper;
 
     @Override
     public Transcription transcribe(byte[] audioBytes, String fileName, String contentType) {
@@ -77,7 +67,8 @@ public class SpeachesAdapter implements SpeechToTextPort {
 
             log.debug("Resposta Speaches | chars={}", speachesResponse.text().length());
 
-            return mapper.toDomain(speachesResponse);
+            String audioHash = AudioHashService.generate(audioBytes);
+            return speachesResponse.toDomain(audioHash);
 
         } catch (RestClientException ex) {
             // Captura quedas de conexão, timeouts e o shutdown do MockWebServer

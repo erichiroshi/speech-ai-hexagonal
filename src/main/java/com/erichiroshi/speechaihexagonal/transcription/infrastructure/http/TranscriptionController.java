@@ -4,7 +4,6 @@ import com.erichiroshi.speechaihexagonal.transcription.application.input.Transcr
 import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
 import com.erichiroshi.speechaihexagonal.transcription.application.port.in.TranscribeAudioPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
-import com.erichiroshi.speechaihexagonal.transcription.infrastructure.http.mapper.TranscriptionHttpMapper;
 import com.erichiroshi.speechaihexagonal.transcription.infrastructure.http.response.TranscriptionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,31 +25,26 @@ import java.io.IOException;
 public class TranscriptionController {
 
     private final TranscribeAudioPort transcribeAudioPort;
-    private final TranscriptionHttpMapper mapper;
 
     @PostMapping
     public ResponseEntity<TranscriptionResponse> transcription(@RequestPart(name = "file") MultipartFile file) {
 
-        TranscriptionInput input = toTranscriptionInput(file);
+        TranscriptionInput input = toInput(file);
 
         TranscriptionOutput output = transcribeAudioPort.execute(input);
 
-        return ResponseEntity.ok(mapper.toResponse(output));
+        return ResponseEntity.ok(TranscriptionResponse.toResponse(output));
     }
 
-    private TranscriptionInput toTranscriptionInput(MultipartFile file) {
-        byte[] audioBytes = extractBytes(file);
-        String fileName = file.getOriginalFilename();
-        String contentType = file.getContentType();
-        return new TranscriptionInput(audioBytes, fileName, contentType);
-    }
-
-    private byte[] extractBytes(MultipartFile file) {
+    private TranscriptionInput toInput(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new AudioValidationException("file", "Nenhum arquivo foi enviado");
         }
         try {
-            return file.getBytes();
+            return new TranscriptionInput(
+                    file.getBytes(),
+                    file.getOriginalFilename(),
+                    file.getContentType());
         } catch (IOException ex) {
             throw new AudioValidationException("file", "Não foi possível ler o arquivo: " + ex.getMessage());
         }
