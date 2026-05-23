@@ -315,45 +315,6 @@
           }
         ]
       },
-       {
-        id: 3, label: "Fase 3", title: "Observabilidade",
-        color: "#7F77DD", badgeBg: "#1a1640", badgeColor: "#a5b4fc",
-        version: "v3.1.0–v3.4.0", taskCount: 4, done: false,
-        tasks: [
-          {
-            title: "3.1 — Micrometer + Prometheus",
-            desc: "micrometer-registry-prometheus, TranscriptionMetrics, Counter + Timer + container Prometheus",
-            tags: ["Micrometer", "Prometheus", "Actuator"],
-            done: false,
-            version: null,
-            detail: "Dependência micrometer-registry-prometheus. TranscriptionMetrics centraliza métricas: Counter (success/error), Timer (speaches.duration com p50/p95/p99), DistributionSummary (file.size.bytes). Container Prometheus no docker-compose.yml.",
-            snippet: "Counter.builder(\"transcription.requests.total\")\n  .tag(\"status\",\"success\").register(registry);\nTimer.builder(\"transcription.speaches.duration\")\n  .publishPercentiles(0.5,0.95,0.99).register(registry);" },
-          {
-            title: "3.2 — Grafana + dashboards",
-            desc: "Container Grafana, datasource Prometheus, dashboard de transcrições (throughput, latência, erros)",
-            tags: ["Grafana", "Dashboard", "Datasource"],
-            done: false,
-            version: null,
-            detail: "Container Grafana no docker-compose.yml com provisioning automático (datasource.yml + dashboard.json via volumes). Dashboard inclui: req/min, cache hit rate, latência p95, erros por tipo. Pronto para importar no Grafana Cloud.",
-            snippet: "volumes:\n  - ./observability/grafana/provisioning:/etc/grafana/provisioning\n  - ./observability/grafana/dashboards:/var/lib/grafana/dashboards" },
-          {
-            title: "3.3 — Zipkin + OpenTelemetry tracing",
-            desc: "micrometer-tracing-bridge-otel, opentelemetry-exporter-zipkin, spans por request",
-            tags: ["Zipkin", "OTel", "Tracing"],
-            done: false,
-            version: null,
-            detail: "micrometer-tracing-bridge-otel + opentelemetry-exporter-zipkin. Trace propagado: Controller → Service → SpeachesAdapter. MDC automaticamente populado com traceId/spanId. Container Zipkin no compose.",
-            snippet: "management.tracing.sampling.probability=1.0\nmanagement.zipkin.tracing.endpoint=http://zipkin:9411/api/v2/spans" },
-          {
-            title: "3.4 — Logs estruturados JSON + MDC",
-            desc: "logstash-logback-encoder, MdcLoggingFilter com requestId, traceId, fileName",
-            tags: ["Logback", "JSON", "MDC"],
-            done: false,
-            version: null,
-            detail: "logback-spring.xml: perfil prod → JSON (logstash-logback-encoder), dev → texto colorido. MdcLoggingFilter popula requestId (UUID), httpMethod, uri. TranscriptionService adiciona fileName, fileSizeBytes. Header X-Request-Id em todas as respostas.",
-            snippet: "// MDC fields in prod (JSON):\n// requestId, traceId, spanId, httpMethod, uri, fileName" }
-        ]
-      },
       {
         id: 4, label: "Fase 4", title: "Cache Redis (SHA-256)",
         color: "#0e7490", badgeBg: "#083344", badgeColor: "#67e8f9",
@@ -417,6 +378,45 @@
             version: null,
             detail: "Atualiza dashboard Grafana com painel de resiliência: estado do circuit breaker, tentativas de retry, chamadas rejeitadas pelo bulkhead. Testes com WireMock simulam Speaches lento/falhando para validar comportamento dos mecanismos.",
             snippet: "// WireMock: simula timeout no Speaches\nwireMock.stubFor(post(\"/v1/audio/transcriptions\")\n  .willReturn(aResponse().withFixedDelay(5000)));" }
+        ]
+      },
+      {
+        id: 6, label: "Fase 6", title: "Observabilidade",
+        color: "#7F77DD", badgeBg: "#1a1640", badgeColor: "#a5b4fc",
+        version: "v3.1.0–v3.4.0", taskCount: 4, done: false,
+        tasks: [
+          {
+            title: "3.1 — Micrometer + Prometheus",
+            desc: "micrometer-registry-prometheus, TranscriptionMetrics, Counter + Timer + container Prometheus",
+            tags: ["Micrometer", "Prometheus", "Actuator"],
+            done: false,
+            version: null,
+            detail: "Dependência micrometer-registry-prometheus. TranscriptionMetrics centraliza métricas: Counter (success/error), Timer (speaches.duration com p50/p95/p99), DistributionSummary (file.size.bytes). Container Prometheus no docker-compose.yml.",
+            snippet: "Counter.builder(\"transcription.requests.total\")\n  .tag(\"status\",\"success\").register(registry);\nTimer.builder(\"transcription.speaches.duration\")\n  .publishPercentiles(0.5,0.95,0.99).register(registry);" },
+          {
+            title: "3.2 — Grafana + dashboards",
+            desc: "Container Grafana, datasource Prometheus, dashboard de transcrições (throughput, latência, erros)",
+            tags: ["Grafana", "Dashboard", "Datasource"],
+            done: false,
+            version: null,
+            detail: "Container Grafana no docker-compose.yml com provisioning automático (datasource.yml + dashboard.json via volumes). Dashboard inclui: req/min, cache hit rate, latência p95, erros por tipo. Pronto para importar no Grafana Cloud.",
+            snippet: "volumes:\n  - ./observability/grafana/provisioning:/etc/grafana/provisioning\n  - ./observability/grafana/dashboards:/var/lib/grafana/dashboards" },
+          {
+            title: "3.3 — Zipkin + OpenTelemetry tracing",
+            desc: "micrometer-tracing-bridge-otel, opentelemetry-exporter-zipkin, spans por request",
+            tags: ["Zipkin", "OTel", "Tracing"],
+            done: false,
+            version: null,
+            detail: "micrometer-tracing-bridge-otel + opentelemetry-exporter-zipkin. Trace propagado: Controller → Service → SpeachesAdapter. MDC automaticamente populado com traceId/spanId. Container Zipkin no compose.",
+            snippet: "management.tracing.sampling.probability=1.0\nmanagement.zipkin.tracing.endpoint=http://zipkin:9411/api/v2/spans" },
+          {
+            title: "3.4 — Logs estruturados JSON + MDC",
+            desc: "logstash-logback-encoder, MdcLoggingFilter com requestId, traceId, fileName",
+            tags: ["Logback", "JSON", "MDC"],
+            done: false,
+            version: null,
+            detail: "logback-spring.xml: perfil prod → JSON (logstash-logback-encoder), dev → texto colorido. MdcLoggingFilter popula requestId (UUID), httpMethod, uri. TranscriptionService adiciona fileName, fileSizeBytes. Header X-Request-Id em todas as respostas.",
+            snippet: "// MDC fields in prod (JSON):\n// requestId, traceId, spanId, httpMethod, uri, fileName" }
         ]
       },
       {

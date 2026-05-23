@@ -2,7 +2,7 @@ package com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtot
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "speaches")
+@ConfigurationProperties(prefix = "app.speaches")
 public record SpeachesProperties(
         String baseUrl,
         String model

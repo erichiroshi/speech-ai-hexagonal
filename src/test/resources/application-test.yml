@@ -1,6 +1,5 @@
 spring:
   config:
-    import: ""
     activate:
       on-profile: test
 
@@ -20,10 +19,6 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-
-speaches:
-  base-url: http://localhost:9999
-  model: Systran/faster-whisper-small
 
 logging:
   level:

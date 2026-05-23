@@ -15,6 +15,14 @@ spring:
         format_sql: true
     show-sql: true
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      # timeout de conexão/leitura — falha rápida, não bloqueia o request
+      connect-timeout: 2s
+      timeout: 2s
+
 management:
   endpoints:
     web:
@@ -24,9 +32,13 @@ management:
     health:
       show-details: always
 
-speaches:
-  base-url: ${SPEACHES_BASE_URL:http://localhost:8000}
-  model: ${SPEACHES_MODEL:Systran/faster-whisper-small}
+app:
+  speaches:
+    base-url: ${SPEACHES_BASE_URL:http://localhost:8000}
+    model: ${SPEACHES_MODEL:Systran/faster-whisper-small}
+  cache:
+    transcription:
+      ttl-hours: ${CACHE_TTL_HOURS:1}
 
 logging:
   level:

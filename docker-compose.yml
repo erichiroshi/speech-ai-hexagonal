@@ -19,6 +19,21 @@ services:
       retries: 5
       start_period: 20s
 
+  redis:
+    container_name: redis
+    image: redis:8.6.2-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes # persistência AOF
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   speaches:
     image: ghcr.io/speaches-ai/speaches:latest-cuda
     container_name: speaches
@@ -65,6 +80,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
   speaches_models:
 
 networks:

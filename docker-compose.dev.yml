@@ -20,9 +20,22 @@ services:
       retries: 5
       start_period: 20s
 
+  # ── Redis ────────────────────────────────────────────────────────────────────
+  redis:
+    container_name: redis
+    image: redis:8.6.2-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   # ── Speaches (Whisper) ───────────────────────────────────────────────────────
   speaches:
-    container_name: speaches-dev
+    container_name: speaches
     # imagem com suporte a CUDA
     image: ghcr.io/speaches-ai/speaches:latest-cuda
     restart: unless-stopped
