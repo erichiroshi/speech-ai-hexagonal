@@ -6,6 +6,7 @@ import com.erichiroshi.speechaihexagonal.transcription.domain.SpeechToTextPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionRepository;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
+import com.erichiroshi.speechaihexagonal.transcription.domain.model.TranscriptionId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,18 +29,18 @@ import static org.mockito.Mockito.*;
 @DisplayName("TranscribeAudioUseCase")
 class TranscribeAudioUseCaseTest {
 
-    private static final byte[] VALID_AUDIO = "fake-audio-bytes".getBytes();
-    private static final String FILENAME = "audio.wav";
-    private static final String CONTENT_TYPE = "audio/wav";
-    @Mock
-    private SpeechToTextPort speechToTextPort;
-    @Mock
-    private TranscriptionRepository transcriptionRepository;
+    @Mock private SpeechToTextPort speechToTextPort;
+    @Mock private TranscriptionRepository transcriptionRepository;
+
     @InjectMocks
     private TranscribeAudioUseCase useCase;
 
+    private static final byte[] VALID_AUDIO = "fake-audio-bytes".getBytes();
+    private static final String FILENAME = "audio.wav";
+    private static final String CONTENT_TYPE = "audio/wav";
+
     private static Transcription fakeDomain(String text) {
-        return new Transcription("a".repeat(64), text);
+        return new Transcription(new TranscriptionId(UUID.randomUUID()), "a".repeat(64), text, LocalDateTime.now());
     }
 
     @Nested

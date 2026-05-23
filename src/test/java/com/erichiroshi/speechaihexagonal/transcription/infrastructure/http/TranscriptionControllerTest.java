@@ -15,6 +15,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -27,16 +30,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("TranscriptionController")
 class TranscriptionControllerTest {
 
-    private static final byte[] AUDIO_BYTES = "fake-audio".getBytes();
-    private static final String AUDIO_HASH = "a".repeat(64);
-
     @Autowired
     private MockMvc mockMvc;
+
     @MockitoBean
-    private TranscribeAudioPort transcribeAudio;
+    private TranscribeAudioPort transcribeAudioPort;
+
+    private static final byte[] AUDIO_BYTES = "fake-audio".getBytes();
+    private static final UUID FIXED_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final LocalDateTime FIXED_TIME = LocalDateTime.parse("2025-01-01T10:00:00");
+    private static final String AUDIO_HASH = "a".repeat(64);
 
     private static TranscriptionOutput fakeOutput(String text) {
-        return new TranscriptionOutput(AUDIO_HASH, text);
+        return new TranscriptionOutput(FIXED_ID, AUDIO_HASH, text, FIXED_TIME);
     }
 
     @Nested
@@ -46,7 +52,7 @@ class TranscriptionControllerTest {
         @Test
         @DisplayName("deve retornar 200 com transcrição nova")
         void deveRetornar200ComTranscricaoNova() throws Exception {
-            when(transcribeAudio.execute(any())).thenReturn(fakeOutput("Olá, texto transcrito."));
+            when(transcribeAudioPort.execute(any())).thenReturn(fakeOutput("Olá, texto transcrito."));
 
             mockMvc.perform(multipart("/api/transcriptions")
                             .file(new MockMultipartFile("file", "audio.wav", "audio/wav", AUDIO_BYTES)))
@@ -57,7 +63,7 @@ class TranscriptionControllerTest {
         @Test
         @DisplayName("deve retornar 200 com transcrição reutilizada (dedup transparente ao controller)")
         void deveRetornar200ComTranscricaoReutilizada() throws Exception {
-            when(transcribeAudio.execute(any())).thenReturn(fakeOutput("Texto reutilizado"));
+            when(transcribeAudioPort.execute(any())).thenReturn(fakeOutput("Texto reutilizado"));
 
             mockMvc.perform(multipart("/api/transcriptions")
                             .file(new MockMultipartFile("file", "audio.wav", "audio/wav", AUDIO_BYTES)))
@@ -68,7 +74,7 @@ class TranscriptionControllerTest {
         @Test
         @DisplayName("deve aceitar audio/mpeg")
         void deveAceitarMpeg() throws Exception {
-            when(transcribeAudio.execute(any())).thenReturn(fakeOutput("Texto mp3"));
+            when(transcribeAudioPort.execute(any())).thenReturn(fakeOutput("Texto mp3"));
 
             mockMvc.perform(multipart("/api/transcriptions")
                             .file(new MockMultipartFile("file", "audio.mp3", "audio/mpeg", AUDIO_BYTES)))
@@ -84,7 +90,7 @@ class TranscriptionControllerTest {
         @Test
         @DisplayName("deve retornar 400 quando Content-Type é inválido")
         void deveRetornar400ParaContentTypeInvalido() throws Exception {
-            when(transcribeAudio.execute(any()))
+            when(transcribeAudioPort.execute(any()))
                     .thenThrow(new AudioValidationException("file", "Content-Type não suportado: 'video/mp4'"));
 
             mockMvc.perform(multipart("/api/transcriptions")
@@ -97,7 +103,7 @@ class TranscriptionControllerTest {
         @Test
         @DisplayName("deve retornar 400 quando arquivo excede 5 MB")
         void deveRetornar400QuandoArquivoGrande() throws Exception {
-            when(transcribeAudio.execute(any()))
+            when(transcribeAudioPort.execute(any()))
                     .thenThrow(new AudioValidationException("file", "Arquivo excede o tamanho máximo de 5 MB"));
 
             mockMvc.perform(multipart("/api/transcriptions")
@@ -114,7 +120,7 @@ class TranscriptionControllerTest {
         @Test
         @DisplayName("deve retornar 502 quando Speaches falha")
         void deveRetornar502QuandoSpeachesFalha() throws Exception {
-            when(transcribeAudio.execute(any()))
+            when(transcribeAudioPort.execute(any()))
                     .thenThrow(new SpeechToTextException("Speaches retornou erro 500"));
 
             mockMvc.perform(multipart("/api/transcriptions")
@@ -126,7 +132,7 @@ class TranscriptionControllerTest {
         @Test
         @DisplayName("deve retornar 500 para exceção genérica")
         void deveRetornar500ParaExcecaoGenerica() throws Exception {
-            when(transcribeAudio.execute(any()))
+            when(transcribeAudioPort.execute(any()))
                     .thenThrow(new RuntimeException("Erro inesperado"));
 
             mockMvc.perform(multipart("/api/transcriptions")

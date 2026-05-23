@@ -12,7 +12,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 @Repository
-public class PostgresTranscriptionRepository implements TranscriptionRepository {
+public class TranscriptionPostgresRepository implements TranscriptionRepository {
 
     private final TranscriptionJpaRepository repository;
 
@@ -21,13 +21,12 @@ public class PostgresTranscriptionRepository implements TranscriptionRepository 
 
         log.debug("Buscando transcrição no banco | audioHash={}", audioHash);
 
-        return repository.findByAudioHash(audioHash).map(TranscriptionEntity::toDomain);
+        return repository.findByAudioHash(audioHash)
+                .map(TranscriptionEntity::toDomain);
     }
 
     @Override
     public Transcription save(Transcription transcription) {
-
-        log.debug("Salvando transcription {}", transcription);
 
         TranscriptionEntity entity = TranscriptionEntity.toEntity(transcription);
         TranscriptionEntity saved = repository.save(entity);

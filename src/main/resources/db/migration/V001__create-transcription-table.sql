@@ -3,10 +3,12 @@
 
 CREATE TABLE transcriptions
 (
-    audio_hash    VARCHAR(64) NOT NULL,
-    transcription TEXT        NOT NULL,
-    created_at    TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
-    CONSTRAINT pk_transcriptions PRIMARY KEY (audio_hash),
+    id            UUID         NOT NULL,
+    audio_hash    VARCHAR(64)  NOT NULL,
+    transcription TEXT         NOT NULL,
+    created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
+
+    CONSTRAINT pk_transcriptions PRIMARY KEY (id),
     CONSTRAINT uq_transcriptions_audio_hash UNIQUE (audio_hash)
 );
 

@@ -38,11 +38,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-flyway'
     implementation 'org.flywaydb:flyway-database-postgresql'
 
-    //Mapstruct
-    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
-    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
-    testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
-
     // Test
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -68,7 +63,6 @@ ext{
     coverageExclusions = [
             '**/config/**',
             '**/dto/**',
-            '**/mapper/**',
             '**/*Application*',
             '**/input**', '**/output**',
             '**/response**',
@@ -82,8 +76,8 @@ ext{
 // ── Jacoco ─────────────────────────────────────────────────────────────
 jacocoTestReport {
     reports {
-        xml.required  = true   // consumido pelo SonarCloud e Codecov
-        html.required = true   // leitura local em build/reports/jacoco/
+        xml.required  = true
+        html.required = true
     }
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
@@ -97,7 +91,7 @@ jacocoTestReport {
 jacocoTestCoverageVerification {
     violationRules {
         rule {
-            limit { minimum = 0.60 }
+            limit { minimum = 0.65 }
         }
     }
 }

@@ -3,7 +3,6 @@ package com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtot
 import com.erichiroshi.speechaihexagonal.transcription.domain.SpeechToTextPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
-import com.erichiroshi.speechaihexagonal.transcription.domain.service.AudioHashService;
 import com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtotext.speaches.response.SpeachesResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,18 +59,15 @@ public class SpeachesAdapter implements SpeechToTextPort {
                     )
                     .body(SpeachesResponse.class);
 
-            // Garantia técnica de infraestrutura caso o client retorne nulo de forma inesperada
             if (speachesResponse == null || speachesResponse.text() == null || speachesResponse.text().isBlank()) {
                 throw new SpeechToTextException("Speaches retornou resposta vazia ou nula");
             }
 
             log.debug("Resposta Speaches | chars={}", speachesResponse.text().length());
 
-            String audioHash = AudioHashService.generate(audioBytes);
-            return speachesResponse.toDomain(audioHash);
+            return speachesResponse.toDomain();
 
         } catch (RestClientException ex) {
-            // Captura quedas de conexão, timeouts e o shutdown do MockWebServer
             log.error("Falha de comunicação com o servidor Speaches", ex);
             throw new SpeechToTextException("Servidor inacessível ou falha de rede", ex);
         }

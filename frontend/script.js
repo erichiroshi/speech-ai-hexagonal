@@ -124,8 +124,7 @@ els.analyzeBtn.addEventListener('click', async () => {
       throw new Error(data.detail || data.title || `HTTP ${res.status}`);
     }
 
-    const summaryText = data.summary || data.text || '';
-    els.analysisText.textContent = summaryText;
+    els.analysisText.textContent = data.summary || data.text || '';
 
     if (data.model) {
       els.modelBadge.textContent = data.model;

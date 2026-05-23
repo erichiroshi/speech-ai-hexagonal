@@ -1,42 +1,36 @@
 package com.erichiroshi.speechaihexagonal.transcription.infrastructure.persistence.postgres;
 
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
-import com.erichiroshi.speechaihexagonal.transcription.infrastructure.persistence.postgres.entity.TranscriptionEntity;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Optional;
 
+import static com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription.newTranscription;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
 @Testcontainers
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Transactional
+@DataJpaTest
 @ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(TranscriptionPostgresRepository.class)
+@Transactional
 @DisplayName("PostgresTranscriptionRepository Test com Testcontainers")
-class PostgresTranscriptionRepositoryTest {
+class TranscriptionPostgresRepositoryTest {
 
     @Autowired
-    private TranscriptionJpaRepository jpaRepository;
-
-    private PostgresTranscriptionRepository postgresRepository;
+    private TranscriptionPostgresRepository postgresRepository;
 
     private static final String VALID_HASH = "a".repeat(64);
     private static final String VALID_TEXT = "Texto transcrito com sucesso via banco real.";
-
-    @BeforeEach
-    void setUp() {
-        this.postgresRepository = new PostgresTranscriptionRepository(jpaRepository);
-    }
 
     @Nested
     @DisplayName("Cenários de salvamento (save)")
@@ -45,18 +39,21 @@ class PostgresTranscriptionRepositoryTest {
         @Test
         @DisplayName("Deve salvar o registro no banco PostgreSQL real e retornar o domínio")
         void deveSalvarTranscriptionComSucesso() {
-            Transcription domainModel = new Transcription(VALID_HASH, VALID_TEXT);
+            Transcription domainModel = newTranscription(VALID_HASH, VALID_TEXT);
 
             Transcription savedDomain = postgresRepository.save(domainModel);
 
             assertThat(savedDomain).isNotNull();
             assertThat(savedDomain.getAudioHash()).isEqualTo(VALID_HASH);
             assertThat(savedDomain.getText()).isEqualTo(VALID_TEXT);
+            assertThat(savedDomain.getCreatedAt()).isNotNull();
 
             // Validação física de leitura na tabela do PostgreSQL
-            Optional<TranscriptionEntity> dbCheck = jpaRepository.findByAudioHash(VALID_HASH);
+            Optional<Transcription> dbCheck = postgresRepository.findByAudioHash(VALID_HASH);
+
             assertThat(dbCheck).isPresent();
             assertThat(dbCheck.get().getText()).isEqualTo(VALID_TEXT);
+            assertThat(dbCheck.get().getId()).isEqualTo(savedDomain.getId());
         }
     }
 
@@ -67,9 +64,8 @@ class PostgresTranscriptionRepositoryTest {
         @Test
         @DisplayName("Deve retornar a transcrição mapeada para o domínio quando existir no Postgres")
         void deveRetornarTranscriptionQuandoHashExistir() {
-            Transcription domainModel = new Transcription(VALID_HASH, VALID_TEXT);
-            TranscriptionEntity entity = TranscriptionEntity.toEntity(domainModel);
-            jpaRepository.saveAndFlush(entity); // força o commit na transação do container
+            Transcription domainModel = newTranscription(VALID_HASH, VALID_TEXT);
+            postgresRepository.save(domainModel);
 
             Optional<Transcription> result = postgresRepository.findByAudioHash(VALID_HASH);
 
@@ -83,6 +79,16 @@ class PostgresTranscriptionRepositoryTest {
         void deveRetornarOptionalVazioQuandoHashNaoExistir() {
             Optional<Transcription> result = postgresRepository.findByAudioHash("hash-inexistente-no-postgres");
 
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        @DisplayName("deve retornar vazio para hash de áudio diferente")
+        void deveRetornarVazioParaHashDiferente() {
+            Transcription saved = Transcription.newTranscription("b".repeat(64), "outro texto");
+            postgresRepository.save(saved);
+
+            Optional<Transcription> result = postgresRepository.findByAudioHash("c".repeat(64));
             assertThat(result).isEmpty();
         }
     }

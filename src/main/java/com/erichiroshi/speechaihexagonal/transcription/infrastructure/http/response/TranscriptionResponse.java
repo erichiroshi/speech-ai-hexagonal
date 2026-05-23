@@ -2,9 +2,17 @@ package com.erichiroshi.speechaihexagonal.transcription.infrastructure.http.resp
 
 import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
 
-public record TranscriptionResponse(String audioHash, String audioTranscription) {
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public record TranscriptionResponse(
+        UUID id,
+        String audioHash,
+        String audioTranscription,
+        LocalDateTime createdAt
+) {
 
     public static TranscriptionResponse toResponse(TranscriptionOutput output) {
-        return new TranscriptionResponse(output.audioHash(), output.text());
+        return new TranscriptionResponse(output.id(), output.audioHash(), output.text(), output.createdAt());
     }
 }

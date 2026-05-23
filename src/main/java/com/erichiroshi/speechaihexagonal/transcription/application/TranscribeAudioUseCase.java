@@ -33,7 +33,6 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
         String audioHash = AudioHashService.generate(input.audioBytes());
 
         // 1. Deduplicação - reutiliza se já existe
-        log.debug("Consultando transcrição existente | audioHash={}", audioHash);
         Optional<Transcription> existing = transcriptionRepository.findByAudioHash(audioHash);
         if (existing.isPresent()) {
             log.info("Transcription existente | audioHash={}", audioHash);
@@ -41,17 +40,16 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
         }
 
         // 2. Transcrever via IA
-        log.info("Iniciando transcrição | filename={} | size={}bytes", input.fileName(), input.audioBytes().length);
+        log.info("Cache miss total — transcrevendo | filename={} | size={}bytes", input.fileName(), input.audioBytes().length);
 
         Transcription transcribed = speechToTextPort.transcribe(
                 input.audioBytes(), input.fileName(), input.contentType());
 
-        log.info("Transcrição concluída | filename={} | chars={}", input.fileName(), transcribed.getText().length());
-
         // 3. Persistir
-        Transcription saved = transcriptionRepository.save(transcribed);
+        Transcription toSave = Transcription.newTranscription(audioHash, transcribed.getText());
+        Transcription saved = transcriptionRepository.save(toSave);
 
-        log.info("Transcrição persistida | audioHash: {}", saved.getAudioHash());
+        log.info("Transcrição concluída e persistida | audioHash: {}", saved.getAudioHash());
 
         return TranscriptionOutput.toOutput(saved);
     }

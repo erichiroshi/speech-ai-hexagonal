@@ -120,7 +120,7 @@ body {
 
 /* Drop zone */
 .drop-zone {
-  border: 1.5px dashed var(--border-2);
+  border: 2px dashed var(--border-2);
   border-radius: var(--radius);
   padding: 28px 20px;
   display: flex;

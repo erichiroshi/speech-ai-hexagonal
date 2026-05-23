@@ -1,11 +1,25 @@
 spring:
   config:
+    import: ""
     activate:
       on-profile: test
 
   datasource:
-    url: jdbc:tc:postgresql:16:///testdb
+    url: jdbc:tc:postgresql:16:///speech_ai_test
+    username: test
+    password: test
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
 
 speaches:
   base-url: http://localhost:9999
@@ -13,4 +27,5 @@ speaches:
 
 logging:
   level:
+    root: WARN
     com.erichiroshi: DEBUG

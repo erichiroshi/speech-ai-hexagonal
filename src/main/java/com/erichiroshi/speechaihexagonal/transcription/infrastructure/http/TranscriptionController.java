@@ -15,10 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-/**
- * Adapter de entrada REST para o use case de transcrição.
- * Responsável apenas por receber a requisição HTTP e delegar ao use case via porta.
- */
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/transcriptions")

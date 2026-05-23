@@ -2,9 +2,11 @@ package com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtot
 
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 
+import static com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription.newTranscription;
+
 public record SpeachesResponse(String text) {
 
-    public Transcription toDomain(String audioHash) {
-        return new Transcription(audioHash, text);
+    public Transcription toDomain() {
+        return newTranscription("", this.text);
     }
 }
