@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.erichiroshi'
-version = '4.1.0'
+version = '4.2.0'
 description = 'Serviço de transcrição de áudio com análise inteligente via LLM'
 
 java {

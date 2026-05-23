@@ -21,13 +21,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(TranscriptionPostgresRepository.class)
+@Import(PostgresRepositoryAdapter.class)
 @Transactional
 @DisplayName("PostgresTranscriptionRepository Test com Testcontainers")
-class TranscriptionPostgresRepositoryTest {
+class PostgresRepositoryAdapterTest {
 
     @Autowired
-    private TranscriptionPostgresRepository postgresRepository;
+    private PostgresRepositoryAdapter postgresRepository;
 
     private static final String VALID_HASH = "a".repeat(64);
     private static final String VALID_TEXT = "Texto transcrito com sucesso via banco real.";

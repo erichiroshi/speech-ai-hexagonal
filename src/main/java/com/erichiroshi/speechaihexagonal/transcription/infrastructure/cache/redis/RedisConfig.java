@@ -1,6 +1,6 @@
 package com.erichiroshi.speechaihexagonal.transcription.infrastructure.cache.redis;
 
-import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
+import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -13,14 +13,14 @@ import tools.jackson.databind.ObjectMapper;
 public class RedisConfig {
 
     @Bean
-    RedisTemplate<String, TranscriptionOutput> redisTemplate(
+    RedisTemplate<String, Transcription> redisTemplate(
             RedisConnectionFactory connectionFactory,
             ObjectMapper objectMapper) {
 
         var keySerializer   = new StringRedisSerializer();
-        var valueSerializer = new JacksonJsonRedisSerializer<>(objectMapper, TranscriptionOutput.class);
+        var valueSerializer = new JacksonJsonRedisSerializer<>(objectMapper, Transcription.class);
 
-        RedisTemplate<String, TranscriptionOutput> template = new RedisTemplate<>();
+        RedisTemplate<String, Transcription> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(keySerializer);
         template.setValueSerializer(valueSerializer);

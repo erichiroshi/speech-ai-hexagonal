@@ -4,9 +4,9 @@ import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcriptio
 
 import java.util.Optional;
 
-public interface TranscriptionRepository {
+public interface TranscriptionCachePort {
 
-    Optional<Transcription> findByAudioHash(String audioHash);
+    Optional<Transcription> get(String audioHash);
 
-    Transcription save(Transcription transcription);
+    void put(String audioHash, Transcription transcription);
 }

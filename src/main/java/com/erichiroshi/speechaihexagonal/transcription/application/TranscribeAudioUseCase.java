@@ -4,7 +4,8 @@ import com.erichiroshi.speechaihexagonal.transcription.application.input.Transcr
 import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
 import com.erichiroshi.speechaihexagonal.transcription.application.port.in.TranscribeAudioPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.SpeechToTextPort;
-import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionRepository;
+import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionCachePort;
+import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionRepositoryPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 import com.erichiroshi.speechaihexagonal.transcription.domain.service.AudioHashService;
@@ -24,7 +25,8 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
             "audio/wav", "audio/wave", "audio/mpeg", "audio/mp3", "audio/mp4", "audio/webm", "audio/ogg");
 
     private final SpeechToTextPort speechToTextPort;
-    private final TranscriptionRepository transcriptionRepository;
+    private final TranscriptionRepositoryPort transcriptionRepositoryPort;
+    private final TranscriptionCachePort transcriptionCachePort;
 
     @Override
     public TranscriptionOutput execute(TranscriptionInput input) {
@@ -32,22 +34,28 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
 
         String audioHash = AudioHashService.generate(input.audioBytes());
 
-        // 1. Deduplicação - reutiliza se já existe
-        Optional<Transcription> existing = transcriptionRepository.findByAudioHash(audioHash);
+        // 1.verfica cache
+        Optional<Transcription> transcription = transcriptionCachePort.get(audioHash);
+        if (transcription.isPresent()) {
+            return TranscriptionOutput.toOutput(transcription.get());
+        }
+
+        // 2. Deduplicação - reutiliza se já existe
+        Optional<Transcription> existing = transcriptionRepositoryPort.findByAudioHash(audioHash);
         if (existing.isPresent()) {
-            log.info("Transcription existente | audioHash={}", audioHash);
             return TranscriptionOutput.toOutput(existing.get());
         }
 
-        // 2. Transcrever via IA
+        // 3. Transcrever via IA
         log.info("Cache miss total — transcrevendo | filename={} | size={}bytes", input.fileName(), input.audioBytes().length);
 
         Transcription transcribed = speechToTextPort.transcribe(
                 input.audioBytes(), input.fileName(), input.contentType());
 
-        // 3. Persistir
+        // 4. Persistir no postgres e no cache
         Transcription toSave = Transcription.newTranscription(audioHash, transcribed.getText());
-        Transcription saved = transcriptionRepository.save(toSave);
+        Transcription saved = transcriptionRepositoryPort.save(toSave);
+        transcriptionCachePort.put(saved.getAudioHash(), saved);
 
         log.info("Transcrição concluída e persistida | audioHash: {}", saved.getAudioHash());
 

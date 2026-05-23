@@ -3,7 +3,8 @@ package com.erichiroshi.speechaihexagonal.transcription.application;
 import com.erichiroshi.speechaihexagonal.transcription.application.input.TranscriptionInput;
 import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
 import com.erichiroshi.speechaihexagonal.transcription.domain.SpeechToTextPort;
-import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionRepository;
+import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionCachePort;
+import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionRepositoryPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.TranscriptionId;
@@ -30,7 +31,8 @@ import static org.mockito.Mockito.*;
 class TranscribeAudioUseCaseTest {
 
     @Mock private SpeechToTextPort speechToTextPort;
-    @Mock private TranscriptionRepository transcriptionRepository;
+    @Mock private TranscriptionRepositoryPort transcriptionRepositoryPort;
+    @Mock private TranscriptionCachePort transcriptionCachePort;
 
     @InjectMocks
     private TranscribeAudioUseCase useCase;
@@ -52,13 +54,13 @@ class TranscribeAudioUseCaseTest {
         void deveReutilizarQuandoHashExiste() {
             Transcription existing = fakeDomain("texto reutilizado");
 
-            when(transcriptionRepository.findByAudioHash(anyString())).thenReturn(Optional.of(existing));
+            when(transcriptionRepositoryPort.findByAudioHash(anyString())).thenReturn(Optional.of(existing));
 
             TranscriptionOutput result = useCase.execute(new TranscriptionInput(VALID_AUDIO, FILENAME, CONTENT_TYPE));
 
             assertThat(result.text()).isEqualTo("texto reutilizado");
             verifyNoInteractions(speechToTextPort);
-            verify(transcriptionRepository, never()).save(any());
+            verify(transcriptionRepositoryPort, never()).save(any());
         }
 
         @Test
@@ -67,15 +69,15 @@ class TranscribeAudioUseCaseTest {
             Transcription fromAI = fakeDomain("texto novo da IA");
             Transcription saved = fakeDomain("texto novo da IA");
 
-            when(transcriptionRepository.findByAudioHash(anyString())).thenReturn(Optional.empty());
+            when(transcriptionRepositoryPort.findByAudioHash(anyString())).thenReturn(Optional.empty());
             when(speechToTextPort.transcribe(any(), any(), any())).thenReturn(fromAI);
-            when(transcriptionRepository.save(any())).thenReturn(saved);
+            when(transcriptionRepositoryPort.save(any())).thenReturn(saved);
 
             TranscriptionOutput result = useCase.execute(new TranscriptionInput(VALID_AUDIO, FILENAME, CONTENT_TYPE));
 
             assertThat(result.text()).isEqualTo("texto novo da IA");
             verify(speechToTextPort).transcribe(VALID_AUDIO, FILENAME, CONTENT_TYPE);
-            verify(transcriptionRepository).save(any());
+            verify(transcriptionRepositoryPort).save(any());
         }
 
         @Test
@@ -84,14 +86,14 @@ class TranscribeAudioUseCaseTest {
             Transcription fromAI = fakeDomain("texto");
             Transcription saved = fakeDomain("texto");
 
-            when(transcriptionRepository.findByAudioHash(anyString())).thenReturn(Optional.empty());
+            when(transcriptionRepositoryPort.findByAudioHash(anyString())).thenReturn(Optional.empty());
             when(speechToTextPort.transcribe(any(), any(), any())).thenReturn(fromAI);
-            when(transcriptionRepository.save(any())).thenReturn(saved);
+            when(transcriptionRepositoryPort.save(any())).thenReturn(saved);
 
             useCase.execute(new TranscriptionInput(VALID_AUDIO, FILENAME, CONTENT_TYPE));
 
             ArgumentCaptor<Transcription> captor = ArgumentCaptor.forClass(Transcription.class);
-            verify(transcriptionRepository).save(captor.capture());
+            verify(transcriptionRepositoryPort).save(captor.capture());
 
             assertThat(captor.getValue().getAudioHash()).hasSize(64).matches("[0-9a-f]+");
         }

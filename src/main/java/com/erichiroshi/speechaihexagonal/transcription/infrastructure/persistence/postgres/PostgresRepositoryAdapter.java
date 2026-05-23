@@ -1,6 +1,6 @@
 package com.erichiroshi.speechaihexagonal.transcription.infrastructure.persistence.postgres;
 
-import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionRepository;
+import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionRepositoryPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 import com.erichiroshi.speechaihexagonal.transcription.infrastructure.persistence.postgres.entity.TranscriptionEntity;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 @Repository
-public class TranscriptionPostgresRepository implements TranscriptionRepository {
+public class PostgresRepositoryAdapter implements TranscriptionRepositoryPort {
 
     private final TranscriptionJpaRepository repository;
 
@@ -22,16 +22,23 @@ public class TranscriptionPostgresRepository implements TranscriptionRepository 
         log.debug("Buscando transcrição no banco | audioHash={}", audioHash);
 
         return repository.findByAudioHash(audioHash)
-                .map(TranscriptionEntity::toDomain);
+                .map(transcriptionEntity -> {
+                    log.info("Transcription existente | audioHash={}", audioHash);
+                    transcriptionEntity.toDomain();
+                    return transcriptionEntity.toDomain();
+                });
     }
 
     @Override
     public Transcription save(Transcription transcription) {
 
+        log.debug("Salvando transcrição no banco");
+
         TranscriptionEntity entity = TranscriptionEntity.toEntity(transcription);
         TranscriptionEntity saved = repository.save(entity);
 
-        log.debug("Transcrição salva no banco {}", saved.getAudioHash());
+        log.info("Transcrição salva no banco {}", saved.getAudioHash());
+
 
         return saved.toDomain();
     }
