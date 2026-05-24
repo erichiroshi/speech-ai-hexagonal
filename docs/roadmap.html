@@ -93,10 +93,10 @@
     <p class="hint">Clique em uma fase para expandir · Clique em uma tarefa para ver detalhes</p>
 
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>Fase 1 — concluída (v1.0.0)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#185FA5"></div>Fase 2 —  (v2.x)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#7F77DD"></div>Fase 3 —  (v3.x)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#0e7490"></div>Fase 4 —  (v4.x)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>Fase 1 — concluída (v1.7.0)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#185FA5"></div>Fase 2 — concluída (v2.5.0)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7F77DD"></div>Fase 3 — concluída (v3.7.0)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0e7490"></div>Fase 4 — concluída (v4.3.0)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#0F6E56"></div>Fase 5 —  (v5.x)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#15803d"></div>Fase 6 —  (v6.x)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>Fase 7 —  (v7.x)</div>
@@ -248,7 +248,7 @@
       {
         id: 3, label: "Fase 3", title: "Persistência de Transcrições e Deduplicação por Hash",
         color: "#7F77DD", badgeBg: "#1a1640", badgeColor: "#a5b4fc",
-        version: "v3.1.0–v3.7.0", taskCount: 7, done: false,
+        version: "v3.1.0–v3.7.0", taskCount: 7, done: true,
         tasks: [
           {
             title: "3.1 — Setup PostgreSQL + JPA + Flyway",
@@ -281,7 +281,7 @@
             title: "3.5 — GetTranscriptionByHashUseCase",
             desc: "Implementar use case responsável pela busca de transcrição reutilizando audioHash.",
             tags: ["UseCase", "Cache Strategy", "Application"],
-            done: false,
+            done: true,
             version: "3.5.0",
             detail: "Implementar caso de uso focado exclusivamente na recuperação de transcrições por audioHash. O fluxo será utilizado futuramente como primeira camada de deduplicação antes do envio para IA, reduzindo chamadas desnecessárias e custo computacional. O comportamento permanece orientado ao domínio sem acoplamento direto ao PostgreSQL.",
             snippet: "Optional<Transcription> result =\n gateway.findByAudioHash(audioHash);"
@@ -290,7 +290,7 @@
             title: "3.6 — Adapter JPA + Repository PostgreSQL",
             desc: "Implementar adapter de persistência utilizando Spring Data JPA e PostgreSQL.",
             tags: ["Adapter", "JPA", "PostgreSQL"],
-            done: false,
+            done: true,
             version: "3.6.0",
             detail: "Criar adapter de saída responsável por implementar a porta TranscriptionGateway utilizando Spring Data JPA. Mapear entidade JPA separada da entidade de domínio para preservar isolamento arquitetural. Implementar repository com busca indexada por audioHash e persistência transacional. Configurar unique constraint no hash para garantir reutilização consistente.",
             snippet: "@Entity\n@Table(name = \"transcriptions\")\npublic class TranscriptionEntity {\n @Id UUID id;\n String audioHash;\n}"
@@ -299,33 +299,23 @@
             title: "3.7 — Migration Flyway Inicial",
             desc: "Criar migration inicial da tabela de transcrições e índices de busca.",
             tags: ["Flyway", "Database", "Migration"],
-            done: false,
+            done: true,
             version: "3.7.0",
             detail: "Criar migration versionada responsável pela estrutura inicial da tabela transcriptions contendo UUID, audio_hash, transcription e created_at. Configurar índice único para audio_hash visando otimização futura de deduplicação e busca rápida. Garantir rastreabilidade e evolução segura do schema desde o início do projeto.",
             snippet: "CREATE TABLE transcriptions (\n id UUID PRIMARY KEY,\n audio_hash VARCHAR(64) UNIQUE,\n transcription TEXT\n);"
-          },
-          {
-            title: "3.8 — Endpoint de Persistência e Recuperação",
-            desc: "Adaptar endpoints para salvar e recuperar transcrições persistidas.",
-            tags: ["REST", "Controller", "API"],
-            done: false,
-            version: "3.8.0",
-            detail: "Atualizar camada de entrada HTTP para integrar os novos use cases de persistência e consulta por hash. O fluxo inicial deve verificar existência prévia da transcrição antes de processar novo áudio, preparando a aplicação para futura camada cache-first. Garantir desacoplamento entre controller e infraestrutura utilizando exclusivamente portas de entrada.",
-            snippet: "// Fluxo controller:\n// 1. gerar audioHash\n// 2. consultar transcrição existente\n// 3. reutilizar ou processar IA"
           }
         ]
       },
       {
         id: 4, label: "Fase 4", title: "Cache Redis (SHA-256)",
         color: "#0e7490", badgeBg: "#083344", badgeColor: "#67e8f9",
-        version: "v4.1.0–v4.3.0", taskCount: 3, done: false,
+        version: "v4.1.0–v4.3.0", taskCount: 3, done: true,
         tasks: [
           {
             title: "4.1 — Dependência + RedisConfig",
             desc: "spring-data-redis, RedisTemplate<String,Transcription>, serialização JSON",
             tags: ["Redis", "RedisConfig", "Jackson"],
-            done: false,
-            version: null,
+            done: true,
             detail: "Adiciona spring-boot-starter-data-redis. RedisConfig configura RedisTemplate com Jackson2JsonRedisSerializer para Transcription. Configura TTL padrão via AppProperties. Redis no docker-compose.dev.yml.",
             snippet: "implementation 'org.springframework.boot:spring-boot-starter-data-redis'\n\n@Bean\nRedisTemplate<String, Transcription> redisTemplate(RedisConnectionFactory f) {...}"
           },
@@ -333,8 +323,7 @@
             title: "4.2 — RedisCacheAdapter",
             desc: "Implementa TranscriptionCachePort com prefixo de chave e TTL configurável",
             tags: ["Adapter", "TTL", "Port"],
-            done: false,
-            version: null,
+            done: true,
             detail: "RedisCacheAdapter implements TranscriptionCachePort. Chave: 'transcription:{hash}'. TTL configurável via @ConfigurationProperties. @Primary substitui InMemoryCacheAdapter em produção. InMemory continua ativo com @Profile('test').",
             snippet: "// Chave: \"transcription:\" + hash\n// TTL: configurável via app.cache.transcription-ttl-hours\n// InMemory permanece para testes unitários"
           },
@@ -342,8 +331,7 @@
             title: "4.3 — Testes de integração com Testcontainers",
             desc: "RedisContainer, RedisCacheAdapterIT, integração ponta-a-ponta com hash real",
             tags: ["Testcontainers", "Integration", "Redis"],
-            done: false,
-            version: null,
+            done: true,
             detail: "RedisCacheAdapterIT usa @Testcontainers + RedisContainer. Testa save/findByHash/TTL com Redis real. RedisServiceIT sobe contexto completo com Speaches mockado e Redis via Testcontainers. Cobertura alvo: 65%.",
             snippet: "@Testcontainers\nclass RedisCacheAdapterIT {\n  @Container\n  static RedisContainer redis = new RedisContainer(\"redis:7\");\n}"
           }
@@ -529,7 +517,7 @@
       }
     ];
 
-    let openPhases = new Set([3]);
+    let openPhases = new Set([5]);
     let activeTask = null;
 
     function renderPhases() {
