@@ -37,7 +37,7 @@ class InMemoryCacheAdapterTest {
         Transcription mockTranscription = newTranscription(audioHash, AUDIO_TRANSCRIPTION); // Certifique-se de preencher os campos se necessário
         cacheMemory.put(audioHash, mockTranscription);
 
-        Optional<Transcription> resultado = cacheAdapter.get(audioHash);
+        Optional<Transcription> resultado = cacheAdapter.findByAudioHash(audioHash);
 
         assertTrue(resultado.isPresent());
         assertEquals(mockTranscription, resultado.get());
@@ -48,7 +48,7 @@ class InMemoryCacheAdapterTest {
     void deveRetornarOptionalEmptyQuandoHashNaoExistir() {
         String audioHash = "inexistente";
 
-        Optional<Transcription> resultado = cacheAdapter.get(audioHash);
+        Optional<Transcription> resultado = cacheAdapter.findByAudioHash(audioHash);
 
         assertTrue(resultado.isEmpty());
     }
@@ -59,7 +59,7 @@ class InMemoryCacheAdapterTest {
         String audioHash = "xyz789hash";
         Transcription transcription = newTranscription(audioHash, AUDIO_TRANSCRIPTION);
 
-        cacheAdapter.put(audioHash, transcription);
+        cacheAdapter.save(transcription);
 
         assertTrue(cacheMemory.containsKey(audioHash));
         assertEquals(transcription, cacheMemory.get(audioHash));

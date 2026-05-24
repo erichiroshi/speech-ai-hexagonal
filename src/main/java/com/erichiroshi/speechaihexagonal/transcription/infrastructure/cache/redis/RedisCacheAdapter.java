@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.Optional;
 
 @Primary
@@ -21,11 +20,11 @@ public class RedisCacheAdapter implements TranscriptionCachePort {
 
     private static final String KEY_PREFIX = "transcription:";
 
-    private final RedisProperties properties;
+    private final RedisProperties redisProperties;
     private final RedisTemplate<String, Transcription> redisTemplate;
 
     @Override
-    public Optional<Transcription> get(String audioHash) {
+    public Optional<Transcription> findByAudioHash(String audioHash) {
         log.debug("Buscando transcrição do cache");
 
         String key = KEY_PREFIX + audioHash;
@@ -33,9 +32,13 @@ public class RedisCacheAdapter implements TranscriptionCachePort {
         try {
             Transcription cached = redisTemplate.opsForValue().get(key);
             if (cached != null) {
-                log.info("Cache HIT | key={}", key);
+                log.info("Cache HIT (Redis) | key={}", key);
+                return Optional.of(cached);
             }
-            return Optional.ofNullable(cached);
+
+            log.debug("Cache miss (Redis) | key={}", key);
+            return Optional.empty();
+
         } catch (Exception ex) {
             log.warn("Falha ao ler cache Redis — continuando sem cache | error={}", ex.getMessage());
             return Optional.empty();
@@ -43,14 +46,13 @@ public class RedisCacheAdapter implements TranscriptionCachePort {
     }
 
     @Override
-    public void put(String audioHash, Transcription transcription) {
-        log.debug("Salvando no cache");
-        String key = KEY_PREFIX + audioHash;
-        long ttlHours = properties.transcription().ttlHours();
+    public void save(Transcription transcription) {
+        log.debug("Salvando no cache (REDIS)");
+        String key = KEY_PREFIX + transcription.getAudioHash();
 
         try {
-            redisTemplate.opsForValue().set(key, transcription, Duration.ofHours(ttlHours));
-            log.info("Cache STORE | key={} | ttl={}h", key, ttlHours);
+            redisTemplate.opsForValue().set(key, transcription, redisProperties.transcriptionTtl());
+            log.info("Cache STORE | key={} | ttl={}h", key, redisProperties.transcriptionTtl());
 
         } catch (Exception ex) {
             log.warn("Falha ao gravar cache Redis | error={}", ex.getMessage());

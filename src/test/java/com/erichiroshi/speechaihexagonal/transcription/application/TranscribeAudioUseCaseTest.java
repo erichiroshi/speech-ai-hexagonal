@@ -30,6 +30,10 @@ import static org.mockito.Mockito.*;
 @DisplayName("TranscribeAudioUseCase")
 class TranscribeAudioUseCaseTest {
 
+    private static final byte[] VALID_AUDIO = "fake-audio-bytes".getBytes();
+    private static final String FILENAME = "audio.wav";
+    private static final String CONTENT_TYPE = "audio/wav";
+
     @Mock private SpeechToTextPort speechToTextPort;
     @Mock private TranscriptionRepositoryPort transcriptionRepositoryPort;
     @Mock private TranscriptionCachePort transcriptionCachePort;
@@ -37,55 +41,69 @@ class TranscribeAudioUseCaseTest {
     @InjectMocks
     private TranscribeAudioUseCase useCase;
 
-    private static final byte[] VALID_AUDIO = "fake-audio-bytes".getBytes();
-    private static final String FILENAME = "audio.wav";
-    private static final String CONTENT_TYPE = "audio/wav";
-
     private static Transcription fakeDomain(String text) {
         return new Transcription(new TranscriptionId(UUID.randomUUID()), "a".repeat(64), text, LocalDateTime.now());
     }
 
     @Nested
-    @DisplayName("deduplicação")
-    class Deduplicacao {
+    @DisplayName("cache-aside — camadas de deduplicação")
+    class CacheAside {
 
         @Test
-        @DisplayName("deve retornar transcrição existente sem chamar IA quando hash já existe")
-        void deveReutilizarQuandoHashExiste() {
-            Transcription existing = fakeDomain("texto reutilizado");
+        @DisplayName("deve retornar do cache Redis sem consultar banco ou IA")
+        void deveRetornarDoCacheRedis() {
+            Transcription cached = fakeDomain("texto do cache");
 
-            when(transcriptionRepositoryPort.findByAudioHash(anyString())).thenReturn(Optional.of(existing));
+            when(transcriptionCachePort.findByAudioHash(anyString())).thenReturn(Optional.of(cached));
 
             TranscriptionOutput result = useCase.execute(new TranscriptionInput(VALID_AUDIO, FILENAME, CONTENT_TYPE));
 
-            assertThat(result.text()).isEqualTo("texto reutilizado");
+            assertThat(result.text()).isEqualTo("texto do cache");
+            verifyNoInteractions(transcriptionRepositoryPort);
             verifyNoInteractions(speechToTextPort);
-            verify(transcriptionRepositoryPort, never()).save(any());
         }
 
         @Test
-        @DisplayName("deve chamar IA e persistir quando hash não existe")
-        void deveTranscreverEPersistirQuandoHashNaoExiste() {
-            Transcription fromAI = fakeDomain("texto novo da IA");
-            Transcription saved = fakeDomain("texto novo da IA");
+        @DisplayName("deve consultar banco quando cache miss, popular cache e retornar")
+        void devePopularCacheAoRetornarDoBanco() {
+            Transcription fromDb = fakeDomain("texto do banco");
 
+            when(transcriptionCachePort.findByAudioHash(anyString())).thenReturn(Optional.empty());
+            when(transcriptionRepositoryPort.findByAudioHash(anyString())).thenReturn(Optional.of(fromDb));
+
+            TranscriptionOutput result = useCase.execute(new TranscriptionInput(VALID_AUDIO, FILENAME, CONTENT_TYPE));
+
+            assertThat(result.text()).isEqualTo("texto do banco");
+            verify(transcriptionCachePort).save(fromDb);
+            verifyNoInteractions(speechToTextPort);
+        }
+
+        @Test
+        @DisplayName("deve chamar IA, persistir e popular cache quando cache e banco miss")
+        void deveChamarIAEPersistirQuandoCacheEBancoMiss() {
+            Transcription fromAI = fakeDomain("texto da IA");
+            Transcription saved = fakeDomain("texto da IA");
+
+            when(transcriptionCachePort.findByAudioHash(anyString())).thenReturn(Optional.empty());
             when(transcriptionRepositoryPort.findByAudioHash(anyString())).thenReturn(Optional.empty());
             when(speechToTextPort.transcribe(any(), any(), any())).thenReturn(fromAI);
             when(transcriptionRepositoryPort.save(any())).thenReturn(saved);
 
             TranscriptionOutput result = useCase.execute(new TranscriptionInput(VALID_AUDIO, FILENAME, CONTENT_TYPE));
 
-            assertThat(result.text()).isEqualTo("texto novo da IA");
+            assertThat(result.text()).isEqualTo("texto da IA");
             verify(speechToTextPort).transcribe(VALID_AUDIO, FILENAME, CONTENT_TYPE);
             verify(transcriptionRepositoryPort).save(any());
+            verify(transcriptionCachePort).save(saved);
         }
 
         @Test
-        @DisplayName("deve persistir com o mesmo audioHash gerado para os bytes do áudio")
+        @DisplayName("deve persistir com audioHash SHA-256 de 64 chars gerado dos bytes")
         void devePersistirComHashCorreto() {
             Transcription fromAI = fakeDomain("texto");
             Transcription saved = fakeDomain("texto");
 
+            when(transcriptionCachePort.findByAudioHash(anyString())).thenReturn(Optional.empty());
             when(transcriptionRepositoryPort.findByAudioHash(anyString())).thenReturn(Optional.empty());
             when(speechToTextPort.transcribe(any(), any(), any())).thenReturn(fromAI);
             when(transcriptionRepositoryPort.save(any())).thenReturn(saved);
@@ -94,7 +112,6 @@ class TranscribeAudioUseCaseTest {
 
             ArgumentCaptor<Transcription> captor = ArgumentCaptor.forClass(Transcription.class);
             verify(transcriptionRepositoryPort).save(captor.capture());
-
             assertThat(captor.getValue().getAudioHash()).hasSize(64).matches("[0-9a-f]+");
         }
     }
@@ -112,7 +129,7 @@ class TranscribeAudioUseCaseTest {
                     .isInstanceOf(AudioValidationException.class)
                     .hasMessageContaining("vazio");
 
-            verifyNoInteractions(speechToTextPort);
+            verifyNoInteractions(speechToTextPort, transcriptionRepositoryPort, transcriptionCachePort);
         }
 
         @Test

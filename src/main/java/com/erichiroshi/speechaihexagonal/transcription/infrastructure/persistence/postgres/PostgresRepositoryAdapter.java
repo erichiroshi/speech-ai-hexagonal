@@ -23,8 +23,7 @@ public class PostgresRepositoryAdapter implements TranscriptionRepositoryPort {
 
         return repository.findByAudioHash(audioHash)
                 .map(transcriptionEntity -> {
-                    log.info("Transcription existente | audioHash={}", audioHash);
-                    transcriptionEntity.toDomain();
+                    log.info("Transcription existente (DB) | audioHash={}", audioHash);
                     return transcriptionEntity.toDomain();
                 });
     }

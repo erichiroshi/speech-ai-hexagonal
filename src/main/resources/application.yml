@@ -69,8 +69,7 @@ app:
     model: ${SPEACHES_MODEL}
 # ── Cache  ────────────────────────────────────────────────────────────
   cache:
-    transcription:
-      ttl-hours: ${CACHE_TTL_HOURS:24}
+    transcription-ttl: ${CACHE_TTL:24}
 
 # ── Logging ────────────────────────────────────────────────────────────
 logging:

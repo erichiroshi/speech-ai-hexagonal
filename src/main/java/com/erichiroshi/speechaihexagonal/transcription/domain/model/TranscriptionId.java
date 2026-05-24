@@ -10,10 +10,9 @@ public record TranscriptionId(UUID id) {
         this(UUID.randomUUID());
     }
 
-    public TranscriptionId(UUID id) {
-        if (id == null ) {
+    public TranscriptionId {
+        if (id == null) {
             throw new SpeechToTextException("TranscriptionId está nulo");
         }
-        this.id = id;
     }
 }

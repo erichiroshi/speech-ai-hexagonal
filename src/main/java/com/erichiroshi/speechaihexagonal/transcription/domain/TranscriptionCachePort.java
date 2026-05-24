@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface TranscriptionCachePort {
 
-    Optional<Transcription> get(String audioHash);
+    Optional<Transcription> findByAudioHash(String audioHash);
 
-    void put(String audioHash, Transcription transcription);
+    void save(Transcription transcription);
 }

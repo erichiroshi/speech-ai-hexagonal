@@ -37,8 +37,7 @@ app:
     base-url: ${SPEACHES_BASE_URL:http://localhost:8000}
     model: ${SPEACHES_MODEL:Systran/faster-whisper-small}
   cache:
-    transcription:
-      ttl-hours: ${CACHE_TTL_HOURS:1}
+    transcription-ttl: ${CACHE_TTL:1}
 
 logging:
   level:

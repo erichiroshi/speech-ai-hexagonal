@@ -2,12 +2,15 @@ package com.erichiroshi.speechaihexagonal.transcription.infrastructure.cache.red
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.time.Duration;
+
 @ConfigurationProperties(prefix = "app.cache")
 public record RedisProperties(
-        TranscriptionProperties transcription
+        Duration transcriptionTtl
 ) {
-    public record TranscriptionProperties(
-            Integer ttlHours
-    ) {
+    public RedisProperties {
+        if (transcriptionTtl == null) {
+            transcriptionTtl = Duration.ofHours(24);
+        }
     }
 }

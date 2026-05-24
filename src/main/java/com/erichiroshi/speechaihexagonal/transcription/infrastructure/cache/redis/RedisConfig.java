@@ -13,12 +13,11 @@ import tools.jackson.databind.ObjectMapper;
 public class RedisConfig {
 
     @Bean
-    RedisTemplate<String, Transcription> redisTemplate(
-            RedisConnectionFactory connectionFactory,
-            ObjectMapper objectMapper) {
+    RedisTemplate<String, Transcription> redisTemplate(RedisConnectionFactory connectionFactory,
+                                                       ObjectMapper objectMapper) {
 
-        var keySerializer   = new StringRedisSerializer();
-        var valueSerializer = new JacksonJsonRedisSerializer<>(objectMapper, Transcription.class);
+        StringRedisSerializer keySerializer = new StringRedisSerializer();
+        JacksonJsonRedisSerializer<Transcription> valueSerializer = new JacksonJsonRedisSerializer<>(objectMapper, Transcription.class);
 
         RedisTemplate<String, Transcription> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);

@@ -12,6 +12,7 @@ import com.erichiroshi.speechaihexagonal.transcription.domain.service.AudioHashS
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -28,22 +29,24 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
     private final TranscriptionRepositoryPort transcriptionRepositoryPort;
     private final TranscriptionCachePort transcriptionCachePort;
 
+    @Transactional
     @Override
     public TranscriptionOutput execute(TranscriptionInput input) {
         validate(input);
 
         String audioHash = AudioHashService.generate(input.audioBytes());
 
-        // 1.verfica cache
-        Optional<Transcription> transcription = transcriptionCachePort.get(audioHash);
-        if (transcription.isPresent()) {
-            return TranscriptionOutput.toOutput(transcription.get());
+        // 1. verifica cache
+        Optional<Transcription> fromCache = transcriptionCachePort.findByAudioHash(audioHash);
+        if (fromCache.isPresent()) {
+            return TranscriptionOutput.toOutput(fromCache.get());
         }
 
-        // 2. Deduplicação - reutiliza se já existe
-        Optional<Transcription> existing = transcriptionRepositoryPort.findByAudioHash(audioHash);
-        if (existing.isPresent()) {
-            return TranscriptionOutput.toOutput(existing.get());
+        // 2. verifica banco de dados
+        Optional<Transcription> fromDb = transcriptionRepositoryPort.findByAudioHash(audioHash);
+        if (fromDb.isPresent()) {
+            transcriptionCachePort.save(fromDb.get());
+            return TranscriptionOutput.toOutput(fromDb.get());
         }
 
         // 3. Transcrever via IA
@@ -55,7 +58,7 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
         // 4. Persistir no postgres e no cache
         Transcription toSave = Transcription.newTranscription(audioHash, transcribed.getText());
         Transcription saved = transcriptionRepositoryPort.save(toSave);
-        transcriptionCachePort.put(saved.getAudioHash(), saved);
+        transcriptionCachePort.save(saved);
 
         log.info("Transcrição concluída e persistida | audioHash: {}", saved.getAudioHash());
 

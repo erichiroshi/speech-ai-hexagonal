@@ -26,7 +26,6 @@ class RedisCacheAdapterTest {
     private final String expectedKey = "transcription:abc123hash";
 
     @Mock private RedisProperties properties;
-    @Mock private RedisProperties.TranscriptionProperties transcriptionConfig;
     @Mock private RedisTemplate<String, Transcription> redisTemplate;
     @Mock private ValueOperations<String, Transcription> valueOperations;
 
@@ -51,7 +50,7 @@ class RedisCacheAdapterTest {
         void shouldReturnTranscriptionOnCacheHit() {
             when(valueOperations.get(expectedKey)).thenReturn(transcriptionMock);
 
-            Optional<Transcription> result = cacheAdapter.get(audioHash);
+            Optional<Transcription> result = cacheAdapter.findByAudioHash(audioHash);
 
             assertTrue(result.isPresent());
             assertEquals(transcriptionMock, result.get());
@@ -63,7 +62,7 @@ class RedisCacheAdapterTest {
         void shouldReturnEmptyOptionalOnCacheMiss() {
             when(valueOperations.get(expectedKey)).thenReturn(null);
 
-            Optional<Transcription> result = cacheAdapter.get(audioHash);
+            Optional<Transcription> result = cacheAdapter.findByAudioHash(audioHash);
 
             assertTrue(result.isEmpty());
             verify(valueOperations, times(1)).get(expectedKey);
@@ -74,7 +73,7 @@ class RedisCacheAdapterTest {
         void shouldReturnEmptyOptionalWhenRedisFailsOnGet() {
             when(valueOperations.get(expectedKey)).thenThrow(new RuntimeException("Redis indisponível"));
 
-            Optional<Transcription> result = cacheAdapter.get(audioHash);
+            Optional<Transcription> result = cacheAdapter.findByAudioHash(audioHash);
 
             assertTrue(result.isEmpty());
             verify(valueOperations, times(1)).get(expectedKey);
@@ -88,28 +87,26 @@ class RedisCacheAdapterTest {
         @Test
         @DisplayName("Deve salvar o registro com o TTL correto configurado")
         void shouldSaveRecordWithConfiguredTtl() {
-            long expectedTtl = 5L;
-            when(properties.transcription()).thenReturn(transcriptionConfig);
-            when(transcriptionConfig.ttlHours()).thenReturn(Math.toIntExact(expectedTtl));
+            Duration expectedTtl = Duration.ofHours(5);
+            when(properties.transcriptionTtl()).thenReturn(expectedTtl);
 
-            cacheAdapter.put(audioHash, transcriptionMock);
+            cacheAdapter.save(transcriptionMock);
 
-            verify(valueOperations, times(1)).set(expectedKey, transcriptionMock, Duration.ofHours(expectedTtl));
+            verify(valueOperations, times(1)).set(expectedKey, transcriptionMock, expectedTtl);
         }
 
         @Test
         @DisplayName("Deve silenciar a exceção e logar o erro se o Redis falhar no salvamento")
         void shouldHandleExceptionWhenRedisFailsOnPut() {
-            long expectedTtl = 2L;
-            when(properties.transcription()).thenReturn(transcriptionConfig);
-            when(transcriptionConfig.ttlHours()).thenReturn(Math.toIntExact(expectedTtl));
+            Duration expectedTtl = Duration.ofHours(2);
+            when(properties.transcriptionTtl()).thenReturn(expectedTtl);
 
             doThrow(new RuntimeException("Erro de conexão")).when(valueOperations)
-                    .set(expectedKey, transcriptionMock, Duration.ofHours(expectedTtl));
+                    .set(expectedKey, transcriptionMock, expectedTtl);
 
             // Não deve lançar exceção para o chamador
-            assertDoesNotThrow(() -> cacheAdapter.put(audioHash, transcriptionMock));
-            verify(valueOperations, times(1)).set(expectedKey, transcriptionMock, Duration.ofHours(expectedTtl));
+            assertDoesNotThrow(() -> cacheAdapter.save(transcriptionMock));
+            verify(valueOperations, times(1)).set(expectedKey, transcriptionMock, expectedTtl);
         }
     }
 }

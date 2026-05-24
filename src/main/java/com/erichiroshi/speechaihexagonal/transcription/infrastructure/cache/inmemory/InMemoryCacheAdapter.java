@@ -7,9 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Profile("test")
 @Slf4j
@@ -17,21 +17,22 @@ import java.util.Optional;
 @Component
 public class InMemoryCacheAdapter implements TranscriptionCachePort {
 
-    private final Map<String, Transcription> cacheMemory = new HashMap<>();
+    private final Map<String, Transcription> cacheMemory = new ConcurrentHashMap<>();
 
     @Override
-    public Optional<Transcription> get(String audioHash) {
+    public Optional<Transcription> findByAudioHash(String audioHash) {
         Transcription transcription = cacheMemory.get(audioHash);
         if (transcription != null) {
-            log.info("Cache InMemory hit, audioHash={}", audioHash);
+            log.info("Cache HIT (InMemory), audioHash={}", audioHash);
             return  Optional.of(transcription);
         }
+        log.info("Cache miss (InMemory)) | key={}", audioHash);
         return Optional.empty();
     }
 
     @Override
-    public void put(String audioHash, Transcription transcription) {
-        log.info("Salvando cache InMemory, audioHash={}", audioHash);
-        cacheMemory.put(audioHash, transcription);
+    public void save(Transcription transcription) {
+        log.info("Salvando no cache (InMemory), audioHash={}", transcription.getAudioHash());
+        cacheMemory.put(transcription.getAudioHash(), transcription);
     }
 }

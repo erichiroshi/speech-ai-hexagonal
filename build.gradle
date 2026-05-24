@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.erichiroshi'
-version = '4.2.0'
+version = '4.3.0'
 description = 'Serviço de transcrição de áudio com análise inteligente via LLM'
 
 java {
@@ -43,13 +43,15 @@ dependencies {
 
     // Test
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
+    testImplementation 'com.redis:testcontainers-redis'
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-redis-test'
+
 
     // MockWebServer para simular o Speaches (Whisper) nos testes
     testImplementation 'com.squareup.okhttp3:mockwebserver'
@@ -70,7 +72,6 @@ ext{
             '**/input**', '**/output**',
             '**/response**',
             '**/exception/**',
-            '**/model/**',
             '**/*Entity*',
             '**/*Properties*'
     ]
@@ -84,8 +85,7 @@ jacocoTestReport {
     }
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude:
-                    coverageExclusions
+            fileTree(dir: it, exclude: coverageExclusions
             )
         }))
     }
