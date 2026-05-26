@@ -150,6 +150,92 @@
     </section>
 
     <section class="card">
+      <h2>Busca por AudioHash</h2>
+
+      <p>
+        O sistema agora possui um caso de uso dedicado para recuperação
+        de transcrições utilizando <strong>audioHash</strong>.
+      </p>
+
+      <div class="code-block">
+        <pre>
+      Optional&lt;Transcription&gt; result =
+          gateway.findByAudioHash(audioHash);
+      </pre>
+      </div>
+
+      <p>
+        O fluxo prepara a aplicação para deduplicação futura antes do envio
+        para processamento de IA.
+      </p>
+    </section>
+
+    <section class="card">
+    <h2>Adapter JPA</h2>
+
+    <p>
+        A persistência agora possui implementação concreta utilizando
+        Spring Data JPA e PostgreSQL.
+    </p>
+
+    <div class="code-block">
+    <pre>
+      @Entity
+      @Table(name = "transcriptions")
+      public class TranscriptionEntity {
+
+        @Id
+        @Column(nullable = false, updatable = false)
+        private UUID id;
+
+        @Column(name = "audio_hash", nullable = false, unique = true, length = 64)
+        private String audioHash;
+
+        @Column(name = "transcription", nullable = false, columnDefinition = "TEXT")
+        private String transcription;
+
+        @Column(name = "created_at", nullable = false, updatable = false)
+        private LocalDateTime createdAt;
+      }
+      </pre>
+      </div>
+
+        <p>
+            A entidade JPA permanece separada da entidade de domínio
+            preservando o isolamento arquitetural.
+        </p>
+    </section>
+
+    <section class="card">
+    <h2>Migration Inicial</h2>
+
+    <p>
+        Foi criada a primeira migration Flyway responsável pela estrutura
+        inicial da persistência de transcrições.
+    </p>
+
+    <div class="code-block">
+    <pre>
+      CREATE TABLE transcriptions
+      (
+          id            UUID         NOT NULL,
+          audio_hash    VARCHAR(64)  NOT NULL,
+          transcription TEXT         NOT NULL,
+          created_at    TIMESTAMPTZ  NOT NULL DEFAULT now(),
+
+          CONSTRAINT pk_transcriptions PRIMARY KEY (id),
+          CONSTRAINT uq_transcriptions_audio_hash UNIQUE (audio_hash)
+      );
+    </pre>
+    </div>
+
+    <p>
+        O índice único em <strong>audio_hash</strong> prepara a aplicação
+        para deduplicação eficiente.
+    </p>
+</section>
+
+    <section class="card">
       <h2>🧱 Estrutura da tabela</h2>
 
       <table>

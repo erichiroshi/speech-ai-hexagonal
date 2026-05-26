@@ -91,6 +91,9 @@
 <body>
   <div class="container">
     <header>
+      <img class="logo-perfil"
+        src="https://github.com/erichiroshi/dio-speech-ai/blob/main/images/logo%20eric%20hiroshi.png?raw=true"
+        alt="Logo Eric Hiroshi" />
       <h1>🎙️ speech-ai-hexagonal</h1>
       <p class="subtitle">API de transcrição de áudio com <strong>arquitetura hexagonal</strong> — Java 25 · Spring Boot
         4 · Speaches/Whisper</p>
@@ -103,6 +106,7 @@
       <a href="persistence.html">Persistência</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
+      <a href="https://github.com/erichiroshi/speech-ai-hexagonal">GitHub</a>
     </nav>
 
     <section class="card">
@@ -118,10 +122,6 @@
         Cada fase adiciona uma camada de maturidade técnica: da base hexagonal até cache, observabilidade,
         resiliência, Spring AI e mensageria assíncrona com RabbitMQ.
       </p>
-      <div class="actions">
-        <a href="https://github.com/erichiroshi/speech-ai-hexagonal" class="btn btn-primary" target="_blank">GitHub</a>
-        <a href="architecture.html" class="btn btn-outline">Ver Arquitetura</a>
-      </div>
     </section>
 
     <section class="card">
@@ -150,27 +150,17 @@
         <span class="phase-desc">
           Persistência de transcrições · PostgreSQL · Flyway · deduplicação por SHA-256
         </span>
-        <span class="badge planned">planejado</span>
-        <span class="phase-ver">v3.x</span>
+        <span class="badge done">✓</span>
+        <span class="phase-ver">v3.7.0</span>
       </div>
-
-      <div class="phase-row">
-        <span class="phase-num">Fase 3</span>
-        <span class="phase-desc">
-          Cache Redis — SHA-256 · RedisCacheAdapter · TTL configurável · Testcontainers
-        </span>
-        <span class="badge planned">planejado</span>
-        <span class="phase-ver">v3.x</span>
-      </div>
-
 
       <div class="phase-row">
         <span class="phase-num">Fase 4</span>
         <span class="phase-desc">
-          Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC
+          Cache Redis — SHA-256 · RedisCacheAdapter · TTL configurável · Testcontainers
         </span>
-        <span class="badge planned">planejado</span>
-        <span class="phase-ver">v4.x</span>
+        <span class="badge done">✓</span>
+        <span class="phase-ver">v4.3.0</span>
       </div>
 
       <div class="phase-row">
@@ -185,6 +175,15 @@
       <div class="phase-row">
         <span class="phase-num">Fase 6</span>
         <span class="phase-desc">
+          Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC
+        </span>
+        <span class="badge planned">planejado</span>
+        <span class="phase-ver">v4.x</span>
+      </div>
+
+      <div class="phase-row">
+        <span class="phase-num">Fase 7</span>
+        <span class="phase-desc">
           Spring AI + OpenAI Whisper — segunda porta de saída (cloud)
         </span>
         <span class="badge planned">planejado</span>
@@ -192,7 +191,7 @@
       </div>
 
       <div class="phase-row">
-        <span class="phase-num">Fase 7</span>
+        <span class="phase-num">Fase 8</span>
         <span class="phase-desc">
           Spring AI + Ollama — sumarização local via LLM ≤1B parâmetros
         </span>
@@ -201,7 +200,7 @@
       </div>
 
       <div class="phase-row">
-        <span class="phase-num">Fase 8</span>
+        <span class="phase-num">Fase 9</span>
         <span class="phase-desc">
           RabbitMQ — eventos assíncronos · DLQ · auditoria de transcrições
         </span>
@@ -210,72 +209,23 @@
       </div>
 
       <div class="phase-row">
-        <span class="phase-num">Fase 9</span>
+        <span class="phase-num">Fase 10</span>
         <span class="phase-desc">
           CI/CD — GitHub Actions · SonarCloud · Codecov · Docker Hub · multi-arch
         </span>
         <span class="badge planned">planejado</span>
         <span class="phase-ver">v9.x</span>
       </div>
-    </section>
 
-    <section class="card">
-      <h2>🛠️ Stack</h2>
-      <div class="stack-grid">
-        <div class="stack-item">
-          <div class="name">Java 25</div>
-          <div class="desc">Linguagem + Records + Pattern Matching</div>
-        </div>
-        <div class="stack-item">
-          <div class="name">Spring Boot 4.0.6</div>
-          <div class="desc">Framework web + DI</div>
-        </div>
-        <div class="stack-item">
-          <div class="name">RestClient</div>
-          <div class="desc">Cliente HTTP síncrono (Spring 6.1+)</div>
-        </div>
-        <div class="stack-item">
-          <div class="name">Speaches</div>
-          <div class="desc">Servidor Whisper local (latest-cuda)</div>
-        </div>
-        <div class="stack-item">
-          <div class="name">faster-whisper-small</div>
-          <div class="desc">Modelo de transcrição local</div>
-        </div>
-        <div class="stack-item">
-          <div class="name">Lombok</div>
-          <div class="desc">Redução de boilerplate</div>
-        </div>
-        <div class="stack-item">
-          <div class="name">MapStruct</div>
-          <div class="desc">Mapeamento entre camadas</div>
-        </div>
-        <div class="stack-item">
-          <div class="name">Springdoc OpenAPI</div>
-          <div class="desc">Swagger UI automático</div>
-        </div>
-        <div class="stack-item">
-          <div class="name">JaCoCo</div>
-          <div class="desc">Cobertura de código (≥60%)</div>
-        </div>
-        <div class="stack-item">
-          <div class="name">MockWebServer</div>
-          <div class="desc">Testes de adapters HTTP</div>
-        </div>
-        <div class="stack-item">
-          <div class="name">Testcontainers</div>
-          <div class="desc">Testes de integração</div>
-        </div>
-        <div class="stack-item">
-          <div class="name">Docker Compose</div>
-          <div class="desc">Orquestração local</div>
-        </div>
+      <div class="actions" style="margin-top: 16px;">
+        <a class="btn btn-primary" href="roadmap.html">Ver roadmap detalhado</a>
       </div>
     </section>
 
     <section class="card">
       <h2>⚡ Quick Start</h2>
-      <pre style="background:#020617;padding:16px;border-radius:8px;font-size:13px;overflow-x:auto;line-height:1.7"><code># Subir infra (Speaches)
+      <pre style="background:#020617;padding:16px;border-radius:8px;font-size:13px;overflow-x:auto;line-height:1.7">
+<code># Subir infra (Speaches)
 docker compose -f docker-compose.dev.yml up -d
 
 # Baixar modelo (1ª vez)
@@ -289,12 +239,52 @@ curl -X POST http://localhost:8080/api/transcriptions \
   -F 'file=@audio.wav;type=audio/wav' | jq .
 
 # Swagger UI
-open http://localhost:8080/swagger-ui.html</code></pre>
+open http://localhost:8080/swagger-ui.html
+</code>
+    </pre>
+    </section>
+
+    <section class="card">
+      <h2>🛠️ Stack</h2>
+      <div class="stack-grid">
+        <div class="stack-item"><div class="name">Java 25</div>   <div class="desc">Linguagem + Records + Pattern Matching</div></div>
+        <div class="stack-item"><div class="name">Spring Boot 4.0.6</div>   <div class="desc">Framework web + DI</div></div>
+        <div class="stack-item"><div class="name">RestClient</div>    <div class="desc">Cliente HTTP síncrono (Spring 6.1+)</div></div>
+        <div class="stack-item"><div class="name">Speaches</div>    <div class="desc">Servidor Whisper local (latest-cuda)</div></div>
+        <div class="stack-item"><div class="name">faster-whisper-small</div>    <div class="desc">Modelo de transcrição local</div></div>
+        <div class="stack-item"><div class="name">Lombok</div>    <div class="desc">Redução de boilerplate</div></div>
+        <div class="stack-item"><div class="name">MapStruct</div>   <div class="desc">Mapeamento entre camadas</div></div>
+        <div class="stack-item"><div class="name">Springdoc OpenAPI</div>   <div class="desc">Swagger UI automático</div></div>
+        <div class="stack-item"><div class="name">JaCoCo</div>    <div class="desc">Cobertura de código (≥60%)</div></div>
+        <div class="stack-item"><div class="name">MockWebServer</div>   <div class="desc">Testes de adapters HTTP</div></div>
+        <div class="stack-item"><div class="name">Testcontainers</div>    <div class="desc">Testes de integração reais</div></div>
+        <div class="stack-item"><div class="name">Docker Compose</div>    <div class="desc">Orquestração local</div></div>
+        <div class="stack-item"><div class="name">Prometheus</div>   <div class="desc">Métricas e scraping</div></div>
+        <div class="stack-item"><div class="name">Logs JSON</div>   <div class="desc">Logback + MDC + requestId</div></div>
+        <div class="stack-item"><div class="name">Redis</div>   <div class="desc">Cache SHA-256, TTL 24h</div></div>
+        <div class="stack-item"><div class="name">Grafana</div>   <div class="desc">12 painéis provisionados</div></div>
+        <div class="stack-item"><div class="name">Zipkin/OTel</div>   <div class="desc">Tracing distribuído</div></div>
+        <div class="stack-item"><div class="name">CircuitBreaker</div>    <div class="desc">Resilience4j, fallback 503</div></div>
+        <div class="stack-item"><div class="name">Retry</div>   <div class="desc">Backoff exponencial</div></div>
+        <div class="stack-item"><div class="name">SonarCloud</div>    <div class="desc">Qualidade contínua</div></div>
+        <div class="stack-item"><div class="name">SonarQube local</div>   <div class="desc">Análise local (Docker dev)</div></div>
+        <div class="stack-item"><div class="name">GitHub Actions</div>    <div class="desc">CI/CD automático</div></div>
+        <div class="stack-item"><div class="name">Bean Validation</div>   <div class="desc">DTOs validados</div></div>
+        <div class="stack-item"><div class="name">Hexagonaln</div>   <div class="desc">Ports & Adapters</div></div>
+        <div class="stack-item"><div class="name">RabbitMQ</div>    <div class="desc">Mensageria assíncrona</div></div>
+        <div class="stack-item"><div class="name">Spring Mail</div>   <div class="desc">E-mail via SMTP + GreenMail (testes)</div></div>
+        <div class="stack-item"><div class="name">Notificaçõesn</div>    <div class="desc">SMS · WhatsApp · e-mail</div></div>
+        <div class="stack-item"><div class="name">Spring AI</div>    <div class="desc">ChatClient · Ollama integration</div></div>
+        <div class="stack-item"><div class="name">Ollama</div>   <div class="desc">LLM local offline — llama3.2, mistral</div></div>
+      </div>
     </section>
 
     <footer>
-      <p>speech-ai-hexagonal · <a href="https://github.com/erichiroshi" style="color:var(--primary)">Eric Hiroshi</a> ·
-        v1.0.0</p>
+      <p>Desenvolvido por <strong>Eric Hiroshi</strong> ·
+        <a href="https://www.linkedin.com/in/eric-hiroshi/" style="color:var(--primary)">LinkedIn</a> ·
+        <a href="https://github.com/erichiroshi" style="color:var(--primary)">GitHub</a>
+      </p>
+    </footer>
     </footer>
   </div>
 </body>

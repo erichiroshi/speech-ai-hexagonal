@@ -13,54 +13,55 @@ import java.io.IOException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DisplayName("SpeachesAdapter")
+/**
+ * Testes unitários do SpeachesAdapter com MockWebServer.
+ * Sem Spring context — valida apenas o comportamento HTTP do adapter.
+ * Resiliência (CB/Retry/Bulkhead) é testada em SpeachesAdapterResilienceIT.
+ */
+@DisplayName("SpeachesAdapter — unitário")
 class SpeachesAdapterTest {
 
-    private MockWebServer mockWebServer;
+    private static MockWebServer mockWebServer;
     private SpeachesAdapter adapter;
 
-    private static final byte[] AUDIO_BYTES = "fake-audio-content".getBytes();
-    private static final String FILENAME   = "audio.wav";
-    private static final String CONTENT_TYPE = "audio/wav";
-
-    @BeforeEach
-    void setUp() throws IOException {
+    @BeforeAll
+    static void startServer() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
-
-        SpeachesProperties properties = new SpeachesProperties(
-                mockWebServer.url("/").toString(),
-                "Systran/faster-whisper-small"
-        );
-
-        RestClient restClient = RestClient.builder()
-                .baseUrl(properties.baseUrl())
-                .build();
-
-        adapter = new SpeachesAdapter(restClient, properties);
     }
 
-    @AfterEach
-    void tearDown() throws IOException {
+    @AfterAll
+    static void stopServer() throws IOException {
         mockWebServer.shutdown();
     }
 
+    @BeforeEach
+    void setUp() {
+        String baseUrl = mockWebServer.url("/").toString();
+        RestClient restClient = RestClient.builder()
+                .baseUrl(baseUrl)
+                .build();
+        SpeachesProperties properties = new SpeachesProperties(baseUrl, "Systran/faster-whisper-small");
+        adapter = new SpeachesAdapter(restClient, properties);
+    }
+
     @Nested
-    @DisplayName("Cenários de sucesso (Caminho Feliz)")
+    @DisplayName("caminho feliz")
     class CaminhoFeliz {
 
         @Test
-        @DisplayName("deve retornar Transcription quando Speaches responde com texto")
-        void deveRetornarTranscriptionComSucesso() throws InterruptedException {
+        @DisplayName("deve retornar Transcription com texto da resposta Speaches")
+        void deveRetornarTranscription() throws InterruptedException {
             mockWebServer.enqueue(new MockResponse()
                     .setResponseCode(200)
                     .addHeader("Content-Type", "application/json")
-                    .setBody("{\"text\": \"Olá, este é o texto transcrito.\"}"));
+                    .setBody("""
+                            {"text": "Olá, isto é um teste de transcrição."}
+                            """));
 
-            Transcription result = adapter.transcribe(AUDIO_BYTES, FILENAME, CONTENT_TYPE);
+            Transcription result = adapter.transcribe("audio".getBytes(), "audio.wav", "audio/wav");
 
-            assertThat(result).isNotNull();
-            assertThat(result.getText()).isEqualTo("Olá, este é o texto transcrito.");
+            assertThat(result.getText()).isEqualTo("Olá, isto é um teste de transcrição.");
 
             RecordedRequest request = mockWebServer.takeRequest();
             assertThat(request.getMethod()).isEqualTo("POST");
@@ -69,110 +70,83 @@ class SpeachesAdapterTest {
         }
 
         @Test
-        @DisplayName("deve usar filename original no multipart quando fornecido")
-        void deveUsarFilenameOriginalNoMultipart() throws InterruptedException {
+        @DisplayName("deve usar 'audio.wav' como nome de arquivo padrão quando fileName é nulo")
+        void deveUsarNomePadraoQuandoNulo() throws InterruptedException {
             mockWebServer.enqueue(new MockResponse()
                     .setResponseCode(200)
                     .addHeader("Content-Type", "application/json")
-                    .setBody("{\"text\": \"texto\"}"));
+                    .setBody("""
+                            {"text": "transcrição sem nome"}
+                            """));
 
-            adapter.transcribe(AUDIO_BYTES, "meu-audio.mp3", "audio/mpeg");
+            Transcription result = adapter.transcribe("audio".getBytes(), null, "audio/wav");
 
-            RecordedRequest request = mockWebServer.takeRequest();
-            String bodyString = request.getBody().readUtf8();
-            assertThat(bodyString).contains("meu-audio.mp3");
-        }
-
-        @Test
-        @DisplayName("deve usar audio.wav como filename padrão quando filename é nulo")
-        void deveUsarFilenamePadraoQuandoNulo() throws InterruptedException {
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(200)
-                    .addHeader("Content-Type", "application/json")
-                    .setBody("{\"text\": \"texto\"}"));
-
-            adapter.transcribe(AUDIO_BYTES, null, CONTENT_TYPE);
+            assertThat(result.getText()).isEqualTo("transcrição sem nome");
 
             RecordedRequest request = mockWebServer.takeRequest();
-            String bodyString = request.getBody().readUtf8();
-            assertThat(bodyString).contains("audio.wav");
-        }
-
-        @Test
-        @DisplayName("deve incluir o model correto no body do request")
-        void deveIncluirModelNoBody() throws InterruptedException {
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(200)
-                    .addHeader("Content-Type", "application/json")
-                    .setBody("{\"text\": \"texto\"}"));
-
-            adapter.transcribe(AUDIO_BYTES, FILENAME, CONTENT_TYPE);
-
-            RecordedRequest request = mockWebServer.takeRequest();
-            String bodyString = request.getBody().readUtf8();
-            assertThat(bodyString).contains("Systran/faster-whisper-small");
+            assertThat(request.getBody().readUtf8()).contains("audio.wav");
         }
     }
 
     @Nested
-    @DisplayName("erros do Speaches")
-    class ErrosSpeaches {
+    @DisplayName("erros HTTP")
+    class ErrosHttp {
 
         @Test
         @DisplayName("deve lançar SpeechToTextException quando Speaches retorna 500")
-        void deveLancarQuandoStatus500() {
+        void deveLancarQuando500() {
             mockWebServer.enqueue(new MockResponse()
                     .setResponseCode(500)
-                    .setBody("Internal Server Error"));
+                    .addHeader("Content-Type", "application/json")
+                    .setBody("{\"error\": \"Internal Server Error\"}"));
 
-            assertThatThrownBy(() -> adapter.transcribe(AUDIO_BYTES, FILENAME, CONTENT_TYPE))
-                    .isInstanceOf(SpeechToTextException.class);
+            var audioBytes = "audio".getBytes();
+            assertThatThrownBy(() -> adapter.transcribe(audioBytes, "audio.wav", "audio/wav"))
+                    .isInstanceOf(SpeechToTextException.class)
+                    .hasMessageContaining("Speaches retornou erro");
         }
 
         @Test
         @DisplayName("deve lançar SpeechToTextException quando Speaches retorna 422")
-        void deveLancarQuandoStatus422() {
+        void deveLancarQuando422() {
             mockWebServer.enqueue(new MockResponse()
                     .setResponseCode(422)
                     .addHeader("Content-Type", "application/json")
-                    .setBody("{\"detail\": \"Unprocessable entity\"}"));
+                    .setBody("{\"error\": \"Unprocessable Entity\"}"));
 
-            assertThatThrownBy(() -> adapter.transcribe(AUDIO_BYTES, FILENAME, CONTENT_TYPE))
+            var audioBytes = "audio".getBytes();
+            assertThatThrownBy(() -> adapter.transcribe(audioBytes, "audio.wav", "audio/wav"))
                     .isInstanceOf(SpeechToTextException.class);
         }
 
         @Test
-        @DisplayName("deve lançar SpeechToTextException quando resposta tem texto vazio")
-        void deveLancarQuandoTextoVazio() {
+        @DisplayName("deve lançar SpeechToTextException quando resposta está vazia")
+        void deveLancarQuandoRespostaVazia() {
             mockWebServer.enqueue(new MockResponse()
                     .setResponseCode(200)
                     .addHeader("Content-Type", "application/json")
                     .setBody("{\"text\": \"\"}"));
 
-            assertThatThrownBy(() -> adapter.transcribe(AUDIO_BYTES, FILENAME, CONTENT_TYPE))
+            var audioBytes = "audio".getBytes();
+            assertThatThrownBy(() -> adapter.transcribe(audioBytes, "audio.wav", "audio/wav"))
+                    .isInstanceOf(SpeechToTextException.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("falha de rede")
+    class FalhaDeRede {
+
+        @Test
+        @DisplayName("deve lançar SpeechToTextException quando servidor fecha conexão")
+        void deveLancarQuandoServidorFechaConexao() {
+            mockWebServer.enqueue(new MockResponse().setSocketPolicy(
+                    okhttp3.mockwebserver.SocketPolicy.DISCONNECT_AFTER_REQUEST));
+
+            var audioBytes = "audio".getBytes();
+            assertThatThrownBy(() -> adapter.transcribe(audioBytes, "audio.wav", "audio/wav"))
                     .isInstanceOf(SpeechToTextException.class)
-                    .hasMessageContaining("vazia");
-        }
-
-        @Test
-        @DisplayName("deve lançar SpeechToTextException quando resposta tem texto apenas com espaços")
-        void deveLancarQuandoTextoApenasBrancos() {
-            mockWebServer.enqueue(new MockResponse()
-                    .setResponseCode(200)
-                    .addHeader("Content-Type", "application/json")
-                    .setBody("{\"text\": \"   \"}"));
-
-            assertThatThrownBy(() -> adapter.transcribe(AUDIO_BYTES, FILENAME, CONTENT_TYPE))
-                    .isInstanceOf(SpeechToTextException.class);
-        }
-
-        @Test
-        @DisplayName("deve lançar SpeechToTextException quando servidor está inacessível")
-        void deveLancarQuandoServidorInacessivel() throws IOException {
-            mockWebServer.shutdown();
-
-            assertThatThrownBy(() -> adapter.transcribe(AUDIO_BYTES, FILENAME, CONTENT_TYPE))
-                    .isInstanceOf(SpeechToTextException.class);
+                    .hasMessageContaining("inacessível ou falha de rede");
         }
     }
 }

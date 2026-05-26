@@ -19,9 +19,6 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      # timeout de conexão/leitura — falha rápida, não bloqueia o request
-      connect-timeout: 2s
-      timeout: 2s
 
 management:
   endpoints:
@@ -39,8 +36,22 @@ app:
   cache:
     transcription-ttl: ${CACHE_TTL:1}
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      speaches:
+        sliding-window-size: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+  retry:
+    instances:
+      speaches:
+        max-attempts: 2
+        wait-duration: 500ms
+
 logging:
   level:
     com.erichiroshi: DEBUG
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
+    io.github.resilience4j: DEBUG

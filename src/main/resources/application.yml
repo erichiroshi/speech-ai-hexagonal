@@ -71,6 +71,46 @@ app:
   cache:
     transcription-ttl: ${CACHE_TTL:24}
 
+# ── Resilience4j ────────────────────────────────────────────────────────
+resilience4j:
+  circuitbreaker:
+    instances:
+      speaches:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 80
+        slow-call-duration-threshold: 10s
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        register-health-indicator: true
+        record-exceptions:
+          - com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException
+          - org.springframework.web.client.RestClientException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+
+  retry:
+    instances:
+      speaches:
+        max-attempts: 3
+        wait-duration: 1s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+        ignore-exceptions:
+          - com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException
+
+  bulkhead:
+    instances:
+      speaches:
+        max-concurrent-calls: 10
+        max-wait-duration: 0ms
+
 # ── Logging ────────────────────────────────────────────────────────────
 logging:
   level:

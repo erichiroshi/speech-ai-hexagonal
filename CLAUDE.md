@@ -24,8 +24,8 @@ infrastructure/  → adapters de entrada e saída + config Spring
 
 | Porta | Interface | Adapter(s) |
 |-------|-----------|------------|
-| `SpeechToTextPort` | `application/port/out` | `SpeachesAdapter` (Fase 1), `OpenAiSpeechAdapter` (Fase 5) |
-| `TranscriptionCachePort` | `application/port/out` | `InMemoryCacheAdapter` (Fase 1), `RedisCacheAdapter` (Fase 2) |
+| `SpeechToTextPort` | `domain`  | `SpeachesAdapter` (Fase 1), `OpenAiSpeechAdapter` (Fase 5) |
+| `TranscriptionCachePort` | `domain`  | `InMemoryCacheAdapter` (Fase 1), `RedisCacheAdapter` (Fase 2) |
 
 ## Comandos principais
 

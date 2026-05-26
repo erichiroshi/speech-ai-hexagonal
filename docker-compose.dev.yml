@@ -63,7 +63,7 @@ services:
   # ── SonarQube ───────────────────────────────────────────────────────────────────
   sonarqube:
     container_name: sonarqube
-    image: sonarqube:latest
+    image: sonarqube:26.5.0.122743-community
     restart: unless-stopped
     ports:
       - "9000:9000" # UI: http://localhost:9000 (admin/admin no primeiro acesso)

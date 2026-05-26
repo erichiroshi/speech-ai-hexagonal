@@ -38,7 +38,7 @@
   - [`POST /api/transcriptions`](#post-apitranscriptions)
 - [Persistência](#persistência)
   - [Tecnologias](#tecnologias)
-- [Audio Hash](#audio-hash)
+  - [Audio Hash](#audio-hash)
   - [Objetivos](#objetivos)
   - [Exemplo](#exemplo)
 - [📊 Observabilidade](#-observabilidade)
@@ -233,7 +233,7 @@ A aplicação agora possui infraestrutura PostgreSQL integrada com Spring Data J
 
 ---
 
-## Audio Hash
+### Audio Hash
 
 A aplicação agora possui um serviço dedicado para geração determinística do `audioHash` utilizando SHA-256 hexadecimal.
 

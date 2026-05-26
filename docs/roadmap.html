@@ -359,12 +359,12 @@
             detail: "@Retry: maxAttempts=3, backoff exponencial (1s→2s→4s), retry apenas em IOException/TimeoutException. @Bulkhead: limita chamadas simultâneas ao Speaches (ex: 10 concurrent). Evita cascata de falhas quando Speaches está lento.",
             snippet: "resilience4j.retry.instances.speaches:\n  maxAttempts: 3\n  waitDuration: 1s\n  enableExponentialBackoff: true" },
           {
-            title: "5.3 — Métricas de resiliência + testes",
-            desc: "Dashboard Grafana com circuit state, retry count; testes com WireMock simulando falhas",
-            tags: ["WireMock", "Grafana", "Testes"],
+            title: "5.3 —  Testes",
+            desc: "Ttestes com WireMock simulando falhas",
+            tags: ["WireMock", "Resilience4j", "Testes"],
             done: false,
             version: null,
-            detail: "Atualiza dashboard Grafana com painel de resiliência: estado do circuit breaker, tentativas de retry, chamadas rejeitadas pelo bulkhead. Testes com WireMock simulam Speaches lento/falhando para validar comportamento dos mecanismos.",
+            detail: "Testes com WireMock simulam Speaches lento/falhando para validar comportamento dos mecanismos.",
             snippet: "// WireMock: simula timeout no Speaches\nwireMock.stubFor(post(\"/v1/audio/transcriptions\")\n  .willReturn(aResponse().withFixedDelay(5000)));" }
         ]
       },
@@ -405,6 +405,8 @@
             version: null,
             detail: "logback-spring.xml: perfil prod → JSON (logstash-logback-encoder), dev → texto colorido. MdcLoggingFilter popula requestId (UUID), httpMethod, uri. TranscriptionService adiciona fileName, fileSizeBytes. Header X-Request-Id em todas as respostas.",
             snippet: "// MDC fields in prod (JSON):\n// requestId, traceId, spanId, httpMethod, uri, fileName" }
+
+            //Atualiza dashboard Grafana com painel de resiliência: estado do circuit breaker, tentativas de retry, chamadas rejeitadas pelo bulkhead.
         ]
       },
       {
