@@ -92,10 +92,10 @@ resilience4j:
         automatic-transition-from-open-to-half-open-enabled: true
         register-health-indicator: true
         record-exceptions:
-          - com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException
           - org.springframework.web.client.RestClientException
           - java.io.IOException
           - java.util.concurrent.TimeoutException
+          - com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException
 
   retry:
     instances:
@@ -109,7 +109,6 @@ resilience4j:
           - java.io.IOException
           - java.util.concurrent.TimeoutException
         ignore-exceptions:
-          - com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException
 
   bulkhead:
     instances:

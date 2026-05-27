@@ -51,7 +51,7 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
             // 2. verifica banco de dados
             Optional<Transcription> fromDb = transcriptionRepositoryPort.findByAudioHash(audioHash);
             if (fromDb.isPresent()) {
-                log.info("Cache hit (DB) | audioHash={} — populando Redis", audioHash);
+                log.info("Cache hit (DB) | audioHash={} — populando Cache", audioHash);
                 metrics.recordCacheHitDb();
                 metrics.recordSuccess();
                 transcriptionCachePort.save(fromDb.get());

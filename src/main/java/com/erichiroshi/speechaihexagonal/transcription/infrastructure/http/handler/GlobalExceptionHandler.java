@@ -2,6 +2,9 @@ package com.erichiroshi.speechaihexagonal.transcription.infrastructure.http.hand
 
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException;
+import io.github.resilience4j.bulkhead.BulkheadFullException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.net.URI;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -28,6 +32,35 @@ public class GlobalExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, ex.getMessage());
         problem.setType(URI.create(BASE_URI + "speech-to-text"));
         problem.setTitle("Falha no motor de transcrição");
+        return problem;
+    }
+
+    /**
+     * CircuitBreaker OPEN — Speaches temporariamente indisponível.
+     * Retorna 503 Service Unavailable com Retry-After header.
+     */
+    @ExceptionHandler(CallNotPermittedException.class)
+    public ProblemDetail handleCircuitBreakerOpen(CallNotPermittedException ex) {
+        log.warn("CircuitBreaker [{}] OPEN — chamada rejeitada", ex.getCausingCircuitBreakerName());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "Serviço de transcrição temporariamente indisponível. Tente novamente em instantes.");
+        problem.setType(URI.create(BASE_URI + "circuit-open"));
+        problem.setTitle("Serviço indisponível");
+        return problem;
+    }
+
+    /**
+     * Bulkhead cheio — muitas requisições simultâneas.
+     */
+    @ExceptionHandler(BulkheadFullException.class)
+    public ProblemDetail handleBulkheadFull(BulkheadFullException ex) {
+        log.warn("Bulkhead [speaches] cheio — requisição rejeitada");
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.TOO_MANY_REQUESTS,
+                "Muitas requisições simultâneas. Tente novamente em instantes.");
+        problem.setType(URI.create(BASE_URI + "bulkhead-full"));
+        problem.setTitle("Capacidade excedida");
         return problem;
     }
 

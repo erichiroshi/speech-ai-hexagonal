@@ -15,6 +15,11 @@
   <img src="https://img.shields.io/badge/Spring%20Boot-4.0.6-6DB33F?style=flat-square&logo=springboot&logoColor=white" alt="Spring Boot 4.0.6">
   <img src="https://img.shields.io/badge/Speaches-Whisper-4A90D9?style=flat-square" alt="Speaches Whisper">
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose">
+  <img src="https://img.shields.io/badge/Prometheus-E6522C?style=flat-square&logo=prometheus&logoColor=white" alt="Prometheus">
+  <img src="https://img.shields.io/badge/Grafana-F46800?style=flat-square&logo=grafana&logoColor=white" alt="Grafana">
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis">
+  <img src="https://img.shields.io/badge/Resilience4j-informational?style=flat-square" alt="Resilience4j">
+  <img src="https://img.shields.io/badge/OpenAPI-3.1-6BA539?style=flat-square&logo=openapiinitiative&logoColor=white" alt="OpenAPI 3.1">  
   <img src="https://img.shields.io/badge/Jacoco-70%25-brightgreen?style=flat-square" alt="Jacoco">
   <img src="https://img.shields.io/badge/SonarCloud-passing-4E9BCD?style=flat-square&logo=sonarcloud&logoColor=white" alt="SonarCloud">
   <img src="https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?style=flat-square&logo=githubactions&logoColor=white" alt="GitHub Actions">
@@ -43,9 +48,9 @@
   - [Exemplo](#exemplo)
 - [📊 Observabilidade](#-observabilidade)
   - [Componentes](#componentes)
-- [Métricas](#métricas)
-- [Tracing](#tracing)
-- [Logs estruturados](#logs-estruturados)
+  - [Métricas](#métricas)
+  - [Tracing](#tracing)
+  - [Logs estruturados](#logs-estruturados)
 - [🧪 Testando a API](#-testando-a-api)
   - [Estratégia de testes](#estratégia-de-testes)
 - [🔧 Variáveis de ambiente](#-variáveis-de-ambiente)
@@ -282,7 +287,7 @@ A aplicação agora possui stack completa de observabilidade.
 
 ---
 
-## Métricas
+### Métricas
 
 ```java
 Counter.builder("transcription.requests.total")
@@ -292,7 +297,7 @@ Counter.builder("transcription.requests.total")
 
 ---
 
-## Tracing
+### Tracing
 
 ```yaml
 management.tracing.sampling.probability=1.0
@@ -301,7 +306,7 @@ management.zipkin.tracing.endpoint=http://zipkin:9411/api/v2/spans
 
 ---
 
-## Logs estruturados
+### Logs estruturados
 
 Campos MDC:
 

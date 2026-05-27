@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.erichiroshi'
-version = '6.4.0'
+version = '6.4.1'
 description = 'Serviço de transcrição de áudio com análise inteligente via LLM'
 
 java {
@@ -28,6 +28,8 @@ ext {
     aopVersion = '3.5.13'
     resilience4jVersion = '2.4.0'
     logbackencoderVersion = '9.0'
+    wireMockVersion = '3.13.0'
+    awaitilityVersion = '4.3.0'
 }
 
 dependencies {
@@ -58,15 +60,15 @@ dependencies {
 
     // Test
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
     testImplementation 'com.redis:testcontainers-redis'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-redis-test'
-    testImplementation 'org.wiremock:wiremock-standalone:3.13.0'
-    testImplementation 'org.awaitility:awaitility:4.3.0'
+    testImplementation "org.wiremock:wiremock-standalone:${wireMockVersion}"
+    testImplementation "org.awaitility:awaitility:${awaitilityVersion}"
     testImplementation 'com.squareup.okhttp3:mockwebserver'
 }
 
@@ -78,16 +80,14 @@ dependencyManagement {
 }
 
 ext {
-    coverageExclusions = [
-            '**/config/**',
-            '**/dto/**',
-            '**/*Application*',
-            '**/input**', '**/output**',
-            '**/response**',
-            '**/exception/**',
-            '**/*Entity*',
-            '**/*Properties*'
-    ]
+    coverageExclusions = ['**/config/**',
+                          '**/dto/**',
+                          '**/*Application*',
+                          '**/input**', '**/output**',
+                          '**/response**',
+                          '**/exception/**',
+                          '**/*Entity*',
+                          '**/*Properties*']
 }
 
 // ── Jacoco ─────────────────────────────────────────────────────────────
@@ -98,8 +98,7 @@ jacocoTestReport {
     }
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: coverageExclusions
-            )
+            fileTree(dir: it, exclude: coverageExclusions)
         }))
     }
 }
@@ -122,6 +121,13 @@ sonar {
 }
 
 // ── Tasks ─────────────────────────────────────────────────────────────
-tasks.named('sonar')            { dependsOn tasks.named('jacocoTestReport') }
-tasks.named('jacocoTestReport') { dependsOn tasks.named('test') }
-tasks.named('test')             { useJUnitPlatform() }
+tasks.named('sonar') {
+    dependsOn tasks.named('jacocoTestReport')
+}
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+}
+tasks.named('test') {
+    useJUnitPlatform()
+    jvmArgs '-XX:+EnableDynamicAgentLoading'
+}

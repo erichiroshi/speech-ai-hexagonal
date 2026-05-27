@@ -82,7 +82,7 @@ class SpeachesAdapterResilienceIT {
         registry.add("resilience4j.circuitbreaker.instances.speaches.permitted-number-of-calls-in-half-open-state", () -> 3);
         registry.add("resilience4j.circuitbreaker.instances.speaches.automatic-transition-from-open-to-half-open-enabled", () -> true);
         registry.add("resilience4j.circuitbreaker.instances.speaches.record-exceptions",
-                () -> "org.springframework.web.client.RestClientException,java.io.IOException");
+                () -> "org.springframework.web.client.RestClientException,java.io.IOException,java.util.concurrent.TimeoutException");
         registry.add("resilience4j.circuitbreaker.instances.speaches.record-exceptions",
                 () -> "com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException");
         registry.add("resilience4j.retry.instances.speaches.max-attempts", () -> 1);
@@ -148,7 +148,7 @@ class SpeachesAdapterResilienceIT {
         stubServerError();
 
         // Com max-attempts=1 e SpeechToTextException no ignore-exceptions do Retry,
-        // o erro original sobe diretamente (não passa pelo fallback pois CB ainda não abriu)
+        // o erro original sobe diretamente (não passa pelo fallback, pois CB ainda não abriu)
 
         var fakeAudio = fakeAudio();
         assertThatThrownBy(() -> adapter.transcribe(fakeAudio, "audio.wav", "audio/wav"))

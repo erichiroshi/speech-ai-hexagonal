@@ -1,5 +1,8 @@
 package com.erichiroshi.speechaihexagonal.transcription.domain.exception;
 
+import lombok.Getter;
+
+@Getter
 public class AudioValidationException extends RuntimeException {
 
     private final String field;
@@ -9,7 +12,4 @@ public class AudioValidationException extends RuntimeException {
         this.field = field;
     }
 
-    public String getField() {
-        return field;
-    }
 }
