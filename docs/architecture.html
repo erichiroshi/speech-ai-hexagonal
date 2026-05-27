@@ -117,8 +117,11 @@
       <a href="architecture.html">Arquitetura</a>
       <a href="quality.html">Qualidade</a>
       <a href="persistence.html">Persistência</a>
+      <a href="cache.html">Cache</a>
+      <a href="observability.html">Observabilidade</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
+      <a href="https://github.com/erichiroshi/speech-ai-hexagonal">GitHub</a>
     </nav>
 
     <section class="card">
@@ -377,30 +380,6 @@ com.erichiroshi.speechaihexagonal/
     </section>
 
     <section class="card">
-      <h2>Persistência e Migrations</h2>
-
-      <p>
-        A infraestrutura de persistência foi introduzida utilizando PostgreSQL,
-        Spring Data JPA e Flyway mantendo a separação arquitetural entre domínio,
-        portas e adapters.
-      </p>
-
-      <div class="code-block">
-        <pre>
-    Domain
-      └── Ports
-            └── Persistence SPI
-                    └── JPA Adapter
-                            └── PostgreSQL
-    </pre>
-      </div>
-      <p>
-        O domínio permanece completamente desacoplado do Hibernate e da infraestrutura.
-        Toda responsabilidade de persistência fica restrita aos adapters de saída.
-      </p>
-    </section>
-
-    <section class="card">
       <h2>Domínio de Transcrição</h2>
 
       <p>
@@ -428,13 +407,13 @@ com.erichiroshi.speechaihexagonal/
 
     <section class="card">
       <h2>Serviço de AudioHash</h2>
-    
+
       <p>
         A geração do hash SHA-256 foi isolada em um serviço reutilizável
         da camada de aplicação para evitar dependência criptográfica direta
         dentro do domínio.
       </p>
-    
+
       <div class="code-block">
         <pre>
     Application
@@ -442,11 +421,56 @@ com.erichiroshi.speechaihexagonal/
             └── SHA-256
     </pre>
       </div>
-    
+
       <p>
         A abordagem mantém a arquitetura hexagonal desacoplada e prepara
         a aplicação para deduplicação futura de transcrições.
       </p>
+    </section>
+
+    <section class="card">
+      <h2>Persistência e Migrations</h2>
+
+      <p>
+        A infraestrutura de persistência foi introduzida utilizando PostgreSQL,
+        Spring Data JPA e Flyway mantendo a separação arquitetural entre domínio,
+        portas e adapters.
+      </p>
+
+      <div class="code-block">
+        <pre>
+    Domain
+      └── Ports
+            └── Persistence SPI
+                    └── JPA Adapter
+                            └── PostgreSQL
+    </pre>
+      </div>
+      <p>
+        O domínio permanece completamente desacoplado do Hibernate e da infraestrutura.
+        Toda responsabilidade de persistência fica restrita aos adapters de saída.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Camada de Cache</h2>
+
+      <p>
+        A arquitetura agora possui camada de cache distribuído desacoplada
+        através da porta <strong>TranscriptionCachePort</strong>.
+      </p>
+
+      <div class="code-block">
+        <pre>
+        Application
+            ↓
+        TranscriptionCachePort
+            ↓
+        RedisCacheAdapter
+            ↓
+        Redis
+      </pre>
+      </div>
     </section>
 
     <footer>

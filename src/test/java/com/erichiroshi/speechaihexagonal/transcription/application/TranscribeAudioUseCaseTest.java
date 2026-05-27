@@ -2,12 +2,14 @@ package com.erichiroshi.speechaihexagonal.transcription.application;
 
 import com.erichiroshi.speechaihexagonal.transcription.application.input.TranscriptionInput;
 import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
-import com.erichiroshi.speechaihexagonal.transcription.domain.SpeechToTextPort;
-import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionCachePort;
-import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionRepositoryPort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.SpeechToTextPort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionCachePort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionMetricsPort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionRepositoryPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.TranscriptionId;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,12 +40,22 @@ class TranscribeAudioUseCaseTest {
     @Mock private SpeechToTextPort speechToTextPort;
     @Mock private TranscriptionRepositoryPort transcriptionRepositoryPort;
     @Mock private TranscriptionCachePort transcriptionCachePort;
+    @Mock private TranscriptionMetricsPort metrics;
 
     @InjectMocks
     private TranscribeAudioUseCase useCase;
 
     private static Transcription fakeDomain(String text) {
         return new Transcription(new TranscriptionId(UUID.randomUUID()), "a".repeat(64), text, LocalDateTime.now());
+    }
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(metrics.timeSpeaches(any()))
+                .thenAnswer(invocation -> {
+                    Supplier<?> supplier = invocation.getArgument(0);
+                    return supplier.get();
+                });
     }
 
     @Nested

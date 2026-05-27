@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cache (Redis) — speech-ai-hexagonal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Cache Redis Distribuído</h1>
+
+      <p class="subtitle">
+        speech-ai-hexagonal · v5.3.0 · Hexagonal (Ports &amp; Adapters)
+      </p>
+    </header>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="architecture.html">Arquitetura</a>
+      <a href="quality.html">Qualidade</a>
+      <a href="persistence.html">Persistência</a>
+      <a href="cache.html">Cache</a>
+      <a href="observability.html">Observabilidade</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
+      <a href="https://github.com/erichiroshi/speech-ai-hexagonal">GitHub</a>
+    </nav>
+
+    <section class="card">
+      <h2>Cache Redis Distribuído</h2>
+
+      <p>
+        O sistema agora possui cache distribuído utilizando Redis para
+        reutilização inteligente de transcrições via audioHash.
+      </p>
+
+      <div class="code-block">
+        <pre>
+transcription:{hash}
+        </pre>
+      </div>
+
+      <ul>
+        <li>RedisTemplate customizado</li>
+        <li>Serialização JSON</li>
+        <li>TTL configurável</li>
+        <li>Integração com Testcontainers</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>speech-ai-hexagonal · <a href="https://github.com/erichiroshi" style="color:var(--primary)">Eric Hiroshi</a> ·
+        v5.3.0</p>
+    </footer>
+
+  </div>
+</body>
+
+</html>

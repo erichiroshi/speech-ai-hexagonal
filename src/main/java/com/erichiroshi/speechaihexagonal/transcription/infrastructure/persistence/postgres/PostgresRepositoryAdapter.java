@@ -1,6 +1,6 @@
 package com.erichiroshi.speechaihexagonal.transcription.infrastructure.persistence.postgres;
 
-import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionRepositoryPort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionRepositoryPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 import com.erichiroshi.speechaihexagonal.transcription.infrastructure.persistence.postgres.entity.TranscriptionEntity;
 import lombok.RequiredArgsConstructor;

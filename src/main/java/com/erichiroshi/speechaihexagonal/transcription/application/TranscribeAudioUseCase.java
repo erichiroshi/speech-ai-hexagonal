@@ -3,9 +3,10 @@ package com.erichiroshi.speechaihexagonal.transcription.application;
 import com.erichiroshi.speechaihexagonal.transcription.application.input.TranscriptionInput;
 import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
 import com.erichiroshi.speechaihexagonal.transcription.application.port.in.TranscribeAudioPort;
-import com.erichiroshi.speechaihexagonal.transcription.domain.SpeechToTextPort;
-import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionCachePort;
-import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionRepositoryPort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.SpeechToTextPort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionCachePort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionMetricsPort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionRepositoryPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 import com.erichiroshi.speechaihexagonal.transcription.domain.service.AudioHashService;
@@ -28,41 +29,56 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
     private final SpeechToTextPort speechToTextPort;
     private final TranscriptionRepositoryPort transcriptionRepositoryPort;
     private final TranscriptionCachePort transcriptionCachePort;
+    private final TranscriptionMetricsPort metrics;
 
     @Transactional
     @Override
     public TranscriptionOutput execute(TranscriptionInput input) {
         validate(input);
+        metrics.recordFileSize(input.audioBytes().length);
 
         String audioHash = AudioHashService.generate(input.audioBytes());
+        try {
+            // 1. verifica cache
+            Optional<Transcription> fromCache = transcriptionCachePort.findByAudioHash(audioHash);
+            if (fromCache.isPresent()) {
+                log.info("Cache hit | audioHash={}", audioHash);
+                metrics.recordCacheHitRedis();
+                metrics.recordSuccess();
+                return TranscriptionOutput.toOutput(fromCache.get());
+            }
 
-        // 1. verifica cache
-        Optional<Transcription> fromCache = transcriptionCachePort.findByAudioHash(audioHash);
-        if (fromCache.isPresent()) {
-            return TranscriptionOutput.toOutput(fromCache.get());
+            // 2. verifica banco de dados
+            Optional<Transcription> fromDb = transcriptionRepositoryPort.findByAudioHash(audioHash);
+            if (fromDb.isPresent()) {
+                log.info("Cache hit (DB) | audioHash={} — populando Redis", audioHash);
+                metrics.recordCacheHitDb();
+                metrics.recordSuccess();
+                transcriptionCachePort.save(fromDb.get());
+                return TranscriptionOutput.toOutput(fromDb.get());
+            }
+
+            // 3. Transcrever via IA
+            log.info("Cache miss total — transcrevendo | filename={} | size={}bytes", input.fileName(), input.audioBytes().length);
+            metrics.recordAiCall();
+
+            Transcription transcribed = metrics.timeSpeaches(() -> speechToTextPort.transcribe(
+                    input.audioBytes(), input.fileName(), input.contentType()));
+
+            // 4. Persistir no postgres e no cache
+            Transcription toSave = Transcription.newTranscription(audioHash, transcribed.getText());
+            Transcription saved = transcriptionRepositoryPort.save(toSave);
+            transcriptionCachePort.save(saved);
+
+            log.info("Transcrição concluída e persistida | audioHash: {}", saved.getAudioHash());
+            metrics.recordSuccess();
+
+            return TranscriptionOutput.toOutput(saved);
+
+        } catch (Exception ex) {
+            metrics.recordError();
+            throw ex;
         }
-
-        // 2. verifica banco de dados
-        Optional<Transcription> fromDb = transcriptionRepositoryPort.findByAudioHash(audioHash);
-        if (fromDb.isPresent()) {
-            transcriptionCachePort.save(fromDb.get());
-            return TranscriptionOutput.toOutput(fromDb.get());
-        }
-
-        // 3. Transcrever via IA
-        log.info("Cache miss total — transcrevendo | filename={} | size={}bytes", input.fileName(), input.audioBytes().length);
-
-        Transcription transcribed = speechToTextPort.transcribe(
-                input.audioBytes(), input.fileName(), input.contentType());
-
-        // 4. Persistir no postgres e no cache
-        Transcription toSave = Transcription.newTranscription(audioHash, transcribed.getText());
-        Transcription saved = transcriptionRepositoryPort.save(toSave);
-        transcriptionCachePort.save(saved);
-
-        log.info("Transcrição concluída e persistida | audioHash: {}", saved.getAudioHash());
-
-        return TranscriptionOutput.toOutput(saved);
     }
 
     private void validate(TranscriptionInput input) {

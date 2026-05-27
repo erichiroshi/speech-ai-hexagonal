@@ -1,6 +1,6 @@
 package com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtotext.speaches;
 
-import com.erichiroshi.speechaihexagonal.transcription.domain.SpeechToTextPort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.SpeechToTextPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 import com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtotext.speaches.response.SpeachesResponse;

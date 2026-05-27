@@ -1,6 +1,6 @@
 package com.erichiroshi.speechaihexagonal.transcription.infrastructure.cache.inmemory;
 
-import com.erichiroshi.speechaihexagonal.transcription.domain.TranscriptionCachePort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionCachePort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

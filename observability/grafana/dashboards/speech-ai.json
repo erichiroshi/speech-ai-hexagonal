@@ -1,0 +1,75 @@
+{
+  "title": "Speech AI — Observabilidade",
+  "uid": "speech-ai-main",
+  "schemaVersion": 38,
+  "refresh": "5s",
+  "time": { "from": "now-30m", "to": "now" },
+  "tags": ["speech-ai"],
+  "panels": [
+    {
+      "id": 1, "title": "Requisições por minuto",
+      "type": "timeseries", "gridPos": { "x": 0, "y": 0, "w": 8, "h": 5 },
+      "targets": [{ "expr": "rate(transcription_requests_total[1m]) * 60", "legendFormat": "{{status}}" }]
+    },
+    {
+      "id": 2, "title": "Cache Hit Rate (%)",
+      "type": "gauge", "gridPos": { "x": 8, "y": 0, "w": 4, "h": 5 },
+      "targets": [{
+        "expr": "sum(rate(transcription_cache_hits_total[5m])) / sum(rate(transcription_requests_total{status='success'}[5m])) * 100"
+      }],
+      "options": { "thresholds": { "steps": [{"value": 0, "color": "red"}, {"value": 50, "color": "yellow"}, {"value": 80, "color": "green"}] } }
+    },
+    {
+      "id": 3, "title": "Cache Hits por Camada",
+      "type": "timeseries", "gridPos": { "x": 12, "y": 0, "w": 12, "h": 5 },
+      "targets": [{ "expr": "rate(transcription_cache_hits_total[1m]) * 60", "legendFormat": "{{layer}}" }]
+    },
+    {
+      "id": 4, "title": "Latência Speaches — p50 / p95 / p99 (ms)",
+      "type": "timeseries", "gridPos": { "x": 0, "y": 5, "w": 12, "h": 5 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(transcription_speaches_duration_seconds_bucket[5m])) * 1000", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(transcription_speaches_duration_seconds_bucket[5m])) * 1000", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(transcription_speaches_duration_seconds_bucket[5m])) * 1000", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "id": 5, "title": "Erros por minuto",
+      "type": "timeseries", "gridPos": { "x": 12, "y": 5, "w": 12, "h": 5 },
+      "targets": [{ "expr": "rate(transcription_requests_total{status='error'}[1m]) * 60", "legendFormat": "erros/min" }]
+    },
+    {
+      "id": 6, "title": "Tamanho dos Arquivos (bytes) — p50/p95/p99",
+      "type": "timeseries", "gridPos": { "x": 0, "y": 10, "w": 12, "h": 5 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, rate(transcription_file_size_bytes_bucket[5m]))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, rate(transcription_file_size_bytes_bucket[5m]))", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, rate(transcription_file_size_bytes_bucket[5m]))", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "id": 7, "title": "Circuit Breaker — Estado",
+      "type": "stat", "gridPos": { "x": 12, "y": 10, "w": 4, "h": 5 },
+      "targets": [{ "expr": "resilience4j_circuitbreaker_state{name='speaches'}", "legendFormat": "{{state}}" }],
+      "options": { "colorMode": "background", "thresholds": { "steps": [{"value": 0, "color": "green"}, {"value": 1, "color": "yellow"}, {"value": 2, "color": "red"}] } }
+    },
+    {
+      "id": 8, "title": "Circuit Breaker — Taxa de Falha (%)",
+      "type": "timeseries", "gridPos": { "x": 16, "y": 10, "w": 8, "h": 5 },
+      "targets": [{ "expr": "resilience4j_circuitbreaker_failure_rate{name='speaches'}", "legendFormat": "failure rate" }]
+    },
+    {
+      "id": 9, "title": "Retry — Tentativas por resultado",
+      "type": "timeseries", "gridPos": { "x": 0, "y": 15, "w": 12, "h": 5 },
+      "targets": [{ "expr": "rate(resilience4j_retry_calls_total{name='speaches'}[1m])", "legendFormat": "{{kind}}" }]
+    },
+    {
+      "id": 10, "title": "Bulkhead — Slots disponíveis / Rejeitadas",
+      "type": "timeseries", "gridPos": { "x": 12, "y": 15, "w": 12, "h": 5 },
+      "targets": [
+        { "expr": "resilience4j_bulkhead_available_concurrent_calls{name='speaches'}", "legendFormat": "disponíveis" },
+        { "expr": "rate(resilience4j_bulkhead_rejected_calls_total{name='speaches'}[1m])", "legendFormat": "rejeitadas/s" }
+      ]
+    }
+  ]
+}

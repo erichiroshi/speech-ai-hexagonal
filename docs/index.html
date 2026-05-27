@@ -104,6 +104,8 @@
       <a href="architecture.html">Arquitetura</a>
       <a href="quality.html">Qualidade</a>
       <a href="persistence.html">Persistência</a>
+      <a href="cache.html">Cache</a>
+      <a href="observability.html">Observabilidade</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
       <a href="https://github.com/erichiroshi/speech-ai-hexagonal">GitHub</a>
@@ -247,35 +249,122 @@ open http://localhost:8080/swagger-ui.html
     <section class="card">
       <h2>🛠️ Stack</h2>
       <div class="stack-grid">
-        <div class="stack-item"><div class="name">Java 25</div>   <div class="desc">Linguagem + Records + Pattern Matching</div></div>
-        <div class="stack-item"><div class="name">Spring Boot 4.0.6</div>   <div class="desc">Framework web + DI</div></div>
-        <div class="stack-item"><div class="name">RestClient</div>    <div class="desc">Cliente HTTP síncrono (Spring 6.1+)</div></div>
-        <div class="stack-item"><div class="name">Speaches</div>    <div class="desc">Servidor Whisper local (latest-cuda)</div></div>
-        <div class="stack-item"><div class="name">faster-whisper-small</div>    <div class="desc">Modelo de transcrição local</div></div>
-        <div class="stack-item"><div class="name">Lombok</div>    <div class="desc">Redução de boilerplate</div></div>
-        <div class="stack-item"><div class="name">MapStruct</div>   <div class="desc">Mapeamento entre camadas</div></div>
-        <div class="stack-item"><div class="name">Springdoc OpenAPI</div>   <div class="desc">Swagger UI automático</div></div>
-        <div class="stack-item"><div class="name">JaCoCo</div>    <div class="desc">Cobertura de código (≥60%)</div></div>
-        <div class="stack-item"><div class="name">MockWebServer</div>   <div class="desc">Testes de adapters HTTP</div></div>
-        <div class="stack-item"><div class="name">Testcontainers</div>    <div class="desc">Testes de integração reais</div></div>
-        <div class="stack-item"><div class="name">Docker Compose</div>    <div class="desc">Orquestração local</div></div>
-        <div class="stack-item"><div class="name">Prometheus</div>   <div class="desc">Métricas e scraping</div></div>
-        <div class="stack-item"><div class="name">Logs JSON</div>   <div class="desc">Logback + MDC + requestId</div></div>
-        <div class="stack-item"><div class="name">Redis</div>   <div class="desc">Cache SHA-256, TTL 24h</div></div>
-        <div class="stack-item"><div class="name">Grafana</div>   <div class="desc">12 painéis provisionados</div></div>
-        <div class="stack-item"><div class="name">Zipkin/OTel</div>   <div class="desc">Tracing distribuído</div></div>
-        <div class="stack-item"><div class="name">CircuitBreaker</div>    <div class="desc">Resilience4j, fallback 503</div></div>
-        <div class="stack-item"><div class="name">Retry</div>   <div class="desc">Backoff exponencial</div></div>
-        <div class="stack-item"><div class="name">SonarCloud</div>    <div class="desc">Qualidade contínua</div></div>
-        <div class="stack-item"><div class="name">SonarQube local</div>   <div class="desc">Análise local (Docker dev)</div></div>
-        <div class="stack-item"><div class="name">GitHub Actions</div>    <div class="desc">CI/CD automático</div></div>
-        <div class="stack-item"><div class="name">Bean Validation</div>   <div class="desc">DTOs validados</div></div>
-        <div class="stack-item"><div class="name">Hexagonaln</div>   <div class="desc">Ports & Adapters</div></div>
-        <div class="stack-item"><div class="name">RabbitMQ</div>    <div class="desc">Mensageria assíncrona</div></div>
-        <div class="stack-item"><div class="name">Spring Mail</div>   <div class="desc">E-mail via SMTP + GreenMail (testes)</div></div>
-        <div class="stack-item"><div class="name">Notificaçõesn</div>    <div class="desc">SMS · WhatsApp · e-mail</div></div>
-        <div class="stack-item"><div class="name">Spring AI</div>    <div class="desc">ChatClient · Ollama integration</div></div>
-        <div class="stack-item"><div class="name">Ollama</div>   <div class="desc">LLM local offline — llama3.2, mistral</div></div>
+        <div class="stack-item">
+          <div class="name">Java 25</div>
+          <div class="desc">Linguagem + Records + Pattern Matching</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Spring Boot 4.0.6</div>
+          <div class="desc">Framework web + DI</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">RestClient</div>
+          <div class="desc">Cliente HTTP síncrono (Spring 6.1+)</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Speaches</div>
+          <div class="desc">Servidor Whisper local (latest-cuda)</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">faster-whisper-small</div>
+          <div class="desc">Modelo de transcrição local</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Lombok</div>
+          <div class="desc">Redução de boilerplate</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">MapStruct</div>
+          <div class="desc">Mapeamento entre camadas</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Springdoc OpenAPI</div>
+          <div class="desc">Swagger UI automático</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">JaCoCo</div>
+          <div class="desc">Cobertura de código (≥60%)</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">MockWebServer</div>
+          <div class="desc">Testes de adapters HTTP</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Testcontainers</div>
+          <div class="desc">Testes de integração reais</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Docker Compose</div>
+          <div class="desc">Orquestração local</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Prometheus</div>
+          <div class="desc">Métricas e scraping</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Logs JSON</div>
+          <div class="desc">Logback + MDC + requestId</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Redis</div>
+          <div class="desc">Cache SHA-256, TTL 24h</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Grafana</div>
+          <div class="desc">12 painéis provisionados</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Zipkin/OTel</div>
+          <div class="desc">Tracing distribuído</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">CircuitBreaker</div>
+          <div class="desc">Resilience4j, fallback 503</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Retry</div>
+          <div class="desc">Backoff exponencial</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">SonarCloud</div>
+          <div class="desc">Qualidade contínua</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">SonarQube local</div>
+          <div class="desc">Análise local (Docker dev)</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">GitHub Actions</div>
+          <div class="desc">CI/CD automático</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Bean Validation</div>
+          <div class="desc">DTOs validados</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Hexagonaln</div>
+          <div class="desc">Ports & Adapters</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">RabbitMQ</div>
+          <div class="desc">Mensageria assíncrona</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Spring Mail</div>
+          <div class="desc">E-mail via SMTP + GreenMail (testes)</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Notificaçõesn</div>
+          <div class="desc">SMS · WhatsApp · e-mail</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Spring AI</div>
+          <div class="desc">ChatClient · Ollama integration</div>
+        </div>
+        <div class="stack-item">
+          <div class="name">Ollama</div>
+          <div class="desc">LLM local offline — llama3.2, mistral</div>
+        </div>
       </div>
     </section>
 

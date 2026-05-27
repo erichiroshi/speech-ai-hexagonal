@@ -27,7 +27,6 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
     show-sql: false
     open-in-view: false
@@ -41,8 +40,8 @@ spring:
 # ── Cache ────────────────────────────────────────────────────────────
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
       # timeout de conexão/leitura — falha rápida, não bloqueia o request
       connect-timeout: 2s
       timeout: 2s
@@ -56,18 +55,25 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       show-details: when_authorized
+  tracing:
+    sampling:
+      probability: 1.0
+    export:
+      zipkin:
+        endpoint: ${ZIPKIN_ENDPOINT:http://zipkin:9411/api/v2/spans}
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 # ── App Config ────────────────────────────────────────────────────────────
 app:
-# ── Speaches ────────────────────────────────────────────────────────────
   speaches:
-    base-url: ${SPEACHES_BASE_URL}
-    model: ${SPEACHES_MODEL}
-# ── Cache  ────────────────────────────────────────────────────────────
+    base-url: ${SPEACHES_BASE_URL:http://localhost:8000}
+    model: ${SPEACHES_MODEL:Systran/faster-whisper-small}
   cache:
     transcription-ttl: ${CACHE_TTL:24}
 

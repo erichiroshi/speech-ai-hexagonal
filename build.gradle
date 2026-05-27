@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.erichiroshi'
-version = '5.1.0'
+version = '6.4.0'
 description = 'Serviço de transcrição de áudio com análise inteligente via LLM'
 
 java {
@@ -25,8 +25,9 @@ repositories {
 ext {
     okhttpVersion = '5.3.2'
     testcontainersVersion = '2.0.4'
-    aopVersion            = '3.5.13'
-    resilience4jVersion   = '2.4.0'
+    aopVersion = '3.5.13'
+    resilience4jVersion = '2.4.0'
+    logbackencoderVersion = '9.0'
 }
 
 dependencies {
@@ -39,20 +40,26 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-flyway'
     implementation 'org.flywaydb:flyway-database-postgresql'
 
-    // Spring Data Redis (Lettuce client embutido) + serialização Jackson
+    // Cache
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     // Resiliência
-    // AOP necessário para @CircuitBreaker, @Retry funcionar como anotações
     implementation "org.springframework.boot:spring-boot-starter-aop:${aopVersion}"
-    // Resilience4j com autoconfigure para Spring Boot 4
     implementation "io.github.resilience4j:resilience4j-spring-boot4:${resilience4jVersion}"
+
+    // Observabilidade
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+    implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
+    implementation 'org.springframework.boot:spring-boot-starter-zipkin'
+
+    // Logs estruturados
+    implementation "net.logstash.logback:logstash-logback-encoder:${logbackencoderVersion}"
 
     // Test
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
@@ -60,8 +67,6 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-data-redis-test'
     testImplementation 'org.wiremock:wiremock-standalone:3.13.0'
     testImplementation 'org.awaitility:awaitility:4.3.0'
-
-    // MockWebServer para simular o Speaches (Whisper) nos testes
     testImplementation 'com.squareup.okhttp3:mockwebserver'
 }
 
@@ -72,7 +77,7 @@ dependencyManagement {
     }
 }
 
-ext{
+ext {
     coverageExclusions = [
             '**/config/**',
             '**/dto/**',
@@ -88,7 +93,7 @@ ext{
 // ── Jacoco ─────────────────────────────────────────────────────────────
 jacocoTestReport {
     reports {
-        xml.required  = true
+        xml.required = true
         html.required = true
     }
     afterEvaluate {
@@ -102,7 +107,7 @@ jacocoTestReport {
 jacocoTestCoverageVerification {
     violationRules {
         rule {
-            limit { minimum = 0.65 }
+            limit { minimum = 0.70 }
         }
     }
 }
@@ -117,12 +122,6 @@ sonar {
 }
 
 // ── Tasks ─────────────────────────────────────────────────────────────
-tasks.named('sonar') {
-    dependsOn tasks.named('jacocoTestReport')
-}
-tasks.named('jacocoTestReport') {
-    dependsOn tasks.named('test')
-}
-tasks.named('test') {
-    useJUnitPlatform()
-}
+tasks.named('sonar')            { dependsOn tasks.named('jacocoTestReport') }
+tasks.named('jacocoTestReport') { dependsOn tasks.named('test') }
+tasks.named('test')             { useJUnitPlatform() }

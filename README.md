@@ -42,6 +42,10 @@
   - [Objetivos](#objetivos)
   - [Exemplo](#exemplo)
 - [📊 Observabilidade](#-observabilidade)
+  - [Componentes](#componentes)
+- [Métricas](#métricas)
+- [Tracing](#tracing)
+- [Logs estruturados](#logs-estruturados)
 - [🧪 Testando a API](#-testando-a-api)
   - [Estratégia de testes](#estratégia-de-testes)
 - [🔧 Variáveis de ambiente](#-variáveis-de-ambiente)
@@ -56,12 +60,12 @@
 
 | Fase | Descrição | Status |
 |------|-----------|--------|
-| **1** | Base hexagonal — transcrição local (Speaches/Whisper) · RestClient · Lombok · MapStruct | ✅ `v1.0.0` |
-| **2** | Qualidade de código com SonarQube e JaCoCo | ✅ `v2.0.0` |
-| **3** | Setup PostgreSQL + JPA + Flyway | ✅ `v3.1.0` |
-| **4** | Cache Redis com SHA-256 — RedisConfig · RedisCacheAdapter · Testcontainers | 🔜 `v2.x` |
-| **5** | Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC | 🔜 `v3.x` |
-| **6** | Resiliência — Circuit Breaker · Retry · Bulkhead (Resilience4j) | 🔜 `v4.x` |
+| **1** | Base hexagonal — transcrição local (Speaches/Whisper) · RestClient · Lombok · MapStruct | ✅ `v1.7.0` |
+| **2** | Qualidade de código com SonarQube e JaCoCo | ✅ `v2.5.0` |
+| **3** | Setup PostgreSQL + JPA + Flyway | ✅ `v3.7.0` |
+| **4** | Cache Redis com SHA-256 — RedisConfig · RedisCacheAdapter · Testcontainers | ✅ `v4.3.0` |
+| **5** | Resiliência — Circuit Breaker · Retry · Bulkhead (Resilience4j) | ✅ `v5.3.0` |
+| **6** | Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC | ✅ `v6.5.0` |
 | **7** | Spring AI + OpenAI Whisper — segunda porta de saída (cloud) | 🔜 `v5.x` |
 | **8** | Spring AI + Ollama — resumo por LLM local ≤1B parâmetros | 🔜 `v6.x` |
 | **9** | RabbitMQ — TranscriptionCompletedEvent · DLQ · Consumer de auditoria | 🔜 `v7.x` |
@@ -258,14 +262,57 @@ return HexFormat.of().formatHex(hash);
 
 ## 📊 Observabilidade
 
-> Disponível a partir da Fase 3.
-
 | Ferramenta | URL local | Descrição |
 |-----------|-----------|-----------|
 | Prometheus | `http://localhost:9090` | Métricas |
 | Grafana | `http://localhost:3000` | Dashboards |
 | Zipkin | `http://localhost:9411` | Tracing |
 | Actuator Health | `http://localhost:8080/actuator/health` | Health check |
+
+A aplicação agora possui stack completa de observabilidade.
+
+### Componentes
+
+- Micrometer
+- Prometheus
+- Grafana
+- OpenTelemetry
+- Zipkin
+- Logs JSON estruturados
+
+---
+
+## Métricas
+
+```java
+Counter.builder("transcription.requests.total")
+  .tag("status","success")
+  .register(registry);
+```
+
+---
+
+## Tracing
+
+```yaml
+management.tracing.sampling.probability=1.0
+management.zipkin.tracing.endpoint=http://zipkin:9411/api/v2/spans
+```
+
+---
+
+## Logs estruturados
+
+Campos MDC:
+
+```text
+requestId
+traceId
+spanId
+httpMethod
+uri
+fileName
+```
 
 ---
 

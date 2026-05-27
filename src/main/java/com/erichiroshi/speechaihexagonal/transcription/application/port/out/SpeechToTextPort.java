@@ -1,4 +1,4 @@
-package com.erichiroshi.speechaihexagonal.transcription.domain;
+package com.erichiroshi.speechaihexagonal.transcription.application.port.out;
 
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 
