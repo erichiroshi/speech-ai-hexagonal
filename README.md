@@ -51,6 +51,10 @@
   - [Métricas](#métricas)
   - [Tracing](#tracing)
   - [Logs estruturados](#logs-estruturados)
+- [Governança Arquitetural](#governança-arquitetural)
+  - [Validações adicionadas](#validações-adicionadas)
+  - [Exemplo](#exemplo-1)
+  - [Objetivos](#objetivos-1)
 - [🧪 Testando a API](#-testando-a-api)
   - [Estratégia de testes](#estratégia-de-testes)
 - [🔧 Variáveis de ambiente](#-variáveis-de-ambiente)
@@ -318,6 +322,37 @@ httpMethod
 uri
 fileName
 ```
+
+---
+
+## Governança Arquitetural
+
+A aplicação agora possui validação automatizada da arquitetura hexagonal utilizando ArchUnit.
+
+### Validações adicionadas
+
+- Onion Architecture
+- Convenções de portas
+- Separação domínio/aplicação/infraestrutura
+- Restrições de dependência
+
+### Exemplo
+
+```java
+@ArchTest
+public static final ArchRule arquitetura_hexagonal_completa =
+    onionArchitecture()
+        .domainModels("..transcription.domain.model..")
+        .applicationServices("..transcription.application..")
+        .adapter("http", "..transcription.infrastructure.http..");
+```
+
+### Objetivos
+
+- Evitar erosão arquitetural
+- Reduzir acoplamento indevido
+- Garantir governança contínua
+- Executar validações junto dos testes
 
 ---
 

@@ -100,11 +100,13 @@
       <div class="legend-item"><div class="legend-dot" style="background:#185FA5"></div>Fase 2 — concluída (v2.5.0)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#7F77DD"></div>Fase 3 — concluída (v3.7.0)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#0e7490"></div>Fase 4 — concluída (v4.3.0)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#0F6E56"></div>Fase 5 —  (v5.x)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#15803d"></div>Fase 6 —  (v6.x)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>Fase 7 —  (v7.x)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#b45309"></div>Fase 8 —  (v8.x)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div>Fase 9 —  (v9.x)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0F6E56"></div>Fase 5 — concluída (v5.3.0)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#520775c2"></div>Fase 6 — concluída (v6.4.0)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#15803d"></div>Fase 7 — concluída (v7.1.0)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#bc27e9c9"></div>Fase 8 —  (v8.x)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>Fase 9 —  (v9.x)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#883506"></div>Fase 10 —  (v10.x)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#087252"></div>Fase 11 —  (v10.x)</div>
     </div>
 
     <div id="phases"></div>
@@ -373,7 +375,7 @@
       },
       {
         id: 6, label: "Fase 6", title: "Observabilidade",
-        color: "#7F77DD", badgeBg: "#1a1640", badgeColor: "#a5b4fc",
+        color: "#15803d", badgeBg: "#1a1640", badgeColor: "#a5b4fc",
         version: "v6.1.0–v6.4.0", taskCount: 4, done: false,
         tasks: [
           {
@@ -411,12 +413,27 @@
         ]
       },
       {
-        id: 7, label: "Fase 7", title: "Spring AI — transcrição via OpenAI",
+        id: 7, label: "Fase 7", title: "Validação Automatizada da Arquitetura Hexagonal",
         color: "#15803d", badgeBg: "#052e16", badgeColor: "#86efac",
-        version: "v7.1.0–v7.2.0", taskCount: 2, done: false,
+        version: "v7.1.0", taskCount: 1, done: true,
         tasks: [
           {
-            title: "7.1 — OpenAiSpeechAdapter (segunda porta de saída)",
+            title: "7.1 — Validação Automatizada da Arquitetura Hexagonal",
+            desc: "Adicionar ArchUnit, criar testes arquiteturais e validar convenções da arquitetura hexagonal.",
+            tags: ["ArchUnit", "Arquitetura", "Hexagonal"],
+            done: true,
+            version: "7.1.0",
+            detail: "Adicionar dependência ArchUnit JUnit5 ao build.gradle e criar a classe HexagonalArchitectureTest para validar automaticamente as regras da arquitetura hexagonal. Configurar Onion Architecture garantindo separação entre domínio, aplicação e adapters de infraestrutura. Implementar validações de convenção para portas, adapters e organização de pacotes, reduzindo risco de acoplamento indevido entre camadas. A suíte arquitetural deve executar junto ao pipeline de testes garantindo governança contínua da estrutura do projeto.",
+            snippet: "@ArchTest\npublic static final ArchRule arquitetura_hexagonal_completa = onionArchitecture()\n .domainModels(\"..transcription.domain.model..\")\n .applicationServices(\"..transcription.application..\")\n .adapter(\"http\", \"..transcription.infrastructure.http..);\n\n@ArchTest\npublic static final ArchRule portas_de_entrada_devem_terminar_com_port =\n classes().that().resideInAPackage(\"..port.in..\")\n .should().haveSimpleNameEndingWith(\"Port\");"}
+        ]
+      },
+      {
+        id: 8, label: "Fase 8", title: "Spring AI — transcrição via OpenAI",
+        color: "#b45309", badgeBg: "#4c1d95", badgeColor: "#a78bfa",
+        version: "v8.1.0–v8.2.0", taskCount: 2, done: false,
+        tasks: [
+          {
+            title: "8.1 — OpenAiSpeechAdapter (segunda porta de saída)",
             desc: "Implementa SpeechToTextPort via Spring AI + OpenAI Whisper, seleção por profile/config",
             tags: ["Spring AI", "OpenAI", "Whisper-1"],
             done: false,
@@ -424,7 +441,7 @@
             detail: "OpenAiSpeechAdapter implements SpeechToTextPort. Usa Spring AI AudioTranscriptionModel com OpenAI whisper-1. Seleção do adapter via @ConditionalOnProperty(speech.provider=openai). SpeachesAdapter permanece como padrão local. Domínio e use case não mudam uma linha.",
             snippet: "@ConditionalOnProperty(name=\"speech.provider\", havingValue=\"openai\")\n@Primary\npublic class OpenAiSpeechAdapter implements SpeechToTextPort {...}\n\n// application.yml:\n# speech.provider: speaches  ← local (padrão)\n# speech.provider: openai    ← cloud" },
           {
-            title: "7.2 — Testes + config de ambiente",
+            title: "8.2 — Testes + config de ambiente",
             desc: "Testes com MockWebServer para OpenAI, .env atualizado com OPENAI_API_KEY, profile openai",
             tags: ["MockWebServer", "Profile", "Config"],
             done: false,
@@ -434,12 +451,12 @@
         ]
       },
       {
-        id: 8, label: "Fase 8", title: "Spring AI — resumo via Ollama",
+        id: 9, label: "Fase 9", title: "Spring AI — resumo via Ollama",
         color: "#7c3aed", badgeBg: "#2e1065", badgeColor: "#c4b5fd",
-        version: "v8.1.0–v8.3.0", taskCount: 3, done: false,
+        version: "v9.1.0–v9.3.0", taskCount: 3, done: false,
         tasks: [
           {
-            title: "8.1 — Domínio analysis/ + LanguageModelPort",
+            title: "9.1 — Domínio analysis/ + LanguageModelPort",
             desc: "Novo bounded context analysis/ hexagonal completo, SummarizeTranscriptionUseCase",
             tags: ["Bounded Context", "Spring AI", "Ollama"],
             done: false,
@@ -447,7 +464,7 @@
             detail: "Novo domínio analysis/ completamente separado do transcription/. LanguageModelPort define o contrato. SummarizeTranscriptionUseCase: busca texto no cache → prompt → LLM → armazena resumo → retorna. Ollama com modelo ≤1B (ex: qwen2.5:0.5b or tinyllama).",
             snippet: "public interface LanguageModelPort {\n    String generate(String prompt);\n}\n\n// Trocar Ollama por OpenAI = novo adapter\n// Use case e domínio não mudam" },
           {
-            title: "8.2 — OllamaLanguageModelAdapter + endpoint",
+            title: "9.2 — OllamaLanguageModelAdapter + endpoint",
             desc: "POST /api/transcriptions/{hash}/analysis, OllamaLanguageModelAdapter via Spring AI",
             tags: ["Ollama", "Adapter", "REST"],
             done: false,
@@ -455,7 +472,7 @@
             detail: "OllamaLanguageModelAdapter implements LanguageModelPort com Spring AI ChatClient + Ollama. Endpoint POST /{hash}/analysis busca texto no Redis via TranscriptionCachePort, gera prompt, chama LLM. GlobalExceptionHandler: AnalysisUnavailableException → 503.",
             snippet: "POST /api/transcriptions/{audioHash}/analysis\n\nResponse 200:\n{ \"summary\": \"...\", \"audioHash\": \"...\", \"model\": \"qwen2.5:0.5b\", \"cached\": false }" },
           {
-            title: "8.3 — Cache Redis para resumos + testes",
+            title: "9.3 — Cache Redis para resumos + testes",
             desc: "SummaryStorePort, RedisStoreAdapter (TTL 72h), testes Testcontainers",
             tags: ["Redis", "Cache", "Testcontainers"],
             done: false,
@@ -465,12 +482,12 @@
         ]
       },
       {
-        id: 9, label: "Fase 9", title: "Mensageria (RabbitMQ)",
+        id: 10, label: "Fase 10", title: "Mensageria (RabbitMQ)",
         color: "#b45309", badgeBg: "#451a03", badgeColor: "#fcd34d",
-        version: "v9.1.0–v9.2.0", taskCount: 2, done: false,
+        version: "v10.1.0–v10.2.0", taskCount: 2, done: false,
         tasks: [
           {
-            title: "9.1 — TranscriptionCompletedEvent + publisher",
+            title: "10.1 — TranscriptionCompletedEvent + publisher",
             desc: "EventPublisherPort, RabbitMqEventPublisher, TranscriptionCompletedEvent no use case",
             tags: ["RabbitMQ", "Event", "Port"],
             done: false,
@@ -478,7 +495,7 @@
             detail: "EventPublisherPort como nova porta de saída. RabbitMqEventPublisher implements EventPublisherPort. TranscriptionService publica TranscriptionCompletedEvent após cada transcrição bem-sucedida. RabbitMQ no Docker Compose.",
             snippet: "public interface EventPublisherPort {\n    void publish(TranscriptionCompletedEvent event);\n}\n\n// TranscriptionService:\neventPublisher.publish(new TranscriptionCompletedEvent(hash, text, filename));" },
           {
-            title: "9.2 — Consumer base + DLQ + testes",
+            title: "10.2 — Consumer base + DLQ + testes",
             desc: "Consumer de log/auditoria, Dead Letter Queue, testes com Testcontainers RabbitMQ",
             tags: ["Consumer", "DLQ", "Testcontainers"],
             done: false,
@@ -488,12 +505,12 @@
         ]
       },
       {
-        id: 10, label: "Fase 10", title: "CI/CD + qualidade de código",
-        color: "#8b5cf6", badgeBg: "#4c1d95", badgeColor: "#a78bfa",
-        version: "v10.1.0–v10.3.0", taskCount: 3, done: false,
+        id: 11, label: "Fase 11", title: "CI/CD + qualidade de código",
+        color: "#8b5cf6", badgeBg: "#052e16", badgeColor: "#86efac",
+        version: "v11.1.0–v11.3.0", taskCount: 3, done: false,
         tasks: [
           {
-            title: "10.1 — GitHub Actions: build + testes + JaCoCo",
+            title: "11.1 — GitHub Actions: build + testes + JaCoCo",
             desc: "ci.yml: build, test, JaCoCo report, threshold 70%, artefato de cobertura",
             tags: ["GitHub Actions", "JaCoCo", "CI"],
             done: false,
@@ -501,7 +518,7 @@
             detail: "ci.yml: triggers em push/PR main. Steps: checkout → Java 25 → Gradle test → JaCoCo report → upload artefato. Threshold: 70% (sobe progressivamente). Badge de build no README.",
             snippet: "- name: Run tests\n  run: ./gradlew test jacocoTestReport\n- name: Upload coverage\n  uses: actions/upload-artifact@v4\n  with: { path: build/reports/jacoco }" },
           {
-            title: "10.2 — SonarCloud + Codecov",
+            title: "11.2 — SonarCloud + Codecov",
             desc: "sonar-project.properties, SONAR_TOKEN, codecov.yml, badges no README",
             tags: ["SonarCloud", "Codecov", "Quality Gate"],
             done: false,
@@ -509,7 +526,7 @@
             detail: "sonar-project.properties com qualitygate configurado. Secrets: SONAR_TOKEN, CODECOV_TOKEN. codecov.yml com threshold. ci.yml atualizado com steps de SonarCloud e Codecov. Badges de qualidade no README.",
             snippet: "- name: SonarCloud\n  run: ./gradlew sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}\n- name: Codecov\n  uses: codecov/codecov-action@v4" },
           {
-            title: "10.3 — Docker Hub + release automático",
+            title: "11.3 — Docker Hub + release automático",
             desc: "docker.yml: build multi-arch, push Docker Hub, release.sh atualizado para o projeto",
             tags: ["Docker Hub", "Multi-arch", "Release"],
             done: false,
@@ -520,7 +537,7 @@
       }
     ];
 
-    let openPhases = new Set([6]);
+    let openPhases = new Set([8]);
     let activeTask = null;
 
     function renderPhases() {

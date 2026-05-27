@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.erichiroshi'
-version = '6.4.1'
+version = '7.1.0'
 description = 'Serviço de transcrição de áudio com análise inteligente via LLM'
 
 java {
@@ -70,7 +70,7 @@ dependencies {
     testImplementation "org.wiremock:wiremock-standalone:${wireMockVersion}"
     testImplementation "org.awaitility:awaitility:${awaitilityVersion}"
     testImplementation 'com.squareup.okhttp3:mockwebserver'
-}
+    testImplementation 'com.tngtech.archunit:archunit-junit5:1.4.2'}
 
 dependencyManagement {
     imports {
