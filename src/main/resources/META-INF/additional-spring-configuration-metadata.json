@@ -1,0 +1,28 @@
+{
+  "properties": [
+    {
+      "name": "speech.provider",
+      "type": "java.lang.String",
+      "description": "Description for speech.provider."
+    },
+    {
+      "name": "app.openai.model",
+      "type": "java.lang.String",
+      "description": "Description for app.openai.model."
+    },
+    {
+      "name": "app.analysis.model",
+      "type": "java.lang.String",
+      "description": "Description for app.analysis.model."
+    },
+    {
+      "name": "app.analysis.base-url",
+      "type": "java.lang.String",
+      "description": "Description for app.analysis.base-url."
+    },
+    {
+      "name": "app.analysis.summary-ttl",
+      "type": "java.lang.String",
+      "description": "Description for app.analysis.summary-ttl."
+    }
+  ] }

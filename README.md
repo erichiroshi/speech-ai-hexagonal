@@ -67,18 +67,19 @@
 
 ## 🗺️ Roadmap
 
-| Fase | Descrição | Status |
-|------|-----------|--------|
-| **1** | Base hexagonal — transcrição local (Speaches/Whisper) · RestClient · Lombok · MapStruct | ✅ `v1.7.0` |
-| **2** | Qualidade de código com SonarQube e JaCoCo | ✅ `v2.5.0` |
-| **3** | Setup PostgreSQL + JPA + Flyway | ✅ `v3.7.0` |
-| **4** | Cache Redis com SHA-256 — RedisConfig · RedisCacheAdapter · Testcontainers | ✅ `v4.3.0` |
-| **5** | Resiliência — Circuit Breaker · Retry · Bulkhead (Resilience4j) | ✅ `v5.3.0` |
-| **6** | Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC | ✅ `v6.5.0` |
-| **7** | Spring AI + OpenAI Whisper — segunda porta de saída (cloud) | 🔜 `v5.x` |
-| **8** | Spring AI + Ollama — resumo por LLM local ≤1B parâmetros | 🔜 `v6.x` |
-| **9** | RabbitMQ — TranscriptionCompletedEvent · DLQ · Consumer de auditoria | 🔜 `v7.x` |
-| **10** | CI/CD — GitHub Actions · SonarCloud · Codecov · Docker Hub · Multi-arch | 🔜 `v8.x` |
+| Fase   | Descrição | Status     |
+|--------|-----------|------------|
+| **1**  | Base hexagonal — transcrição local (Speaches/Whisper) · RestClient · Lombok · MapStruct | ✅ `v1.7.0` |
+| **2**  | Qualidade de código com SonarQube e JaCoCo | ✅ `v2.5.0` |
+| **3**  | Setup PostgreSQL + JPA + Flyway | ✅ `v3.7.0` |
+| **4**  | Cache Redis com SHA-256 — RedisConfig · RedisCacheAdapter · Testcontainers | ✅ `v4.3.0` |
+| **5**  | Resiliência — Circuit Breaker · Retry · Bulkhead (Resilience4j) | ✅ `v5.3.0` |
+| **6**  | Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC | ✅ `v6.5.0` |
+| **7**  | Validação automatizada da arquitetura hexagonal| ✅ `v7.1`   |
+| **8**  | Spring AI + OpenAI Whisper — segunda porta de saída (cloud) | ✅ `v8.2`   |
+| **9**  | Spring AI + Ollama — resumo por LLM local ≤1B parâmetros | 🔜 `v9.x`  |
+| **10** | RabbitMQ — TranscriptionCompletedEvent · DLQ · Consumer de auditoria | 🔜 `v10.x` |
+| **11** | CI/CD — GitHub Actions · SonarCloud · Codecov · Docker Hub · Multi-arch | 🔜 `v11.x` |
 
 ---
 
@@ -87,16 +88,17 @@
 
 👉 https://github.com/erichiroshi/speech-ai-hexagonal
  
-| Página | Descrição |
-|---|---|
-| [Home](https://erichiroshi.github.io/speech-ai-hexagonal/) | Visão geral e quick start |
-| [Arquitetura](https://erichiroshi.github.io/speech-ai-hexagonal/architecture.html) | C4 Model — Contexto, Containers, Componentes |
-| [Qualidade](https://erichiroshi.github.io/speech-ai-hexagonal/quality.html)| Jacoco + SonarCloud + Codecov |
-| [Persistência](https://erichiroshi.github.io/speech-ai-hexagonal/persistence.html)| Postgres + Flyway |
-| [Roadmap](https://erichiroshi.github.io/speech-ai-hexagonal/roadmap.html)| Roadmap do projeto |
-| [Observabilidade]() | - |
-| [Resiliência]() | - |
-| [API Reference]() | - |
+| Página                                                                             | Descrição                                      |
+|------------------------------------------------------------------------------------|------------------------------------------------|
+| [Home](https://erichiroshi.github.io/speech-ai-hexagonal/)                         | Visão geral e quick start                      |
+| [Arquitetura](https://erichiroshi.github.io/speech-ai-hexagonal/architecture.html) | C4 Model — Contexto, Containers, Componentes   |
+| [Qualidade](https://erichiroshi.github.io/speech-ai-hexagonal/quality.html)        | Jacoco + SonarCloud + Codecov                  |
+| [Persistência](https://erichiroshi.github.io/speech-ai-hexagonal/persistence.html) | Postgres + Flyway                              |
+| [Cache](https://erichiroshi.github.io/speech-ai-hexagonal/cache.html)            | Cache Redis Distribuído                        |
+| [Observabilidade](https://erichiroshi.github.io/speech-ai-hexagonal/observability.html) | Promethes + Grafana + Zipkin + Logs JSON (MDC) |
+| [Roadmap](https://erichiroshi.github.io/speech-ai-hexagonal/roadmap.html)          | Roadmap do projeto                             |
+| [Resiliência]() | -                                              |
+| [API Reference]() | -                                              |
 
 ---
 
@@ -228,6 +230,55 @@ curl -X POST http://localhost:8080/api/transcriptions \
 
 **Tipos aceitos:** `audio/wav`, `audio/wave`, `audio/mpeg`, `audio/mp3`, `audio/mp4`, `audio/webm`, `audio/ogg`  
 **Tamanho máximo:** 5 MB
+
+---
+
+## Multi-provider Speech-to-Text
+
+A aplicação agora suporta múltiplos providers de transcrição utilizando arquitetura hexagonal.
+
+### Providers disponíveis
+
+| Provider | Estratégia |
+|---|---|
+| speaches | Local/GPU |
+| openai | Cloud/OpenAI Whisper |
+
+---
+
+## OpenAI Whisper
+
+Implementação baseada em:
+
+- Spring AI
+- AudioTranscriptionModel
+- whisper-1
+
+### Seleção dinâmica
+
+```yaml
+# local
+speech.provider=speaches
+
+# cloud
+speech.provider=openai
+```
+
+---
+
+## Ativação do profile OpenAI
+
+```bash
+./gradlew bootRun --args='--spring.profiles.active=dev,openai'
+```
+
+---
+
+## Variáveis de ambiente
+
+```env
+OPENAI_API_KEY=sk-...
+```
 
 ---
 

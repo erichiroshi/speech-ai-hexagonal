@@ -31,12 +31,12 @@ public class PostgresRepositoryAdapter implements TranscriptionRepositoryPort {
     @Override
     public Transcription save(Transcription transcription) {
 
-        log.debug("Salvando transcrição no banco");
+        log.debug("Salvando transcrição no banco (Postgres)");
 
         TranscriptionEntity entity = TranscriptionEntity.toEntity(transcription);
         TranscriptionEntity saved = repository.save(entity);
 
-        log.info("Transcrição salva no banco {}", saved.getAudioHash());
+        log.info("Transcrição salva no banco (Postgres) {}", saved.getAudioHash());
 
 
         return saved.toDomain();

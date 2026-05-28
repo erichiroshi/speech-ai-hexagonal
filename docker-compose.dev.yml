@@ -114,6 +114,22 @@ services:
       retries: 3
       start_period: 10s
 
+# ── Ollama ───────────────────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-dev
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
   # ── SonarQube ───────────────────────────────────────────────────────────────────
   sonarqube:
     image: sonarqube:26.5.0.122743-community
@@ -141,6 +157,7 @@ volumes:
   sonarqube_extensions:
   sonarqube_logs:
   sonarqube_temp:
+  ollama_models:
 
 networks:
   default:

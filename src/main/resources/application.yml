@@ -46,6 +46,14 @@ spring:
       connect-timeout: 2s
       timeout: 2s
 
+# ── Ollama ────────────────────────────────────────────────────────────────────
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://ollama:11434}
+      chat:
+        options:
+          model: ${OLLAMA_MODEL:qwen2.5:0.5b}
+
 # ── Server Port ────────────────────────────────────────────────────────────
 server:
   port: 8080
@@ -76,6 +84,19 @@ app:
     model: ${SPEACHES_MODEL:Systran/faster-whisper-small}
   cache:
     transcription-ttl: ${CACHE_TTL:24}
+
+  openai:
+    model: ${OPENAI_MODEL:whisper-1}
+  analysis:
+    model: ${OLLAMA_MODEL:qwen2.5:0.5b}
+    base-url: ${OLLAMA_BASE_URL:http://ollama:11434}
+    summary-ttl: ${SUMMARY_TTL:72h}
+
+# ── Speech Provider ───────────────────────────────────────────────────────────
+# speaches → Whisper local via Speaches (padrão, requer GPU)
+# openai → OpenAI Whisper-1 cloud (requer OPENAI_API_KEY)
+speech:
+  provider: ${SPEECH_PROVIDER:speaches}
 
 # ── Resilience4j ────────────────────────────────────────────────────────
 resilience4j:
