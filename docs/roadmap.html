@@ -456,13 +456,13 @@
       {
         id: 9, label: "Fase 9", title: "Spring AI — resumo via Ollama",
         color: "#7c3aed", badgeBg: "#2e1065", badgeColor: "#c4b5fd",
-        version: "v9.1.0–v9.3.0", taskCount: 3, done: false,
+        version: "v9.3.0", taskCount: 3, done: true,
         tasks: [
           {
             title: "9.1 — Domínio analysis/ + LanguageModelPort",
             desc: "Novo bounded context analysis/ hexagonal completo, SummarizeTranscriptionUseCase",
             tags: ["Bounded Context", "Spring AI", "Ollama"],
-            done: false,
+            done: true,
             version: null,
             detail: "Novo domínio analysis/ completamente separado do transcription/. LanguageModelPort define o contrato. SummarizeTranscriptionUseCase: busca texto no cache → prompt → LLM → armazena resumo → retorna. Ollama com modelo ≤1B (ex: qwen2.5:0.5b or tinyllama).",
             snippet: "public interface LanguageModelPort {\n    String generate(String prompt);\n}\n\n// Trocar Ollama por OpenAI = novo adapter\n// Use case e domínio não mudam" },
@@ -470,7 +470,7 @@
             title: "9.2 — OllamaLanguageModelAdapter + endpoint",
             desc: "POST /api/transcriptions/{hash}/analysis, OllamaLanguageModelAdapter via Spring AI",
             tags: ["Ollama", "Adapter", "REST"],
-            done: false,
+            done: true,
             version: null,
             detail: "OllamaLanguageModelAdapter implements LanguageModelPort com Spring AI ChatClient + Ollama. Endpoint POST /{hash}/analysis busca texto no Redis via TranscriptionCachePort, gera prompt, chama LLM. GlobalExceptionHandler: AnalysisUnavailableException → 503.",
             snippet: "POST /api/transcriptions/{audioHash}/analysis\n\nResponse 200:\n{ \"summary\": \"...\", \"audioHash\": \"...\", \"model\": \"qwen2.5:0.5b\", \"cached\": false }" },
@@ -478,7 +478,7 @@
             title: "9.3 — Cache Redis para resumos + testes",
             desc: "SummaryStorePort, RedisStoreAdapter (TTL 72h), testes Testcontainers",
             tags: ["Redis", "Cache", "Testcontainers"],
-            done: false,
+            done: true,
             version: null,
             detail: "SummaryStorePort como nova porta de saída. RedisStoreAdapter: chave 'summary:{hash}', TTL 72h configurável. RedisAnalysisConfig com RedisTemplate separado. Testes Testcontainers validam cache hit/miss para resumos.",
             snippet: "// Fluxo com cache:\n// 1ª chamada: Ollama (~5-30s) → armazena Redis → cached: false\n// 2ª chamada: Redis hit (~15ms) → cached: true" }
@@ -540,7 +540,7 @@
       }
     ];
 
-    let openPhases = new Set([9])
+    let openPhases = new Set([10])
     let activeTask = null
 
     function renderPhases() {

@@ -1,5 +1,7 @@
 package com.erichiroshi.speechaihexagonal.transcription.infrastructure.http.handler;
 
+import com.erichiroshi.speechaihexagonal.analysis.domain.exception.AnalysisUnavailableException;
+import com.erichiroshi.speechaihexagonal.analysis.domain.exception.TranscriptionNotFoundException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException;
 import io.github.resilience4j.bulkhead.Bulkhead;
@@ -23,6 +25,7 @@ class GlobalExceptionHandlerTest {
 
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
 
+    // ── transcription/ ────────────────────────────────────────────────────────
     @Test
     void deveTratarAudioValidationException() {
         // Cenário
@@ -102,6 +105,42 @@ class GlobalExceptionHandlerTest {
         assertEquals("Capacidade excedida", result.getTitle());
     }
 
+    // ── analysis/ ─────────────────────────────────────────────────────────────
+    @Test
+    void deveTratarTranscriptionNotFoundException() {
+        // Cenário
+        String audioHash = "a1b2c3d4";
+        TranscriptionNotFoundException exception = new TranscriptionNotFoundException(audioHash);
+
+        // Ação
+        ProblemDetail result = handler.handleTranscriptionNotFound(exception);
+
+        // Verificação
+        assertNotNull(result);
+        assertEquals(HttpStatus.NOT_FOUND.value(), result.getStatus());
+        assertEquals("Transcrição não encontrada para audioHash: " + audioHash, result.getDetail());
+        assertEquals("Transcrição não encontrada", result.getTitle());
+        assert result.getProperties() != null;
+        assertEquals(audioHash, result.getProperties().get("audioHash"));
+         assertEquals(URI.create("/errors/transcription-not-found"), result.getType());
+    }
+
+    @Test
+    void deveTratarAnalysisUnavailableException() {
+        // Cenário
+        AnalysisUnavailableException exception = new AnalysisUnavailableException("Ollama offline");
+
+        // Ação
+        ProblemDetail result = handler.handleAnalysisUnavailable(exception);
+
+        // Verificação
+        assertNotNull(result);
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE.value(), result.getStatus());
+        assertEquals("Ollama offline", result.getDetail());
+        assertEquals("Serviço de análise indisponível", result.getTitle());
+    }
+
+    // ── genérico ──────────────────────────────────────────────────────────────
     @Test
     void deveTratarGenericException() {
         // Cenário

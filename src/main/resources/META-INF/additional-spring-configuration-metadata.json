@@ -11,18 +11,18 @@
       "description": "Description for app.openai.model."
     },
     {
-      "name": "app.analysis.model",
+      "name": "app.analysis.ollama.model",
       "type": "java.lang.String",
-      "description": "Description for app.analysis.model."
+      "description": "Description for app.analysis.ollama.model."
     },
     {
-      "name": "app.analysis.base-url",
+      "name": "app.analysis.ollama.base-url",
       "type": "java.lang.String",
-      "description": "Description for app.analysis.base-url."
+      "description": "Description for app.analysis.ollama.base-url."
     },
     {
-      "name": "app.analysis.summary-ttl",
+      "name": "app.analysis.cache.summary-ttl",
       "type": "java.lang.String",
-      "description": "Description for app.analysis.summary-ttl."
+      "description": "Description for app.analysis.cache.summary-ttl."
     }
   ] }

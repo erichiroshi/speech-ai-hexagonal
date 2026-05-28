@@ -22,7 +22,12 @@ spring:
 
   ai:
     openai:
-      api-key: ${OPENAI_API_KEY}
+      api-key: ${OPENAI_API_KEY:openai_key_dev}
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        options:
+          model: ${OLLAMA_MODEL:llama3.2:1b}
 
 management:
   endpoints:
@@ -45,6 +50,18 @@ app:
     model: ${SPEACHES_MODEL:Systran/faster-whisper-small}
   cache:
     transcription-ttl: ${CACHE_TTL:1}
+  openai:
+    model: ${OPENAI_MODEL:whisper-1}
+
+  analysis:
+    ollama:
+      model: ${OLLAMA_MODEL:llama3.2:1b}
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+    cache:
+      summary-ttl: ${SUMMARY_TTL:72h}
+
+speech:
+  provider: ${SPEECH_PROVIDER:speaches}
 
 resilience4j:
   circuitbreaker:

@@ -40,19 +40,21 @@ spring:
 # ── Cache ────────────────────────────────────────────────────────────
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
       # timeout de conexão/leitura — falha rápida, não bloqueia o request
       connect-timeout: 2s
       timeout: 2s
 
-# ── Ollama ────────────────────────────────────────────────────────────────────
+# ── Ollama LLM ────────────────────────────────────────────────────────────────────
   ai:
     ollama:
-      base-url: ${OLLAMA_BASE_URL:http://ollama:11434}
+      base-url: ${OLLAMA_BASE_URL}
       chat:
         options:
-          model: ${OLLAMA_MODEL:qwen2.5:0.5b}
+          model: ${OLLAMA_MODEL}
+    openai:
+      api-key: ${OPENAI_API_KEY}
 
 # ── Server Port ────────────────────────────────────────────────────────────
 server:
@@ -72,7 +74,7 @@ management:
       probability: 1.0
     export:
       zipkin:
-        endpoint: ${ZIPKIN_ENDPOINT:http://zipkin:9411/api/v2/spans}
+        endpoint: ${ZIPKIN_ENDPOINT}
   metrics:
     tags:
       application: ${spring.application.name}
@@ -80,23 +82,25 @@ management:
 # ── App Config ────────────────────────────────────────────────────────────
 app:
   speaches:
-    base-url: ${SPEACHES_BASE_URL:http://localhost:8000}
-    model: ${SPEACHES_MODEL:Systran/faster-whisper-small}
+    base-url: ${SPEACHES_BASE_URL}
+    model: ${SPEACHES_MODEL}
   cache:
-    transcription-ttl: ${CACHE_TTL:24}
-
+    transcription-ttl: ${CACHE_TTL}
   openai:
     model: ${OPENAI_MODEL:whisper-1}
+
   analysis:
-    model: ${OLLAMA_MODEL:qwen2.5:0.5b}
-    base-url: ${OLLAMA_BASE_URL:http://ollama:11434}
-    summary-ttl: ${SUMMARY_TTL:72h}
+    ollama:
+      model: ${OLLAMA_MODEL}
+      base-url: ${OLLAMA_BASE_URL}
+    cache:
+      summary-ttl: ${SUMMARY_TTL}
 
 # ── Speech Provider ───────────────────────────────────────────────────────────
 # speaches → Whisper local via Speaches (padrão, requer GPU)
 # openai → OpenAI Whisper-1 cloud (requer OPENAI_API_KEY)
 speech:
-  provider: ${SPEECH_PROVIDER:speaches}
+  provider: ${SPEECH_PROVIDER:speech}
 
 # ── Resilience4j ────────────────────────────────────────────────────────
 resilience4j:

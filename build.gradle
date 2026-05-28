@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.erichiroshi'
-version = '8.2.0'
+version = '9.3.0'
 description = 'Serviço de transcrição de áudio com análise inteligente via LLM'
 
 java {
@@ -58,6 +58,7 @@ dependencies {
     // Spring AI — OpenAI (áudio/transcrição)
     implementation platform("org.springframework.ai:spring-ai-bom:${springAiVersion}")
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+    implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
 
     // Test
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

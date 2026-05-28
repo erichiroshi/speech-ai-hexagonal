@@ -1,0 +1,38 @@
+# ── Profile: openai ───────────────────────────────────────────────────────────
+# Ativa o OpenAiSpeechAdapter em substituição ao SpeachesAdapter.
+#
+# Como usar:
+#   ./gradlew bootRun --args='--spring.profiles.active=dev,openai'
+#   SPEECH_PROVIDER=openai ./gradlew bootRun
+#
+# Requer:
+#   OPENAI_API_KEY=sk-...
+#
+# Trade-off:
+#   Speaches: gratuito | local | requer GPU | zero latência de rede
+#   OpenAI:   ~$0.006/min | cloud | sem infra | SLA de disponibilidade
+# ─────────────────────────────────────────────────────────────────────────────
+spring:
+  config:
+    activate:
+      on-profile: openai
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      audio:
+        transcription:
+          options:
+            model: ${OPENAI_MODEL:whisper-1}
+            language: pt
+            response-format: json
+
+speech:
+  provider: openai
+
+app:
+  openai:
+    model: ${OPENAI_MODEL:whisper-1}
+
+logging:
+  level:
+    org.springframework.ai: DEBUG

@@ -39,8 +39,21 @@
   - [Subir infraestrutura](#subir-infraestrutura)
   - [Acessar dashboard](#acessar-dashboard)
 - [📄 Swagger UI](#-swagger-ui)
+- [Bounded Context de Análise](#bounded-context-de-análise)
+  - [Recursos adicionados](#recursos-adicionados)
+- [Endpoint de análise](#endpoint-de-análise)
+  - [Response](#response)
+- [Estratégia de cache](#estratégia-de-cache)
+  - [Fluxo](#fluxo)
 - [📡 Endpoint de transcrição](#-endpoint-de-transcrição)
   - [`POST /api/transcriptions`](#post-apitranscriptions)
+  - [`POST /api/transcriptions/{hashTranscription}/analysis`](#post-apitranscriptionshashtranscriptionanalysis)
+- [Multi-provider Speech-to-Text](#multi-provider-speech-to-text)
+  - [Providers disponíveis](#providers-disponíveis)
+- [OpenAI Whisper](#openai-whisper)
+  - [Seleção dinâmica](#seleção-dinâmica)
+- [Ativação do profile OpenAI](#ativação-do-profile-openai)
+- [Variáveis de ambiente](#variáveis-de-ambiente)
 - [Persistência](#persistência)
   - [Tecnologias](#tecnologias)
   - [Audio Hash](#audio-hash)
@@ -77,7 +90,7 @@
 | **6**  | Observabilidade — Prometheus · Grafana · Zipkin/OTel · Logs JSON + MDC | ✅ `v6.5.0` |
 | **7**  | Validação automatizada da arquitetura hexagonal| ✅ `v7.1`   |
 | **8**  | Spring AI + OpenAI Whisper — segunda porta de saída (cloud) | ✅ `v8.2`   |
-| **9**  | Spring AI + Ollama — resumo por LLM local ≤1B parâmetros | 🔜 `v9.x`  |
+| **9**  | Spring AI + Ollama — resumo por LLM local ≤1B parâmetros | ✅ `v9.3`   |
 | **10** | RabbitMQ — TranscriptionCompletedEvent · DLQ · Consumer de auditoria | 🔜 `v10.x` |
 | **11** | CI/CD — GitHub Actions · SonarCloud · Codecov · Docker Hub · Multi-arch | 🔜 `v11.x` |
 
@@ -176,6 +189,9 @@ uvx speaches-cli model download Systran/faster-whisper-small
 
 # 4. Suba a API
 ./gradlew bootRun --args='--spring.profiles.active=dev'
+
+# 4.1 Suba a API usando OPENAI
+./gradlew bootRun --args='--spring.profiles.active=dev,openai'
 ```
 
 ### Modo produção (tudo via Docker)
@@ -211,6 +227,54 @@ Disponível em: [http://localhost:8080/swagger-ui.html](http://localhost:8080/sw
 
 ---
 
+## Bounded Context de Análise
+
+A aplicação agora possui o contexto `analysis/`
+dedicado à geração de resumos utilizando modelos LLM.
+
+### Recursos adicionados
+
+- LanguageModelPort
+- SummarizeTranscriptionUseCase
+- OllamaLanguageModelAdapter
+- Cache Redis para resumos
+
+---
+
+## Endpoint de análise
+
+```http
+POST /api/transcriptions/{audioHash}/analysis
+```
+
+### Response
+
+```json
+{
+  "summary": "...",
+  "audioHash": "...",
+  "model": "qwen2.5:0.5b",
+  "cached": false
+}
+```
+
+---
+
+## Estratégia de cache
+
+```text
+summary:{hash}
+```
+
+### Fluxo
+
+```text
+1ª chamada → LLM → Redis
+2ª chamada → Redis hit
+```
+
+---
+
 ## 📡 Endpoint de transcrição
 
 ### `POST /api/transcriptions`
@@ -230,6 +294,22 @@ curl -X POST http://localhost:8080/api/transcriptions \
 
 **Tipos aceitos:** `audio/wav`, `audio/wave`, `audio/mpeg`, `audio/mp3`, `audio/mp4`, `audio/webm`, `audio/ogg`  
 **Tamanho máximo:** 5 MB
+
+---
+
+### `POST /api/transcriptions/{hashTranscription}/analysis`
+
+```bash
+curl -X POST http://localhost:8080/api/transcriptions/{hashTranscription}/analysis \
+```
+
+**Resposta 200:**
+
+```json
+{
+  "summary": "Este é o resumo do áudio transcrito."
+}
+```
 
 ---
 

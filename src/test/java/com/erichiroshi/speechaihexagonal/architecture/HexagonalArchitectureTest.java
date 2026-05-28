@@ -29,14 +29,15 @@ public class HexagonalArchitectureTest {
     // 1. O CORAÇÃO DO TESTE: Valida tod_o o isolamento de acessos entre camadas
     @ArchTest
     public static final ArchRule arquitetura_hexagonal_completa = onionArchitecture()
-            .domainModels("..transcription.domain.model..")
-            .domainServices("..transcription.domain.service..")
-            .applicationServices("..transcription.application..")
-            .adapter("http", "..transcription.infrastructure.http..")
-            .adapter("persistence", "..transcription.infrastructure.persistence..")
-            .adapter("cache", "..transcription.infrastructure.cache..")
-            .adapter("speechtotext", "..transcription.infrastructure.speechtotext..")
-            .adapter("metrics", "..transcription.infrastructure.metrics..");
+            .domainModels("..domain.model..")
+            .domainServices("..domain.service..")
+            .applicationServices("..application..")
+            .adapter("cache", "..infrastructure.cache..")
+            .adapter("http", "..infrastructure.http..")
+            .adapter("persistence", "..infrastructure.persistence..")
+            .adapter("speechtotext", "..infrastructure.speechtotext..")
+            .adapter("llm", "..infrastructure.llm..")
+            .adapter("metrics", "..infrastructure.metrics..");
 
     // 2. CONVENÇÕES: Regras de sufixo e localização que o Onion não valida sozinho
     @ArchTest
@@ -52,10 +53,10 @@ public class HexagonalArchitectureTest {
     @ArchTest
     public static final ArchRule adapters_devem_residir_na_infraestrutura =
             classes().that().haveSimpleNameEndingWith("Adapter")
-                    .should().resideInAPackage("..transcription.infrastructure..");
+                    .should().resideInAPackage("..infrastructure..");
 
     @ArchTest
     public static final ArchRule entidades_jpa_devem_residir_na_infraestrutura =
             classes().that().areAnnotatedWith(jakarta.persistence.Entity.class)
-                    .should().resideInAPackage("..transcription.infrastructure..");
+                    .should().resideInAPackage("..infrastructure..");
 }

@@ -1,5 +1,7 @@
 package com.erichiroshi.speechaihexagonal.transcription.infrastructure.http.handler;
 
+import com.erichiroshi.speechaihexagonal.analysis.domain.exception.AnalysisUnavailableException;
+import com.erichiroshi.speechaihexagonal.analysis.domain.exception.TranscriptionNotFoundException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException;
 import io.github.resilience4j.bulkhead.BulkheadFullException;
@@ -18,6 +20,7 @@ public class GlobalExceptionHandler {
 
     private static final String BASE_URI = "/errors/";
 
+    // ── transcription/ ────────────────────────────────────────────────────────
     @ExceptionHandler(AudioValidationException.class)
     public ProblemDetail handleAudioValidation(AudioValidationException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
@@ -64,6 +67,27 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    // ── analysis/ ─────────────────────────────────────────────────────────────
+    @ExceptionHandler(TranscriptionNotFoundException.class)
+    public ProblemDetail handleTranscriptionNotFound(TranscriptionNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problem.setType(URI.create(BASE_URI + "transcription-not-found"));
+        problem.setTitle("Transcrição não encontrada");
+        problem.setProperty("audioHash", ex.getAudioHash());
+        return problem;
+    }
+
+    @ExceptionHandler(AnalysisUnavailableException.class)
+    public ProblemDetail handleAnalysisUnavailable(AnalysisUnavailableException ex) {
+        log.error("Modelo de linguagem indisponível", ex);
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+        problem.setType(URI.create(BASE_URI + "analysis-unavailable"));
+        problem.setTitle("Serviço de análise indisponível");
+        return problem;
+    }
+
+    // ── genérico ──────────────────────────────────────────────────────────────
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGeneric(Exception ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
