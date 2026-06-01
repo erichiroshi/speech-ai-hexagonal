@@ -2,6 +2,7 @@ package com.erichiroshi.speechaihexagonal.analysis.application;
 
 import com.erichiroshi.speechaihexagonal.analysis.application.output.SummaryOutput;
 import com.erichiroshi.speechaihexagonal.analysis.application.port.out.LanguageModelPort;
+import com.erichiroshi.speechaihexagonal.analysis.application.port.out.SummaryEventPublisherPort;
 import com.erichiroshi.speechaihexagonal.analysis.application.port.out.SummaryStorePort;
 import com.erichiroshi.speechaihexagonal.analysis.application.port.out.TranscriptionTextPort;
 import com.erichiroshi.speechaihexagonal.analysis.domain.exception.AnalysisUnavailableException;
@@ -30,6 +31,7 @@ class SummarizeTranscriptionUseCaseTest {
     @Mock private TranscriptionTextPort transcriptionTextPort;
     @Mock private LanguageModelPort     languageModelPort;
     @Mock private SummaryStorePort      summaryStorePort;
+    @Mock private SummaryEventPublisherPort eventPublisherPort;
 
     @InjectMocks
     private SummarizeTranscriptionUseCase useCase;
@@ -57,6 +59,7 @@ class SummarizeTranscriptionUseCaseTest {
             assertThat(result.cached()).isTrue();
             assertThat(result.summary()).isEqualTo(SUMMARY);
             verifyNoInteractions(transcriptionTextPort, languageModelPort);
+            verify(eventPublisherPort).publish(any());
         }
     }
 
@@ -77,6 +80,7 @@ class SummarizeTranscriptionUseCaseTest {
             assertThat(result.summary()).isEqualTo(SUMMARY);
             assertThat(result.audioHash()).isEqualTo(AUDIO_HASH);
             verify(summaryStorePort).save(any(Summary.class));
+            verify(eventPublisherPort).publish(any());
         }
 
         @Test
@@ -91,6 +95,7 @@ class SummarizeTranscriptionUseCaseTest {
 
             verifyNoInteractions(languageModelPort);
             verify(summaryStorePort, never()).save(any());
+            verifyNoInteractions(eventPublisherPort);
         }
 
         @Test
@@ -106,6 +111,18 @@ class SummarizeTranscriptionUseCaseTest {
                     .hasMessageContaining("Ollama indisponível");
 
             verify(summaryStorePort, never()).save(any());
+            verifyNoInteractions(eventPublisherPort);
+        }
+
+        @Test
+        @DisplayName("falha no publisher não deve impedir resposta ao cliente")
+        void falhaNoPublisherNaoDevePropagarExcecao() {
+            when(summaryStorePort.findByAudioHash(AUDIO_HASH)).thenReturn(Optional.empty());
+            when(transcriptionTextPort.findTextByAudioHash(AUDIO_HASH)).thenReturn(Optional.of(TEXT));
+            when(languageModelPort.generate(anyString())).thenReturn(SUMMARY);
+            doThrow(new RuntimeException("RabbitMQ down")).when(eventPublisherPort).publish(any());
+
+            assertThat(useCase.execute(AUDIO_HASH)).isNotNull();
         }
     }
 }

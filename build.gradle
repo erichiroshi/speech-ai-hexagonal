@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.erichiroshi'
-version = '9.1.0'
+version = '10.2.0'
 description = 'Serviço de transcrição de áudio com análise inteligente via LLM'
 
 java {
@@ -42,6 +42,9 @@ dependencies {
     // Cache
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    //RabbitMQ
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+
     // Resiliência
     implementation "org.springframework.boot:spring-boot-starter-aop:${aopVersion}"
     implementation "io.github.resilience4j:resilience4j-spring-boot4:${resilience4jVersion}"
@@ -65,7 +68,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    implementation platform('org.testcontainers:testcontainers-bom:2.0.4')
+    implementation platform('org.testcontainers:testcontainers-bom:2.0.5')
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
     testImplementation 'com.redis:testcontainers-redis'
@@ -75,10 +78,12 @@ dependencies {
     implementation platform('com.squareup.okhttp3:okhttp-bom:5.3.2')
     testImplementation 'com.squareup.okhttp3:mockwebserver'
     testImplementation 'com.tngtech.archunit:archunit-junit5:1.4.2'
+    testImplementation 'org.testcontainers:testcontainers-rabbitmq'
 }
 
 ext {
     coverageExclusions = ['**/config/**',
+                          '**/*Config*',
                           '**/dto/**',
                           '**/*Application*',
                           '**/input**', '**/output**',

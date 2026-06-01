@@ -46,6 +46,22 @@ spring:
       connect-timeout: 2s
       timeout: 2s
 
+# ── RabbitMQ ──────────────────────────────────────────────────────────────────
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASS:guest}
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1s
+          max-attempts: 3
+          multiplier: 2
+          max-interval: 10s
+        acknowledge-mode: auto
+
 # ── Ollama LLM ────────────────────────────────────────────────────────────────────
   ai:
     ollama:

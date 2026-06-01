@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
@@ -39,14 +40,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * </ul>
  */
 @SpringBootTest(
-        classes = {
-                SpeachesResilienceTestConfig.class,
-                SpeachesAdapter.class,
-                AopAutoConfiguration.class,
-                CircuitBreakerAutoConfiguration.class
-        },
+        classes = SpeachesAdapter.class,
         webEnvironment = SpringBootTest.WebEnvironment.NONE
 )
+@Import({
+        SpeachesResilienceTestConfig.class,
+        AopAutoConfiguration.class,
+        CircuitBreakerAutoConfiguration.class
+})
 @EnableConfigurationProperties
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @DisplayName("SpeachesAdapter — Resiliência (WireMock)")
@@ -93,15 +94,15 @@ class SpeachesAdapterResilienceIT {
         registry.add("resilience4j.bulkhead.instances.speaches.max-wait-duration", () -> "0ms");
     }
 
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    private static byte[] fakeAudio() {
+        return "fake-audio-bytes".getBytes();
+    }
+
     @BeforeEach
     void reset() {
         wireMock.resetAll();
         circuitBreakerRegistry.circuitBreaker("speaches").reset();
-    }
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
-    private static byte[] fakeAudio() {
-        return "fake-audio-bytes".getBytes();
     }
 
     private void stubSuccess() {

@@ -60,6 +60,70 @@ services:
       retries: 3
       start_period: 60s
 
+  # ── RabbitMQ ────────────────────────────────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: rabbitmq-dev
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+    volumes:
+      - rabbitmq_data_dev:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ── Ollama ───────────────────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-dev
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      # Se tiver GPU NVIDIA, adicionar:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    runtime: nvidia
+    # Faz o pull do modelo e depois inicia o servidor
+    entrypoint: ["/usr/bin/sh", "-c"]
+    command: ["ollama serve & sleep 5 && ollama pull llama3.2:1b && wait"]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 50s
+      retries: 5
+      start_period: 20s
+
+  # ── SonarQube ───────────────────────────────────────────────────────────────────
+  sonarqube:
+    image: sonarqube:26.5.0.122743-community
+    container_name: sonarqube
+    restart: unless-stopped
+    ports:
+      - "9000:9000" # UI: http://localhost:9000 (admin/admin no primeiro acesso)
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_temp:/opt/sonarqube/temp
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/api/system/status" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
   # ── Prometheus ────────────────────────────────────────────────────────────────────
   prometheus:
     image: prom/prometheus:latest
@@ -115,50 +179,6 @@ services:
       retries: 3
       start_period: 10s
 
-# ── Ollama ───────────────────────────────────────────────────────────────────
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama-dev
-    restart: unless-stopped
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_models:/root/.ollama
-    environment:
-      - OLLAMA_KEEP_ALIVE=24h
-      # Se tiver GPU NVIDIA, adicionar:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
-    runtime: nvidia
-    # Faz o pull do modelo e depois inicia o servidor
-    entrypoint: ["/usr/bin/sh", "-c"]
-    command: ["ollama serve & sleep 5 && ollama pull llama3.2:1b && wait"]
-    healthcheck:
-      test: ["CMD", "ollama", "list"]
-      interval: 10s
-      timeout: 50s
-      retries: 5
-      start_period: 20s
-
-  # ── SonarQube ───────────────────────────────────────────────────────────────────
-  sonarqube:
-    image: sonarqube:26.5.0.122743-community
-    container_name: sonarqube
-    restart: unless-stopped
-    ports:
-      - "9000:9000" # UI: http://localhost:9000 (admin/admin no primeiro acesso)
-    volumes:
-      - sonarqube_data:/opt/sonarqube/data
-      - sonarqube_extensions:/opt/sonarqube/extensions
-      - sonarqube_logs:/opt/sonarqube/logs
-      - sonarqube_temp:/opt/sonarqube/temp
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/api/system/status" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-
 volumes:
   postgres_data_dev:
   speaches_models:
@@ -169,6 +189,7 @@ volumes:
   sonarqube_logs:
   sonarqube_temp:
   ollama_models:
+  rabbitmq_data_dev:
 
 networks:
   default:

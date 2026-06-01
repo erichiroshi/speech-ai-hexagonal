@@ -2,11 +2,7 @@ spring:
   config:
     activate:
       on-profile: test
-  datasource:
-    url: jdbc:tc:postgresql:16-alpine:///speech_ai_test
-    username: test
-    password: test
-    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -14,45 +10,10 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-  data:
-    redis:
-      host: localhost
-      port: 6379
-  ai:
-    openai:
-      api-key: Credências-de-testes
-app:
-  speaches:
-    base-url: http://localhost:8000
-    model: Systran/faster-whisper-small
-  cache:
-    transcription-ttl: 1
 
-resilience4j:
-  circuitbreaker:
-    instances:
-      speaches:
-        sliding-window-size: 4
-        failure-rate-threshold: 50
-        wait-duration-in-open-state: 2s
-        permitted-number-of-calls-in-half-open-state: 3
-        automatic-transition-from-open-to-half-open-enabled: true
-        record-exceptions:
-          - org.springframework.web.client.RestClientException
-          - java.io.IOException
-          - java.util.concurrent.TimeoutException
-  retry:
-    instances:
-      speaches:
-        max-attempts: 1
-        wait-duration: 100ms
-        ignore-exceptions:
-          - com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException
-  bulkhead:
-    instances:
-      speaches:
-        max-concurrent-calls: 10
-        max-wait-duration: 0ms
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.amqp.autoconfigure.RabbitAutoConfiguration
 
 logging:
   level:

@@ -55,7 +55,7 @@ public class RedisCacheAdapter implements TranscriptionCachePort {
             log.info("Cache STORE | key={} | ttl={}h", key, redisProperties.transcriptionTtl());
 
         } catch (Exception ex) {
-            log.warn("Falha ao gravar cache Redis | error={}", ex.getMessage());
+            log.warn("Falha ao gravar cache (Redis) | error={}", ex.getMessage());
         }
     }
 }

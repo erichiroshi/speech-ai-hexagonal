@@ -3,10 +3,8 @@ package com.erichiroshi.speechaihexagonal.transcription.application;
 import com.erichiroshi.speechaihexagonal.transcription.application.input.TranscriptionInput;
 import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
 import com.erichiroshi.speechaihexagonal.transcription.application.port.in.TranscribeAudioPort;
-import com.erichiroshi.speechaihexagonal.transcription.application.port.out.SpeechToTextPort;
-import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionCachePort;
-import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionMetricsPort;
-import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionRepositoryPort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.*;
+import com.erichiroshi.speechaihexagonal.transcription.domain.event.TranscriptionCompletedEvent;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 import com.erichiroshi.speechaihexagonal.transcription.domain.service.AudioHashService;
@@ -29,6 +27,7 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
     private final SpeechToTextPort speechToTextPort;
     private final TranscriptionRepositoryPort transcriptionRepositoryPort;
     private final TranscriptionCachePort transcriptionCachePort;
+    private final TranscriptionEventPublisherPort eventPublisherPort;
     private final TranscriptionMetricsPort metrics;
 
     @Transactional
@@ -45,6 +44,7 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
                 log.info("Cache hit | audioHash={}", audioHash);
                 metrics.recordCacheHitRedis();
                 metrics.recordSuccess();
+                publishTranscriptionEvent(fromCache.get(), input, true);
                 return TranscriptionOutput.toOutput(fromCache.get());
             }
 
@@ -55,15 +55,17 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
                 metrics.recordCacheHitDb();
                 metrics.recordSuccess();
                 transcriptionCachePort.save(fromDb.get());
+                publishTranscriptionEvent(fromDb.get(), input, true);
                 return TranscriptionOutput.toOutput(fromDb.get());
             }
 
             // 3. Transcrever via IA
-            log.info("Cache miss total — transcrevendo | filename={} | size={}bytes", input.fileName(), input.audioBytes().length);
+            log.info("Cache miss total — transcrevendo | filename={} | size={}bytes",
+                    input.fileName(), input.audioBytes().length);
             metrics.recordAiCall();
 
-            Transcription transcribed = metrics.timeSpeaches(() -> speechToTextPort.transcribe(
-                    input.audioBytes(), input.fileName(), input.contentType()));
+            Transcription transcribed = metrics.timeSpeaches(
+                    () -> speechToTextPort.transcribe(input.audioBytes(), input.fileName(), input.contentType()));
 
             // 4. Persistir no postgres e no cache
             Transcription toSave = Transcription.newTranscription(audioHash, transcribed.getText());
@@ -72,12 +74,27 @@ public class TranscribeAudioUseCase implements TranscribeAudioPort {
 
             log.info("Transcrição concluída e persistida | audioHash: {}", saved.getAudioHash());
             metrics.recordSuccess();
+            publishTranscriptionEvent(saved, input, false);
 
             return TranscriptionOutput.toOutput(saved);
 
         } catch (Exception ex) {
             metrics.recordError();
             throw ex;
+        }
+    }
+
+    private void publishTranscriptionEvent(Transcription transcription, TranscriptionInput input, boolean fromCache) {
+        try {
+            eventPublisherPort.publish(TranscriptionCompletedEvent.of(
+                    transcription.getAudioHash(),
+                    transcription.getText(),
+                    input.fileName(),
+                    input.audioBytes().length,
+                    fromCache));
+        } catch (Exception ex) {
+            // Falha no publisher não deve impedir a resposta ao cliente
+            log.warn("Falha ao publicar TranscriptionCompletedEvent | audioHash={}", transcription.getAudioHash(), ex);
         }
     }
 

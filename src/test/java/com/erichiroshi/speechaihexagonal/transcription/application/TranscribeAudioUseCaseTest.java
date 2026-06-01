@@ -2,10 +2,7 @@ package com.erichiroshi.speechaihexagonal.transcription.application;
 
 import com.erichiroshi.speechaihexagonal.transcription.application.input.TranscriptionInput;
 import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
-import com.erichiroshi.speechaihexagonal.transcription.application.port.out.SpeechToTextPort;
-import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionCachePort;
-import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionMetricsPort;
-import com.erichiroshi.speechaihexagonal.transcription.application.port.out.TranscriptionRepositoryPort;
+import com.erichiroshi.speechaihexagonal.transcription.application.port.out.*;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.TranscriptionId;
@@ -40,6 +37,7 @@ class TranscribeAudioUseCaseTest {
     @Mock private SpeechToTextPort speechToTextPort;
     @Mock private TranscriptionRepositoryPort transcriptionRepositoryPort;
     @Mock private TranscriptionCachePort transcriptionCachePort;
+    @Mock private TranscriptionEventPublisherPort eventPublisherPort;
     @Mock private TranscriptionMetricsPort metrics;
 
     @InjectMocks
@@ -74,6 +72,7 @@ class TranscribeAudioUseCaseTest {
             assertThat(result.text()).isEqualTo("texto do cache");
             verifyNoInteractions(transcriptionRepositoryPort);
             verifyNoInteractions(speechToTextPort);
+            verify(eventPublisherPort).publish(any());
         }
 
         @Test
@@ -89,6 +88,7 @@ class TranscribeAudioUseCaseTest {
             assertThat(result.text()).isEqualTo("texto do banco");
             verify(transcriptionCachePort).save(fromDb);
             verifyNoInteractions(speechToTextPort);
+            verify(eventPublisherPort).publish(any());
         }
 
         @Test
@@ -108,6 +108,7 @@ class TranscribeAudioUseCaseTest {
             verify(speechToTextPort).transcribe(VALID_AUDIO, FILENAME, CONTENT_TYPE);
             verify(transcriptionRepositoryPort).save(any());
             verify(transcriptionCachePort).save(saved);
+            verify(eventPublisherPort).publish(any());
         }
 
         @Test
@@ -126,6 +127,7 @@ class TranscribeAudioUseCaseTest {
             ArgumentCaptor<Transcription> captor = ArgumentCaptor.forClass(Transcription.class);
             verify(transcriptionRepositoryPort).save(captor.capture());
             assertThat(captor.getValue().getAudioHash()).hasSize(64).matches("[0-9a-f]+");
+            verify(eventPublisherPort).publish(any());
         }
     }
 

@@ -3,8 +3,10 @@ package com.erichiroshi.speechaihexagonal.analysis.application;
 import com.erichiroshi.speechaihexagonal.analysis.application.output.SummaryOutput;
 import com.erichiroshi.speechaihexagonal.analysis.application.port.in.SummarizeTranscriptionPort;
 import com.erichiroshi.speechaihexagonal.analysis.application.port.out.LanguageModelPort;
+import com.erichiroshi.speechaihexagonal.analysis.application.port.out.SummaryEventPublisherPort;
 import com.erichiroshi.speechaihexagonal.analysis.application.port.out.SummaryStorePort;
 import com.erichiroshi.speechaihexagonal.analysis.application.port.out.TranscriptionTextPort;
+import com.erichiroshi.speechaihexagonal.analysis.domain.event.SummaryCompletedEvent;
 import com.erichiroshi.speechaihexagonal.analysis.domain.exception.AnalysisUnavailableException;
 import com.erichiroshi.speechaihexagonal.analysis.domain.exception.TranscriptionNotFoundException;
 import com.erichiroshi.speechaihexagonal.analysis.domain.model.Summary;
@@ -36,18 +38,20 @@ public class SummarizeTranscriptionUseCase implements SummarizeTranscriptionPort
     private final TranscriptionTextPort transcriptionTextPort;
     private final LanguageModelPort     languageModelPort;
     private final SummaryStorePort      summaryStorePort;
+    private final SummaryEventPublisherPort eventPublisherPort;
 
-    @Value("${app.analysis.ollama.model}")
+    @Value("${app.analysis.ollama.model:llama3.2:1b}")
     private String model;
 
     @Override
     public SummaryOutput execute(String audioHash) {
-
         // 1. Cache hit — resumo já existe
         Optional<Summary> fromCache = summaryStorePort.findByAudioHash(audioHash);
         if (fromCache.isPresent()) {
             log.info("Cache hit (resumo) | audioHash={}", audioHash);
-            return SummaryOutput.fromDomain(fromCache.get(), true);
+            SummaryOutput output = SummaryOutput.fromDomain(fromCache.get(), true);
+            publishSummaryEvent(fromCache.get(), true);
+            return output;
         }
 
         // 2. Buscar texto da transcrição
@@ -73,7 +77,22 @@ public class SummarizeTranscriptionUseCase implements SummarizeTranscriptionPort
         summaryStorePort.save(summary);
 
         log.info("Resumo gerado e armazenado | audioHash={} | chars={}", audioHash, summaryText.length());
-        return SummaryOutput.fromDomain(summary, false);
+        SummaryOutput output = SummaryOutput.fromDomain(summary, false);
+        publishSummaryEvent(summary, false);
+        return output;
+    }
+
+    private void publishSummaryEvent(Summary summary, boolean fromCache) {
+        try {
+            eventPublisherPort.publish(SummaryCompletedEvent.of(
+                    summary.getAudioHash(),
+                    summary.getText(),
+                    summary.getModel(),
+                    fromCache
+            ));
+        } catch (Exception ex) {
+            log.warn("Falha ao publicar SummaryCompletedEvent | audioHash={}", summary.getAudioHash(), ex);
+        }
     }
 
     private String buildPrompt(String transcriptionText) {

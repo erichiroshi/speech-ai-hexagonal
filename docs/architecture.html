@@ -473,6 +473,32 @@ com.erichiroshi.speechaihexagonal/
       </div>
     </section>
 
+      <section class="card">
+          <h2>Arquitetura Orientada a Eventos</h2>
+
+          <p>
+              O projeto agora utiliza RabbitMQ para comunicação
+              assíncrona baseada em eventos de domínio.
+          </p>
+
+          <div class="code-block">
+            <pre>
+    TranscriptionService
+            ↓
+    TranscriptionCompletedEvent
+            ↓
+        RabbitMQ
+            ↓
+        Consumers
+            </pre>
+          </div>
+          <p>
+              A publicação ocorre através da porta
+              EventPublisherPort preservando o isolamento
+              entre domínio e infraestrutura.
+          </p>
+      </section>
+
       <footer>
           <p>speech-ai-hexagonal · v8.2.0</p>
           <p>Desenvolvido por <strong>Eric Hiroshi</strong> ·

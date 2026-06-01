@@ -362,6 +362,66 @@ OPENAI_API_KEY=sk-...
 
 ---
 
+## Arquitetura Orientada a Eventos
+
+A aplicação agora publica eventos após transcrições concluídas com sucesso.
+
+### Evento disponível
+
+```java
+public record TranscriptionCompletedEvent(
+    String audioHash,
+    String transcription,
+    String filename
+) {}
+```
+
+---
+
+## RabbitMQ
+
+Componentes implementados:
+
+- EventPublisherPort
+- RabbitMqEventPublisher
+- AuditConsumer
+- DLQ
+- Retry automático
+
+---
+
+## Estratégia de recuperação
+
+```text
+Evento
+ ↓
+Consumer
+ ↓
+3 tentativas
+ ↓
+DLQ
+```
+
+---
+
+## Infraestrutura
+
+Containers adicionados:
+
+- RabbitMQ
+- RabbitMQ Management
+
+---
+
+## Benefícios
+
+- Baixo acoplamento
+- Escalabilidade
+- Processamento assíncrono
+- Base para notificações futuras
+
+---
+
 ## Persistência
 
 A aplicação agora possui infraestrutura PostgreSQL integrada com Spring Data JPA e Flyway.  

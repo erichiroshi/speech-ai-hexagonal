@@ -19,11 +19,11 @@ public class PostgresRepositoryAdapter implements TranscriptionRepositoryPort {
     @Override
     public Optional<Transcription> findByAudioHash(String audioHash) {
 
-        log.debug("Buscando transcrição no banco | audioHash={}", audioHash);
+        log.debug("Buscando transcrição no banco (Postgres) | audioHash={}", audioHash);
 
         return repository.findByAudioHash(audioHash)
                 .map(transcriptionEntity -> {
-                    log.info("Transcription existente (DB) | audioHash={}", audioHash);
+                    log.info("Transcription existente no banco (Postgres) | audioHash={}", audioHash);
                     return transcriptionEntity.toDomain();
                 });
     }
