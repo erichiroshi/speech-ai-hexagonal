@@ -25,6 +25,5 @@ public class SummaryAuditConsumer {
                 event.fromCache(),
                 event.model(),
                 event.summaryText() != null ? event.summaryText().length() : 0);
-        // TODO Fase 11: notificationPort.notify(event)
     }
 }

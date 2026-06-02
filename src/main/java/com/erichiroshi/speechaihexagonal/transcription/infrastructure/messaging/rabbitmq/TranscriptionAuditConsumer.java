@@ -6,13 +6,11 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 /**
- * Consumer de auditoria — loga eventos de transcrição recebidos.
+ * Consumer de auditoria do contexto transcription/.
  *
- * <p>Base pronta para Fase 11: substituir log por chamada ao
- * NotificationPort (email/SMS/WhatsApp).
- *
- * <p>DLQ ativa: mensagens que falharem 3x são encaminhadas
- * para {@code transcription.events.dlq}.
+ * <p>Responsabilidade: logging de auditoria dos eventos de transcrição.
+ * Notificações ao usuário são responsabilidade do bounded context notification/,
+ * que possui sua própria fila no mesmo exchange.
  */
 @Slf4j
 @Component
@@ -28,6 +26,5 @@ public class TranscriptionAuditConsumer {
                 event.fromCache(),
                 event.fileName(),
                 event.text() != null ? event.text().length() : 0);
-        // TODO Fase 11: notificationPort.notify(event)
     }
 }

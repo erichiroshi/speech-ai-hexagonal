@@ -25,7 +25,7 @@ public class RedisCacheAdapter implements TranscriptionCachePort {
 
     @Override
     public Optional<Transcription> findByAudioHash(String audioHash) {
-        log.debug("Buscando transcrição do cache");
+        log.debug("Buscando transcrição do cache-trancription");
 
         String key = KEY_PREFIX + audioHash;
 

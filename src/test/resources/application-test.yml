@@ -15,6 +15,9 @@ spring:
     exclude:
       - org.springframework.boot.amqp.autoconfigure.RabbitAutoConfiguration
 
+speech:
+  provider: speaches
+
 logging:
   level:
     root: WARN

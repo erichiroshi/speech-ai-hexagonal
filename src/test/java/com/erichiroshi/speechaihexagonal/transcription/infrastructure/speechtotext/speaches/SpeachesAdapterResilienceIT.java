@@ -2,12 +2,14 @@ package com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtot
 
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException;
 import com.erichiroshi.speechaihexagonal.transcription.domain.model.Transcription;
-import com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtotext.speaches.config.SpeachesResilienceTestConfig;
+import com.erichiroshi.speechaihexagonal.transcription.infrastructure.speechtotext.speaches.config.RestClientConfig;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.springboot.bulkhead.autoconfigure.BulkheadAutoConfiguration;
 import io.github.resilience4j.springboot.circuitbreaker.autoconfigure.CircuitBreakerAutoConfiguration;
+import io.github.resilience4j.springboot.retry.autoconfigure.RetryAutoConfiguration;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,15 +42,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * </ul>
  */
 @SpringBootTest(
-        classes = SpeachesAdapter.class,
+        classes = {
+                SpeachesAdapter.class,
+                RestClientConfig.class,
+        },
         webEnvironment = SpringBootTest.WebEnvironment.NONE
 )
 @Import({
-        SpeachesResilienceTestConfig.class,
         AopAutoConfiguration.class,
-        CircuitBreakerAutoConfiguration.class
+        CircuitBreakerAutoConfiguration.class,
+        RetryAutoConfiguration.class,
+        BulkheadAutoConfiguration.class
 })
-@EnableConfigurationProperties
+@EnableConfigurationProperties(SpeachesProperties.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @DisplayName("SpeachesAdapter — Resiliência (WireMock)")
 class SpeachesAdapterResilienceIT {
@@ -76,16 +82,20 @@ class SpeachesAdapterResilienceIT {
     static void properties(DynamicPropertyRegistry registry) {
         registry.add("app.speaches.base-url", wireMock::baseUrl);
         registry.add("app.speaches.model", () -> "Systran/faster-whisper-small");
+        registry.add("speech.provider", () -> "speaches");
         // Janela pequena para abrir o CB rápido nos testes
         registry.add("resilience4j.circuitbreaker.instances.speaches.sliding-window-size", () -> 4);
         registry.add("resilience4j.circuitbreaker.instances.speaches.failure-rate-threshold", () -> 50);
         registry.add("resilience4j.circuitbreaker.instances.speaches.wait-duration-in-open-state", () -> "2s");
         registry.add("resilience4j.circuitbreaker.instances.speaches.permitted-number-of-calls-in-half-open-state", () -> 3);
         registry.add("resilience4j.circuitbreaker.instances.speaches.automatic-transition-from-open-to-half-open-enabled", () -> true);
-        registry.add("resilience4j.circuitbreaker.instances.speaches.record-exceptions",
-                () -> "org.springframework.web.client.RestClientException,java.io.IOException,java.util.concurrent.TimeoutException");
-        registry.add("resilience4j.circuitbreaker.instances.speaches.record-exceptions",
-                () -> "com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException");
+        registry.add("resilience4j.circuitbreaker.instances.speaches.record-exceptions", () -> String.join(",",
+                        "org.springframework.web.client.RestClientException",
+                        "java.io.IOException",
+                        "java.util.concurrent.TimeoutException",
+                        "com.erichiroshi.speechaihexagonal.transcription.domain.exception.SpeechToTextException"
+                )
+        );
         registry.add("resilience4j.retry.instances.speaches.max-attempts", () -> 1);
         registry.add("resilience4j.retry.instances.speaches.wait-duration", () -> "100ms");
         registry.add("resilience4j.retry.instances.speaches.ignore-exceptions",

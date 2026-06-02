@@ -460,6 +460,44 @@ return HexFormat.of().formatHex(hash);
 
 ---
 
+## Notification 
+
+Novo bounded context responsável pelo envio de notificações orientadas a eventos.
+
+### Recursos implementados
+
+* Notification Domain
+* SendNotificationUseCase
+* NotificationConsumer
+* Integração RabbitMQ
+* Canal E-mail
+* Canal SMS
+* Canal WhatsApp
+
+### Fluxo
+
+```text
+TranscriptionCompletedEvent
+            ↓
+        RabbitMQ
+            ↓
+ NotificationConsumer
+            ↓
+ SendNotificationUseCase
+            ↓
+ Email | SMS | WhatsApp
+```
+
+### Benefícios
+
+* Baixo acoplamento
+* Arquitetura orientada a eventos
+* Multi-canal
+* Extensibilidade para novos providers
+
+
+---
+
 ## 📊 Observabilidade
 
 | Ferramenta | URL local | Descrição |

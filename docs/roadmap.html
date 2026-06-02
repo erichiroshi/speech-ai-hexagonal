@@ -106,14 +106,15 @@
       <div class="legend-item"><div class="legend-dot" style="background:#bc27e9c9"></div>Fase 8 —  concluída(v8.2.0)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>Fase 9 —  concluída(v9.3.0)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#883506"></div>Fase 10 —  concluída(v10.2)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#087252"></div>Fase 11 —  (v11.x)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#880620"></div>Fase 11 —  concluída(v11.5)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#087252"></div>Fase 12 —  (v11.x)</div>
     </div>
 
     <div id="phases"></div>
     <div id="detail-container"></div>
 
     <footer>
-      <p>speech-ai-hexagonal · v8.2.0</p>
+      <p>speech-ai-hexagonal · v11.5.0</p>
       <p>Desenvolvido por <strong>Eric Hiroshi</strong> ·
         <a href="https://www.linkedin.com/in/eric-hiroshi/" style="color:var(--primary)">LinkedIn</a> ·
         <a href="https://github.com/erichiroshi" style="color:var(--primary)">GitHub</a>
@@ -465,7 +466,8 @@
             done: true,
             version: null,
             detail: "Novo domínio analysis/ completamente separado do transcription/. LanguageModelPort define o contrato. SummarizeTranscriptionUseCase: busca texto no cache → prompt → LLM → armazena resumo → retorna. Ollama com modelo ≤1B (ex: qwen2.5:0.5b or tinyllama).",
-            snippet: "public interface LanguageModelPort {\n    String generate(String prompt);\n}\n\n// Trocar Ollama por OpenAI = novo adapter\n// Use case e domínio não mudam" },
+            snippet: "public interface LanguageModelPort {\n    String generate(String prompt);\n}\n\n// Trocar Ollama por OpenAI = novo adapter\n// Use case e domínio não mudam"
+          },
           {
             title: "9.2 — OllamaLanguageModelAdapter + endpoint",
             desc: "POST /api/transcriptions/{hash}/analysis, OllamaLanguageModelAdapter via Spring AI",
@@ -473,7 +475,8 @@
             done: true,
             version: null,
             detail: "OllamaLanguageModelAdapter implements LanguageModelPort com Spring AI ChatClient + Ollama. Endpoint POST /{hash}/analysis busca texto no Redis via TranscriptionCachePort, gera prompt, chama LLM. GlobalExceptionHandler: AnalysisUnavailableException → 503.",
-            snippet: "POST /api/transcriptions/{audioHash}/analysis\n\nResponse 200:\n{ \"summary\": \"...\", \"audioHash\": \"...\", \"model\": \"qwen2.5:0.5b\", \"cached\": false }" },
+            snippet: "POST /api/transcriptions/{audioHash}/analysis\n\nResponse 200:\n{ \"summary\": \"...\", \"audioHash\": \"...\", \"model\": \"qwen2.5:0.5b\", \"cached\": false }"
+          },
           {
             title: "9.3 — Cache Redis para resumos + testes",
             desc: "SummaryStorePort, RedisStoreAdapter (TTL 72h), testes Testcontainers",
@@ -481,7 +484,8 @@
             done: true,
             version: null,
             detail: "SummaryStorePort como nova porta de saída. RedisStoreAdapter: chave 'summary:{hash}', TTL 72h configurável. RedisAnalysisConfig com RedisTemplate separado. Testes Testcontainers validam cache hit/miss para resumos.",
-            snippet: "// Fluxo com cache:\n// 1ª chamada: Ollama (~5-30s) → armazena Redis → cached: false\n// 2ª chamada: Redis hit (~15ms) → cached: true" }
+            snippet: "// Fluxo com cache:\n// 1ª chamada: Ollama (~5-30s) → armazena Redis → cached: false\n// 2ª chamada: Redis hit (~15ms) → cached: true"
+          }
         ]
       },
       {
@@ -496,7 +500,8 @@
             done: true,
             version: null,
             detail: "EventPublisherPort como nova porta de saída. RabbitMqEventPublisher implements EventPublisherPort. TranscriptionService publica TranscriptionCompletedEvent após cada transcrição bem-sucedida. RabbitMQ no Docker Compose.",
-            snippet: "public interface EventPublisherPort {\n    void publish(TranscriptionCompletedEvent event);\n}\n\n// TranscriptionService:\neventPublisher.publish(new TranscriptionCompletedEvent(hash, text, filename));" },
+            snippet: "public interface EventPublisherPort {\n    void publish(TranscriptionCompletedEvent event);\n}\n\n// TranscriptionService:\neventPublisher.publish(new TranscriptionCompletedEvent(hash, text, filename));"
+          },
           {
             title: "10.2 — Consumer base + DLQ + testes",
             desc: "Consumer de log/auditoria, Dead Letter Queue, testes com Testcontainers RabbitMQ",
@@ -504,32 +509,69 @@
             done: true,
             version: null,
             detail: "Consumer de auditoria (loga eventos recebidos). DLQ configurada para mensagens que falham após 3 tentativas. Testes com RabbitMQContainer (Testcontainers). Base pronta para consumers de notificação (Fase 9).",
-            snippet: "spring.rabbitmq.listener.simple.retry.enabled=true\nspring.rabbitmq.listener.simple.retry.max-attempts=3\n# DLQ: transcription.events.dlq" }
+            snippet: "spring.rabbitmq.listener.simple.retry.enabled=true\nspring.rabbitmq.listener.simple.retry.max-attempts=3\n# DLQ: transcription.events.dlq"
+          }
         ]
       },
       {
-        id: 11, label: "Fase 11", title: "CI/CD + qualidade de código",
-        color: "#8b5cf6", badgeBg: "#052e16", badgeColor: "#86efac",
-        version: "v11.1.0–v11.3.0", taskCount: 3, done: false,
+        id: 11, label: "Fase 11", title: "Notificação (SMS, WhatsAPP, Email)",
+        color: "#880620", badgeBg: "#880620", badgeColor: "#fcd34d",
+        version: "v11.5.0", taskCount: 5, done: true,
         tasks: [
           {
-            title: "11.1 — GitHub Actions: build + testes + JaCoCo",
-            desc: "ci.yml: build, test, JaCoCo report, threshold 70%, artefato de cobertura",
-            tags: ["GitHub Actions", "JaCoCo", "CI"],
-            done: false,
-            version: null,
-            detail: "ci.yml: triggers em push/PR main. Steps: checkout → Java 25 → Gradle test → JaCoCo report → upload artefato. Threshold: 70% (sobe progressivamente). Badge de build no README.",
-            snippet: "- name: Run tests\n  run: ./gradlew test jacocoTestReport\n- name: Upload coverage\n  uses: actions/upload-artifact@v4\n  with: { path: build/reports/jacoco }" },
+            title: "11.1 — Domínio Notification + Eventos + Portas",
+            desc: "Criar bounded context de notificações, eventos e contratos para múltiplos canais.",
+            tags: ["Domain", "RabbitMQ", "Events"],
+            done: true,
+            version: "11.1.0",
+            detail: "Criar o domínio notification completamente desacoplado do domínio transcription. Definir modelos de notificação, eventos de aplicação, portas de entrada e saída e contratos para envio multicanal. A integração ocorrerá através dos eventos já publicados via RabbitMQ na fase 10. O objetivo desta etapa é preparar a fundação para que novos canais possam ser adicionados sem modificar regras existentes, seguindo Open/Closed Principle e arquitetura hexagonal.",
+            snippet: "public interface SendNotificationPort {\n void send(Notification notification);\n}\n\npublic record Notification(\n String recipient,\n String subject,\n String message\n) {}"
+          },
           {
-            title: "11.2 — SonarCloud + Codecov",
-            desc: "sonar-project.properties, SONAR_TOKEN, codecov.yml, badges no README",
-            tags: ["SonarCloud", "Codecov", "Quality Gate"],
-            done: false,
-            version: null,
-            detail: "sonar-project.properties com qualitygate configurado. Secrets: SONAR_TOKEN, CODECOV_TOKEN. codecov.yml com threshold. ci.yml atualizado com steps de SonarCloud e Codecov. Badges de qualidade no README.",
-            snippet: "- name: SonarCloud\n  run: ./gradlew sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}\n- name: Codecov\n  uses: codecov/codecov-action@v4" },
+            title: "11.2 — Consumo de Eventos RabbitMQ",
+            desc: "Implementar consumer responsável por receber eventos e acionar notificações.",
+            tags: ["RabbitMQ", "Messaging", "Adapter"],
+            done: true,
+            version: "11.2.0",
+            detail: "Implementar adapter consumidor do RabbitMQ responsável por receber eventos publicados pelos demais domínios da aplicação. O consumer deve converter eventos em comandos de notificação e encaminhá-los para os casos de uso apropriados sem acoplamento direto com providers externos. Esta camada será o ponto único de entrada para notificações orientadas a eventos.",
+            snippet: "@RabbitListener(queues = \"notification.queue\")\npublic void consume(NotificationEvent event) {\n sendNotificationPort.execute(event);\n}"
+          },
           {
-            title: "11.3 — Docker Hub + release automático",
+            title: "11.3 — Notificações por E-mail",
+            desc: "Implementar canal de envio de notificações via e-mail.",
+            tags: ["Email", "SMTP", "Notification"],
+            done: true,
+            version: "11.3.0",
+            detail: "Implementar adapter de envio de e-mails utilizando provedor SMTP ou serviço especializado. Criar EmailNotificationPort e respectivo adapter de infraestrutura. O domínio deve permanecer independente da tecnologia utilizada para envio, permitindo substituição futura por Amazon SES, SendGrid ou Mailgun sem impacto nos casos de uso.",
+            snippet: "public interface EmailNotificationPort {\n void send(Notification notification);\n}"
+          },
+          {
+            title: "11.4 — Notificações por SMS",
+            desc: "Implementar canal de envio de notificações via SMS.",
+            tags: ["SMS", "Notification", "Adapter"],
+            done: true,
+            version: "11.4.0",
+            detail: "Implementar adapter responsável pelo envio de mensagens SMS através de provedores externos. O caso de uso deve reutilizar o mesmo modelo de domínio Notification e abstrair completamente detalhes do provedor. Preparar estrutura para integração futura com Twilio, AWS SNS ou serviços equivalentes.",
+            snippet: "public interface SmsNotificationPort {\n void send(Notification notification);\n}"
+          },
+          {
+            title: "11.5 — Notificações por WhatsApp",
+            desc: "Implementar canal de envio de notificações via WhatsApp.",
+            tags: ["WhatsApp", "Notification", "Adapter"],
+            done: true,
+            version: "11.5.0",
+            detail: "Implementar adapter para envio de mensagens WhatsApp utilizando APIs oficiais ou provedores compatíveis. A camada de aplicação deve permanecer desacoplada do fornecedor escolhido. O canal deve reutilizar os mesmos eventos, modelos e fluxos definidos nas etapas anteriores, garantindo consistência entre todos os meios de comunicação.",
+            snippet: "public interface WhatsAppNotificationPort {\n void send(Notification notification);\n}"
+          }
+        ]
+      },
+      {
+        id: 12, label: "Fase 12", title: "Docker Hub + release automático",
+        color: "#8b5cf6", badgeBg: "#052e16", badgeColor: "#86efac",
+        version: "v12.1.0", taskCount: 1, done: false,
+        tasks: [
+          {
+            title: "12.1 — Docker Hub + release automático",
             desc: "docker.yml: build multi-arch, push Docker Hub, release.sh atualizado para o projeto",
             tags: ["Docker Hub", "Multi-arch", "Release"],
             done: false,
@@ -540,7 +582,7 @@
       }
     ];
 
-    let openPhases = new Set([11])
+    let openPhases = new Set([12])
     let activeTask = null
 
     function renderPhases() {

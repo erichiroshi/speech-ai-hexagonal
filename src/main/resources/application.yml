@@ -9,7 +9,7 @@ spring:
       max-file-size: 5MB
       max-request-size: 6MB
 
-# ── Datasource ────────────────────────────────────────────────────────────
+  # ── Datasource ────────────────────────────────────────────────────────────
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -21,7 +21,7 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
 
-# ── JPA ────────────────────────────────────────────────────────────
+  # ── JPA ────────────────────────────────────────────────────────────
   jpa:
     hibernate:
       ddl-auto: validate
@@ -31,22 +31,22 @@ spring:
     show-sql: false
     open-in-view: false
 
-# ── Flyway ────────────────────────────────────────────────────────────
+  # ── Flyway ────────────────────────────────────────────────────────────
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: false
 
-# ── Cache ────────────────────────────────────────────────────────────
+  # ── Cache ────────────────────────────────────────────────────────────
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
       # timeout de conexão/leitura — falha rápida, não bloqueia o request
       connect-timeout: 2s
       timeout: 2s
 
-# ── RabbitMQ ──────────────────────────────────────────────────────────────────
+  # ── RabbitMQ ──────────────────────────────────────────────────────────────────
   rabbitmq:
     host: ${RABBITMQ_HOST:rabbitmq}
     port: ${RABBITMQ_PORT:5672}
@@ -57,15 +57,28 @@ spring:
         retry:
           enabled: true
           initial-interval: 1s
-          max-attempts: 3
           multiplier: 2
           max-interval: 10s
+          max-attempts: 3
         acknowledge-mode: auto
 
-# ── Ollama LLM ────────────────────────────────────────────────────────────────────
+  # ── Spring Mail (SMTP) ────────────────────────────────────────────────────────
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASS:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  # ── Ollama LLM ────────────────────────────────────────────────────────────────────
   ai:
     ollama:
-      base-url: ${OLLAMA_BASE_URL}
+      base-url: ${OLLAMA_BASE_URL:http://ollama:11434}
       chat:
         options:
           model: ${OLLAMA_MODEL}
@@ -90,7 +103,7 @@ management:
       probability: 1.0
     export:
       zipkin:
-        endpoint: ${ZIPKIN_ENDPOINT}
+        endpoint: ${ZIPKIN_ENDPOINT:http://zipkin:9411/api/v2/spans}
   metrics:
     tags:
       application: ${spring.application.name}
@@ -98,19 +111,41 @@ management:
 # ── App Config ────────────────────────────────────────────────────────────
 app:
   speaches:
-    base-url: ${SPEACHES_BASE_URL}
-    model: ${SPEACHES_MODEL}
+    base-url: ${SPEACHES_BASE_URL:http://localhost:8000}
+    model: ${SPEACHES_MODEL:Systran/faster-whisper-small}
   cache:
-    transcription-ttl: ${CACHE_TTL}
+    transcription-ttl: ${CACHE_TTL:24}
   openai:
     model: ${OPENAI_MODEL:whisper-1}
 
   analysis:
     ollama:
       model: ${OLLAMA_MODEL}
-      base-url: ${OLLAMA_BASE_URL}
+      base-url: ${OLLAMA_BASE_URL:http://ollama:11434}
     cache:
-      summary-ttl: ${SUMMARY_TTL}
+      summary-ttl: ${SUMMARY_TTL:72h}
+
+  notification:
+    email-recipient: ${NOTIFICATION_EMAIL:}
+    sms-recipient: ${NOTIFICATION_SMS_NUMBER:}
+    whatsapp-recipient: ${NOTIFICATION_WHATSAPP_NUMBER:}
+    no_opRecipient: ${NOTIFICATION_NO_OP_EMAIL:no_op@speech-ai.com}
+    channels:
+      email: ${NOTIFICATION_EMAIL_ENABLED:false}
+      sms: ${NOTIFICATION_SMS_ENABLED:false}
+      whatsapp: ${NOTIFICATION_WA_ENABLED:false}
+      no_op: ${NOTIFICATION_NO_OP_ENABLED:true}
+    email:
+      from: ${NOTIFICATION_EMAIL_FROM:noreply@speech-ai.com}
+    sms:
+      provider-url: ${SMS_PROVIDER_URL:}
+      api-key: ${SMS_API_KEY:}
+      from-number: ${SMS_FROM_NUMBER:}
+    whatsapp:
+      provider-url: ${WA_PROVIDER_URL:}
+      api-key: ${WA_API_KEY:}
+      from-number: ${WA_FROM_NUMBER:}
+      phone-number-id: ${WA_PHONE_NUMBER_ID:}
 
 # ── Speech Provider ───────────────────────────────────────────────────────────
 # speaches → Whisper local via Speaches (padrão, requer GPU)

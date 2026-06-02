@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.erichiroshi'
-version = '10.2.0'
+version = '11.5.0'
 description = 'Serviço de transcrição de áudio com análise inteligente via LLM'
 
 java {
@@ -63,6 +63,9 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
     implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
 
+    // ── E-mail  ────────────────────────────────────────────────────────
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     // Test
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -79,6 +82,9 @@ dependencies {
     testImplementation 'com.squareup.okhttp3:mockwebserver'
     testImplementation 'com.tngtech.archunit:archunit-junit5:1.4.2'
     testImplementation 'org.testcontainers:testcontainers-rabbitmq'
+    // GreenMail — servidor SMTP embarcado para testes (não usa conta real)
+    implementation 'com.icegreen:greenmail-spring:2.1.8'
+    testImplementation 'com.icegreen:greenmail:2.1.8'
 }
 
 ext {

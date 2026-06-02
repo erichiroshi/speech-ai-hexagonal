@@ -499,8 +499,34 @@ com.erichiroshi.speechaihexagonal/
           </p>
       </section>
 
+      <section class="card">
+          <h2>Notification Bounded Context</h2>
+
+          <p>
+              O projeto agora possui um contexto dedicado para
+              notificações orientadas a eventos.
+          </p>
+
+          <pre>
+TranscriptionCompletedEvent
+            ↓
+        RabbitMQ
+            ↓
+ NotificationConsumer
+            ↓
+ SendNotificationUseCase
+            ↓
+ Email | SMS | WhatsApp
+</pre>
+
+          <p>
+              Novos canais podem ser adicionados sem alteração
+              das regras existentes.
+          </p>
+      </section>
+
       <footer>
-          <p>speech-ai-hexagonal · v8.2.0</p>
+          <p>speech-ai-hexagonal · v11.5.0</p>
           <p>Desenvolvido por <strong>Eric Hiroshi</strong> ·
               <a href="https://www.linkedin.com/in/eric-hiroshi/" style="color:var(--primary)">LinkedIn</a> ·
               <a href="https://github.com/erichiroshi" style="color:var(--primary)">GitHub</a>

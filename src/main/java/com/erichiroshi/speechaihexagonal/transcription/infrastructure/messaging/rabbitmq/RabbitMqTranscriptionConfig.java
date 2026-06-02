@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
  *                                          │ on failure (3x)
  *                                          ▼
  *                                     DLQ (transcription.events.dlq)
- *
  * </pre>
  *
  * <p>Preparado para consumers de notificação (email/SMS/WhatsApp) na Fase 11.
