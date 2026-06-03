@@ -56,7 +56,8 @@ public class RedisStoreAdapter implements SummaryStorePort {
 
         try {
             redisTemplate.opsForValue().set(key, summary, properties.summaryTtl());
-            log.debug("Resumo armazenado no cache (REDIS-resumo) | key={} | ttl={}h", key, properties.summaryTtl());
+            String safeKey = key.replaceAll("[\r\n]", "_");
+            log.debug("Resumo armazenado no cache (REDIS-resumo) | key={} | ttl={}h", safeKey, properties.summaryTtl());
         } catch (Exception ex) {
             log.warn("Falha ao gravar cache Redis-resumo | error={}", ex.getMessage());
         }

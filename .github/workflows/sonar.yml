@@ -44,7 +44,7 @@ jobs:
           token: ${{ secrets.TC_CLOUD_TOKEN }}
 
       - name: Build + Testes + JaCoCo
-        run: ./gradlew clean build --continue --no-daemon --quiet
+        run: ./gradlew clean build --continue --no-daemon --lifecycle
 
       - name: SonarCloud
         if: success() || failure()
