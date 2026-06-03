@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     name: Build and analyze
@@ -56,13 +59,13 @@ jobs:
         uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          report_type: test_results
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3
+        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
 
       - name: Upload relatório JaCoCo (artifact)
         uses: actions/upload-artifact@v7
