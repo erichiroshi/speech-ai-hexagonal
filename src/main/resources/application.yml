@@ -129,7 +129,7 @@ app:
     email-recipient: ${NOTIFICATION_EMAIL:}
     sms-recipient: ${NOTIFICATION_SMS_NUMBER:}
     whatsapp-recipient: ${NOTIFICATION_WHATSAPP_NUMBER:}
-    no_opRecipient: ${NOTIFICATION_NO_OP_EMAIL:no_op@speech-ai.com}
+    no_opRecipient: ${NOTIFICATION_NO_OP_EMAIL:noOp@speech-ai.com}
     channels:
       email: ${NOTIFICATION_EMAIL_ENABLED:false}
       sms: ${NOTIFICATION_SMS_ENABLED:false}

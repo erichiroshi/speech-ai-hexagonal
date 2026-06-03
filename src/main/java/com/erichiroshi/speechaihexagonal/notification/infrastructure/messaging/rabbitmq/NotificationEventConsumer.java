@@ -49,9 +49,9 @@ public class NotificationEventConsumer {
 
     private void sendToEnabledChannels(String audioHash, String subject, String message, NotificationType type) {
 
-        if (properties.channels().no_op() && hasRecipient(properties.no_opRecipient())) {
+        if (properties.channels().noOp() && hasRecipient(properties.noOpRecipient())) {
             sendNotificationPort.execute(Notification.create(
-                    properties.no_opRecipient(), subject, message,
+                    properties.noOpRecipient(), subject, message,
                     NotificationChannel.NO_OP, type, audioHash));
         }
 

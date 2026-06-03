@@ -107,7 +107,7 @@ class NotificationEventConsumerTest {
     @DisplayName("Deve processar evento de resumo e enviar apenas para os canais ativos")
     void shouldProcessSummaryEventAndSendOnlyToActiveChannels() {
         // Given
-        when(channelsMock.no_op()).thenReturn(false);
+        when(channelsMock.noOp()).thenReturn(false);
         when(channelsMock.email()).thenReturn(true);
         when(channelsMock.sms()).thenReturn(false);
         when(channelsMock.whatsapp()).thenReturn(true);
@@ -152,14 +152,14 @@ class NotificationEventConsumerTest {
 
     // Métodos auxiliares para manter stubs organizados evitando UnnecessaryStubbingException
     private void stubAllChannels() {
-        when(channelsMock.no_op()).thenReturn(true);
+        when(channelsMock.noOp()).thenReturn(true);
         when(channelsMock.email()).thenReturn(true);
         when(channelsMock.sms()).thenReturn(true);
         when(channelsMock.whatsapp()).thenReturn(true);
     }
 
     private void stubAllRecipients() {
-        when(properties.no_opRecipient()).thenReturn(NO_OP_REC);
+        when(properties.noOpRecipient()).thenReturn(NO_OP_REC);
         when(properties.emailRecipient()).thenReturn(EMAIL_REC);
         when(properties.smsRecipient()).thenReturn(SMS_REC);
         when(properties.whatsappRecipient()).thenReturn(WA_REC);

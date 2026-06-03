@@ -16,7 +16,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *       email: false
  *       sms: false
  *       whatsapp: false
- *       no_op: true
+ *       noOp: true
  * </pre>
  */
 @ConfigurationProperties(prefix = "app.notification")
@@ -24,17 +24,17 @@ public record NotificationProperties(
         String emailRecipient,
         String smsRecipient,
         String whatsappRecipient,
-        String no_opRecipient,
+        String noOpRecipient,
         Channels channels
 ) {
     public record Channels(
             boolean email,
             boolean sms,
             boolean whatsapp,
-            boolean no_op
+            boolean noOp
     ) {
         public Channels {
-            no_op = true;
+            noOp = true;
         }
     }
 }

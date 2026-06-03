@@ -30,6 +30,10 @@ public class HexagonalArchitectureTest {
     private static final String ANALYSIS_DOMAIN      = "..analysis.domain..";
     private static final String ANALYSIS_APP         = "..analysis.application..";
 
+    // Bounded Context: Notification
+    private static final String NOTIFICATION_DOMAIN  = "..notification.domain..";
+    private static final String NOTIFICATION_APP     = "..notification.application..";
+
     // Frameworks externas
     private static final String PKG_SPRING      = "org.springframework..";
     private static final String PKG_JAKARTA_JPA = "jakarta.persistence..";
@@ -202,14 +206,21 @@ public class HexagonalArchitectureTest {
                     .because("Controllers não devem acessar persistência diretamente; toda orquestração deve passar pela aplicação");
 
     @ArchTest
-    public static final ArchRule controllers_nao_devem_acessar_dominio =
-            noClasses()
+    public static final ArchRule controllers_devem_acessar_apenas_aplicacao_dominio_e_pacotes_http =
+            classes()
                     .that()
                     .areAnnotatedWith(RestController.class)
                     .should()
-                    .dependOnClassesThat()
-                    .resideInAPackage(ANY_DOMAIN)
-                    .because("Controllers são adapters de entrada e não devem conhecer regras de negócio diretamente");
+                    .onlyDependOnClassesThat()
+                    .resideInAnyPackage(
+                            ANY_APPLICATION,
+                            ANY_DOMAIN,
+                            "..infrastructure.http..",
+                            "java..",
+                            PKG_SPRING,
+                            PKG_LOMBOK
+                    )
+                    .because("Controllers devem apenas orquestrar a entrada HTTP, mapear DTOs e chamar a aplicação/domínio");
 
     @ArchTest
     public static final ArchRule controllers_nao_devem_depender_de_usecases_concretos =
@@ -268,4 +279,32 @@ public class HexagonalArchitectureTest {
                     .should()
                     .resideInAPackage(ANY_INFRASTRUCTURE)
                     .because("Repositórios são detalhes de persistência e pertencem exclusivamente à infraestrutura");
+
+    // ── Bounded context notification/ ────────────────────────────────────────
+
+    @ArchTest
+    public static final ArchRule notification_domain_nao_deve_depender_de_spring =
+            noClasses().that().resideInAPackage(NOTIFICATION_DOMAIN)
+                    .should().dependOnClassesThat().resideInAPackage(PKG_SPRING)
+                    .because("O domínio de notification deve ser Java puro — sem Spring");
+
+    @ArchTest
+    public static final ArchRule notification_application_nao_deve_depender_de_infraestrutura =
+            noClasses().that().resideInAPackage(NOTIFICATION_APP)
+                    .should().dependOnClassesThat().resideInAPackage("..notification.infrastructure..")
+                    .because("Use cases de notification dependem apenas de portas — nunca de adapters");
+
+    @ArchTest
+    public static final ArchRule notification_application_nao_importa_transcription_domain =
+            noClasses().that().resideInAPackage(NOTIFICATION_APP)
+                    .should().dependOnClassesThat().resideInAPackage(TRANSCRIPTION_DOMAIN)
+                    .because("Bounded contexts se integram via portas na infraestrutura — nunca via domínio diretamente");
+
+    @ArchTest
+    public static final ArchRule notification_domain_nao_importa_outros_dominios =
+            noClasses().that().resideInAPackage(NOTIFICATION_DOMAIN)
+                    .should().dependOnClassesThat().resideInAPackage(TRANSCRIPTION_DOMAIN)
+                    .orShould().dependOnClassesThat().resideInAPackage(ANALYSIS_DOMAIN)
+                    .because("Domínios de bounded contexts distintos não se acoplam diretamente");
+
 }

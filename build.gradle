@@ -23,10 +23,15 @@ repositories {
 }
 
 ext {
-    aopVersion = '3.5.13'
-    resilience4jVersion = '2.4.0'
+    aopVersion            = '3.5.13'
+    resilience4jVersion   = '2.4.0'
     logbackencoderVersion = '9.0'
-    springAiVersion = '2.0.0-M5'
+    springAiVersion       = '2.0.0-M5'
+    testcontainersVersion = '2.0.4'
+    okhttpVersion         = '5.3.2'
+    wireMockVersion       = '3.13.0'
+    awaitilityVersion     = '4.3.0'
+    archunitVersion       = '1.4.2'
 }
 
 dependencies {
@@ -42,28 +47,28 @@ dependencies {
     // Cache
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-    //RabbitMQ
+    // Mensageria
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
 
     // Resiliência
     implementation "org.springframework.boot:spring-boot-starter-aop:${aopVersion}"
     implementation "io.github.resilience4j:resilience4j-spring-boot4:${resilience4jVersion}"
 
-    // Observabilidade
+    // Observabilidade — Prometheus + tracing OTel → Zipkin
     implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'io.micrometer:micrometer-tracing-bridge-otel'
     implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
     implementation 'org.springframework.boot:spring-boot-starter-zipkin'
 
-    // Logs estruturados
+    // Logs estruturados JSON
     implementation "net.logstash.logback:logstash-logback-encoder:${logbackencoderVersion}"
 
-    // Spring AI — OpenAI (áudio/transcrição)
+    // Spring AI — OpenAI Whisper + Ollama LLM
     implementation platform("org.springframework.ai:spring-ai-bom:${springAiVersion}")
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
     implementation 'org.springframework.ai:spring-ai-starter-model-ollama'
 
-    // ── E-mail  ────────────────────────────────────────────────────────
+    // E-mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     // Test
@@ -71,26 +76,22 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    implementation platform('org.testcontainers:testcontainers-bom:2.0.5')
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-redis-test'
+    testImplementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
     testImplementation 'com.redis:testcontainers-redis'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-redis-test'
-    testImplementation 'org.wiremock:wiremock-standalone:3.13.0'
-    testImplementation 'org.awaitility:awaitility:4.3.0'
-    implementation platform('com.squareup.okhttp3:okhttp-bom:5.3.2')
-    testImplementation 'com.squareup.okhttp3:mockwebserver'
-    testImplementation 'com.tngtech.archunit:archunit-junit5:1.4.2'
     testImplementation 'org.testcontainers:testcontainers-rabbitmq'
-    // GreenMail — servidor SMTP embarcado para testes (não usa conta real)
-    implementation 'com.icegreen:greenmail-spring:2.1.8'
-    testImplementation 'com.icegreen:greenmail:2.1.8'
+    testImplementation "org.wiremock:wiremock-standalone:${wireMockVersion}"
+    testImplementation "org.awaitility:awaitility:${awaitilityVersion}"
+    testImplementation platform("com.squareup.okhttp3:okhttp-bom:${okhttpVersion}")
+    testImplementation 'com.squareup.okhttp3:mockwebserver'
+    testImplementation "com.tngtech.archunit:archunit-junit5:${archunitVersion}"
 }
 
 ext {
     coverageExclusions = ['**/config/**',
                           '**/*Config*',
-                          '**/dto/**',
                           '**/*Application*',
                           '**/input**', '**/output**',
                           '**/response**',
@@ -134,9 +135,8 @@ tasks.named('sonar') {
     dependsOn tasks.named('jacocoTestReport')
 }
 tasks.named('jacocoTestReport') {
-    dependsOn tasks.named('test')
 }
 tasks.named('test') {
     useJUnitPlatform()
-    jvmArgs '-XX:+EnableDynamicAgentLoading'
+    finalizedBy tasks.named('jacocoTestReport')
 }

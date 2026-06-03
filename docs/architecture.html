@@ -109,7 +109,7 @@
   <div class="container">
     <header>
       <h1>🏗️ Arquitetura</h1>
-      <p class="subtitle">speech-ai-hexagonal · v8.2.0 · Hexagonal (Ports &amp; Adapters)</p>
+      <p class="subtitle">speech-ai-hexagonal · v11.5.0 · Hexagonal (Ports &amp; Adapters)</p>
     </header>
 
     <nav>
@@ -125,7 +125,7 @@
     </nav>
 
     <section class="card">
-      <h2>Diagrama — Hexágono atual (v1.0.0)</h2>
+      <h2>Diagrama — Hexágono atual (v11.5.0)</h2>
       <pre>
 ┌────────────────────────────────────────────────────────────────────────┐
 │                         HEXÁGONO DE TRANSCRIÇÃO                        │
@@ -217,28 +217,28 @@ com.erichiroshi.speechaihexagonal/
             <td>Saída (driven)</td>
             <td>—</td>
             <td><code>RedisCacheAdapter</code> (Fase 3)</td>
-            <td><span class="badge-plan">Fase 3</span></td>
+            <td><span class="badge-done">✓ Fase 3</span></td>
           </tr>
           <tr>
             <td><code>EventPublisherPort</code></td>
             <td>Saída (driven)</td>
             <td>—</td>
             <td><code>RabbitMqEventPublisher</code> (Fase 7)</td>
-            <td><span class="badge-plan">Fase 7</span></td>
+            <td><span class="badge-done">✓ Fase 7</span></td>
           </tr>
           <tr>
             <td><code>LanguageModelPort</code></td>
             <td>Saída (driven)</td>
             <td>—</td>
             <td><code>OllamaLanguageModelAdapter</code> (Fase 6)</td>
-            <td><span class="badge-plan">Fase 6</span></td>
+            <td><span class="badge-done">✓ Fase 6</span></td>
           </tr>
           <tr>
             <td><code>TranscriptionGateway</code></td>
             <td>—</td>
             <td>—</td>
             <td><code>JpaTranscriptionAdapter</code></td>
-            <td><span class="badge-plan">Fase 3</span></td>
+            <td><span class="badge-done">✓ Fase 3</span></td>
           </tr>
 
           <tr>
@@ -246,7 +246,7 @@ com.erichiroshi.speechaihexagonal/
             <td>—</td>
             <td>—</td>
             <td><code>PrometheusMetricsAdapter</code></td>
-            <td><span class="badge-plan">Fase 4</span></td>
+            <td><span class="badge-done">✓ Fase 4</span></td>
           </tr>
 
           <tr>
@@ -254,7 +254,7 @@ com.erichiroshi.speechaihexagonal/
             <td>—</td>
             <td>—</td>
             <td><code>OpenTelemetryTracingAdapter</code></td>
-            <td><span class="badge-plan">Fase 4</span></td>
+            <td><span class="badge-done">✓ Fase 4</span></td>
           </tr>
 
           <tr>
@@ -262,7 +262,7 @@ com.erichiroshi.speechaihexagonal/
             <td>—</td>
             <td>—</td>
             <td><code>Resilience4jAdapter</code></td>
-            <td><span class="badge-plan">Fase 5</span></td>
+            <td><span class="badge-done">✓ Fase 5</span></td>
           </tr>
 
           <tr>
@@ -270,7 +270,7 @@ com.erichiroshi.speechaihexagonal/
             <td>—</td>
             <td>—</td>
             <td><code>OpenAiWhisperAdapter</code></td>
-            <td><span class="badge-plan">Fase 6</span></td>
+            <td><span class="badge-done">✓ Fase 6</span></td>
           </tr>
 
           <tr>
@@ -278,7 +278,7 @@ com.erichiroshi.speechaihexagonal/
             <td>—</td>
             <td>—</td>
             <td><code>OllamaSummarizationAdapter</code></td>
-            <td><span class="badge-plan">Fase 7</span></td>
+            <td><span class="badge-done">✓ Fase 7</span></td>
           </tr>
 
           <tr>
@@ -286,7 +286,7 @@ com.erichiroshi.speechaihexagonal/
             <td>—</td>
             <td>—</td>
             <td><code>RabbitMqEventAdapter</code></td>
-            <td><span class="badge-plan">Fase 8</span></td>
+            <td><span class="badge-done">✓ Fase 8</span></td>
           </tr>
         </tbody>
       </table>

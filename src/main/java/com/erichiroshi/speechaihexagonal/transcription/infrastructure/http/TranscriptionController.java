@@ -3,7 +3,7 @@ package com.erichiroshi.speechaihexagonal.transcription.infrastructure.http;
 import com.erichiroshi.speechaihexagonal.transcription.application.input.TranscriptionInput;
 import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
 import com.erichiroshi.speechaihexagonal.transcription.application.port.in.TranscribeAudioPort;
-import com.erichiroshi.speechaihexagonal.transcription.infrastructure.http.exception.InvalidRequestException;
+import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
 import com.erichiroshi.speechaihexagonal.transcription.infrastructure.http.response.TranscriptionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +34,7 @@ public class TranscriptionController {
 
     private TranscriptionInput toInput(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new InvalidRequestException("file", "Nenhum arquivo foi enviado");
+            throw new AudioValidationException("file", "Nenhum arquivo foi enviado");
         }
         try {
             return new TranscriptionInput(
@@ -42,7 +42,7 @@ public class TranscriptionController {
                     file.getOriginalFilename(),
                     file.getContentType());
         } catch (IOException ex) {
-            throw new InvalidRequestException("file", "Não foi possível ler o arquivo: " + ex.getMessage());
+            throw new AudioValidationException("file", "Não foi possível ler o arquivo: " + ex.getMessage());
         }
     }
 }

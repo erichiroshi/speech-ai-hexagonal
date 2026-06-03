@@ -1,10 +1,10 @@
-name: SonarQube + Codecov
+name: Testes + SonarQube + Codecov
 on:
   push:
     branches:
       - main
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
 
 permissions:
   contents: read
@@ -13,39 +13,44 @@ jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Checkout do código
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
         with:
-          java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
 
       - name: Grant execute permission for Gradle
         run: chmod +x gradlew
 
       - name: Cache SonarQube packages
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache@v5
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Cache Gradle packages
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - name: Setup Testcontainers Cloud
+        uses: atomicjar/testcontainers-cloud-setup-action@7d1bab3fdfe0027c91936deca6b924d8a8a7a04d
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
+          token: ${{ secrets.TC_CLOUD_TOKEN }}
 
-      - name: Build and analyze
+      - name: Build + Testes + JaCoCo
+        run: ./gradlew clean build --continue --no-daemon --quiet
+
+      - name: SonarCloud
+        if: success() || failure()
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build sonar --info
+        run: ./gradlew sonar --no-daemon --info
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354
@@ -57,3 +62,11 @@ jobs:
         uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload relatório JaCoCo (artifact)
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: jacoco-report
+          path: build/reports/jacoco/test/
+          retention-days: 14
