@@ -1,14 +1,15 @@
 package com.erichiroshi.speechaihexagonal.transcription.infrastructure.messaging.rabbitmq;
 
+import com.erichiroshi.speechaihexagonal.shared.rabbitmq.RabbitMqConfig;
 import com.erichiroshi.speechaihexagonal.transcription.domain.event.TranscriptionCompletedEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.amqp.autoconfigure.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -21,15 +22,24 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@Testcontainers // Habilita o ciclo de vida automático do Testcontainers
+@SpringBootTest(
+        classes = {
+                RabbitAutoConfiguration.class,
+                RabbitMqConfig.class,
+                RabbitMqTranscriptionConfig.class,
+                TranscriptionAuditConsumer.class
+        },
+        webEnvironment = SpringBootTest.WebEnvironment.NONE,
+        properties = "spring.main.allow-bean-definition-overriding=true"
+)
+@Testcontainers
 @ExtendWith(OutputCaptureExtension.class)
-class TranscriptionAuditConsumerIT {
+class TranscriptionAuditConsumerTest {
 
     @Container
     static RabbitMQContainer rabbitMQ =
             new RabbitMQContainer(DockerImageName.parse("rabbitmq:4-management-alpine"));
+
     @Autowired
     private RabbitTemplate rabbitTemplate;
 

@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout do código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -44,7 +44,7 @@ jobs:
           token: ${{ secrets.TC_CLOUD_TOKEN }}
 
       - name: Build + Testes + JaCoCo
-        run: ./gradlew clean build --continue --no-daemon --lifecycle
+        run: ./gradlew clean build --continue --no-daemon --quiet
 
       - name: SonarCloud
         if: success() || failure()
@@ -56,6 +56,7 @@ jobs:
         uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
