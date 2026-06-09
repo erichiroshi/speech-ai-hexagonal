@@ -87,6 +87,7 @@
       <a href="persistence.html">Persistência</a>
       <a href="cache.html">Cache</a>
       <a href="observability.html">Observabilidade</a>
+      <a href="swagger.html">Swagger</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
       <a href="https://github.com/erichiroshi/speech-ai-hexagonal">GitHub</a>
@@ -107,14 +108,15 @@
       <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>Fase 9 —  concluída (v9.3.0)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#883506"></div>Fase 10 —  concluída (v10.2)</div>
       <div class="legend-item"><div class="legend-dot" style="background:#880620"></div>Fase 11 —  concluída (v11.5)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#087252"></div>Fase 12 — planejada</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#99dfe1"></div>Fase 12 — concluída (v12.1)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#06884e"></div>Fase 13 — planejada</div>
     </div>
 
     <div id="phases"></div>
     <div id="detail-container"></div>
 
     <footer>
-      <p>speech-ai-hexagonal · v11.5.0 · Java 25 · Spring Boot 4</p>
+      <p>speech-ai-hexagonal · v12.1.0 · Java 25 · Spring Boot 4</p>
       <p>Desenvolvido por <strong>Eric Hiroshi</strong> ·
         <a href="https://www.linkedin.com/in/eric-hiroshi/" style="color:var(--primary)">LinkedIn</a> ·
         <a href="https://github.com/erichiroshi" style="color:var(--primary)">GitHub</a>
@@ -566,18 +568,34 @@
         ]
       },
       {
-        id: 12, label: "Fase 12", title: "Docker Hub + release automático",
-        color: "#8b5cf6", badgeBg: "#052e16", badgeColor: "#86efac",
+        id: 12, label: "Fase 12", title: "Documentação OpenAPI e Swagger",
+        color: "#06884e", badgeBg: "#99dfe1", badgeColor: "#000000",
         version: "v12.1.0", taskCount: 1, done: false,
         tasks: [
           {
-            title: "12.1 — Docker Hub + release automático",
+            title: "12.1 — Documentação OpenAPI e Swagger",
+            desc: "Adicionar SpringDoc OpenAPI, configuração global e documentação desacoplada dos controllers.",
+            tags: ["Swagger", "OpenAPI", "Documentation"],
+            done: false,
+            version: "12.1.0",
+            detail: "Adicionar a dependência SpringDoc OpenAPI Starter WebMVC UI e configurar documentação automática da API. Criar uma classe de configuração em shared.config responsável pelos metadados globais da especificação OpenAPI, incluindo nome da aplicação, descrição, versão, contato e preparação para futura configuração de autenticação JWT via Bearer Token. Definir o padrão arquitetural onde cada controller implementa uma interface localizada em um pacote documentation no mesmo nível do controller, concentrando anotações @Operation, @ApiResponses, @Parameter e demais elementos do Swagger fora da implementação HTTP. Padronizar respostas de sucesso e erro dos endpoints, expor os endpoints /swagger-ui.html e /v3/api-docs e preparar agrupamentos futuros por domínio como transcription e notification. Essa abordagem reduz acoplamento com a ferramenta de documentação, melhora a organização do código e mantém os controllers focados exclusivamente na responsabilidade de adaptação HTTP.",
+            snippet: "implementation \"org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3\"\n\npublic interface TranscriptionControllerDocumentation {\n @Operation(summary = \"Transcrever áudio\")\n ResponseEntity<TranscriptionResponse> transcribe(MultipartFile file);\n}"
+          },
+        ]
+      },
+      {
+        id: 13, label: "Fase 13", title: "Docker Hub + release automático",
+        color: "#0e7548", badgeBg: "#11653e", badgeColor: "#86efac",
+        version: "v13.1.0", taskCount: 1, done: false,
+        tasks: [
+          {
+            title: "13.1 — Docker Hub + release automático",
             desc: "docker.yml: build multi-arch, push Docker Hub, release.sh atualizado para o projeto",
             tags: ["Docker Hub", "Multi-arch", "Release"],
             done: false,
             version: null,
             detail: "docker.yml: trigger em tag v*. Build multi-arch (amd64/arm64) avec buildx. Push pour echichiroshi/speech-ai-hexagonal:$VERSION .",
-            snippet: "docker.yml (trigger: push tags v*):\n  docker buildx build --platform linux/amd64,linux/arm64 \\n    -t echichiroshi/speech-ai-hexagonal:$VERSION ." }
+            snippet: "docker.yml (trigger: push tags v*):\n  docker buildx build --platform linux/amd64,linux/arm64 n    -t echichiroshi/speech-ai-hexagonal:$VERSION ." }
         ]
       }
     ];

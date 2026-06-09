@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'com.erichiroshi'
-version = '11.5.1'
+version = '12.1.0'
 description = 'Serviço de transcrição de áudio com análise inteligente via LLM'
 
 java {
@@ -32,6 +32,7 @@ ext {
     wireMockVersion       = '3.13.0'
     awaitilityVersion     = '4.3.0'
     archunitVersion       = '1.4.2'
+    springdocVersion      = '3.0.3'
 }
 
 dependencies {
@@ -70,6 +71,9 @@ dependencies {
 
     // E-mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // Documentação OpenAPI / Swagger UI
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 
     // Test
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

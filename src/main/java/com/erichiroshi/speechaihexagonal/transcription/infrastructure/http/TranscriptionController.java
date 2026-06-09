@@ -4,6 +4,7 @@ import com.erichiroshi.speechaihexagonal.transcription.application.input.Transcr
 import com.erichiroshi.speechaihexagonal.transcription.application.output.TranscriptionOutput;
 import com.erichiroshi.speechaihexagonal.transcription.application.port.in.TranscribeAudioPort;
 import com.erichiroshi.speechaihexagonal.transcription.domain.exception.AudioValidationException;
+import com.erichiroshi.speechaihexagonal.transcription.infrastructure.http.documentation.TranscriptionControllerDocumentation;
 import com.erichiroshi.speechaihexagonal.transcription.infrastructure.http.response.TranscriptionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/transcriptions")
-public class TranscriptionController {
+public class TranscriptionController implements TranscriptionControllerDocumentation {
 
     private final TranscribeAudioPort transcribeAudioPort;
 

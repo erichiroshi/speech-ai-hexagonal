@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Documentação OpenAPI e Swagger — speech-ai-hexagonal</title>
+    <link rel="stylesheet" href="styles.css"/>
+</head>
+
+<body>
+<div class="container">
+    <header>
+        <h1>Documentação OpenAPI e Swagger</h1>
+
+        <p class="subtitle">
+            speech-ai-hexagonal · v12.1.0 · Hexagonal (Ports &amp; Adapters)
+        </p>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="architecture.html">Arquitetura</a>
+        <a href="quality.html">Qualidade</a>
+        <a href="persistence.html">Persistência</a>
+        <a href="cache.html">Cache</a>
+        <a href="observability.html">Observabilidade</a>
+        <a href="swagger.html">Swagger</a>
+        <a href="roadmap.html">Roadmap</a>
+        <a href="https://github.com/erichiroshi/speech-ai-hexagonal/blob/main/README.md">README</a>
+        <a href="https://github.com/erichiroshi/speech-ai-hexagonal">GitHub</a>
+    </nav>
+
+    <section class="card">
+        <h2>OpenAPI 3 + Swagger UI</h2>
+
+        <p>
+            A documentação da API é gerada automaticamente através
+            do SpringDoc OpenAPI seguindo o padrão de interfaces
+            dedicadas para documentação.
+        </p>
+
+        <pre>
+controller/
+├── TranscriptionController
+└── documentation/
+    └── TranscriptionControllerDocumentation
+</pre>
+
+        <p>
+            Essa abordagem mantém os controllers focados na
+            adaptação HTTP e concentra anotações OpenAPI em
+            interfaces específicas.
+        </p>
+
+        <ul>
+            <li>/swagger-ui.html</li>
+            <li>/v3/api-docs</li>
+        </ul>
+    </section>
+
+    <footer>
+        <p>speech-ai-hexagonal · v12.1.0</p>
+        <p>Desenvolvido por <strong>Eric Hiroshi</strong> ·
+            <a href="https://www.linkedin.com/in/eric-hiroshi/" style="color:var(--primary)">LinkedIn</a> ·
+            <a href="https://github.com/erichiroshi" style="color:var(--primary)">GitHub</a>
+        </p>
+    </footer>
+
+</div>
+</body>
+
+</html>

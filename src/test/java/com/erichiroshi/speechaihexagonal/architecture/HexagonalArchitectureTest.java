@@ -307,4 +307,22 @@ public class HexagonalArchitectureTest {
                     .orShould().dependOnClassesThat().resideInAPackage(ANALYSIS_DOMAIN)
                     .because("Domínios de bounded contexts distintos não se acoplam diretamente");
 
+    // ── Documentação OpenAPI ──────────────────────────────────────────────────
+
+    @ArchTest
+    public static final ArchRule interfaces_de_documentacao_devem_residir_no_pacote_documentation =
+            classes().that().haveSimpleNameEndingWith("Documentation")
+                    .should().resideInAPackage("..documentation..")
+                    .because("Interfaces de documentação OpenAPI devem ficar em pacote documentation/ " +
+                            "para manter controllers livres de anotações Swagger");
+
+    @ArchTest
+    public static final ArchRule controllers_devem_implementar_interface_de_documentacao =
+            classes().that().areAnnotatedWith(org.springframework.web.bind.annotation.RestController.class)
+                    .should().implement(com.tngtech.archunit.base.DescribedPredicate.<com.tngtech.archunit.core.domain.JavaClass>describe(
+                            "interface de documentação",
+                            interfaceClass -> interfaceClass.getSimpleName().contains("Documentation")))
+                    .because("Todo @RestController deve implementar uma interface de documentação " +
+                            "para manter separação entre lógica HTTP e anotações OpenAPI");
+
 }

@@ -197,3 +197,18 @@ logging:
   level:
     root: INFO
     com.erichiroshi: INFO
+
+# ── SpringDoc OpenAPI ─────────────────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    try-it-out-enabled: true
+  show-actuator: false
+  packages-to-scan:
+    - com.erichiroshi.speechaihexagonal.transcription.infrastructure.http
+    - com.erichiroshi.speechaihexagonal.analysis.infrastructure.http

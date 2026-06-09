@@ -2,6 +2,7 @@ package com.erichiroshi.speechaihexagonal.analysis.infrastructure.http;
 
 import com.erichiroshi.speechaihexagonal.analysis.application.output.SummaryOutput;
 import com.erichiroshi.speechaihexagonal.analysis.application.port.in.SummarizeTranscriptionPort;
+import com.erichiroshi.speechaihexagonal.analysis.infrastructure.http.documentation.AnalysisControllerDocumentation;
 import com.erichiroshi.speechaihexagonal.analysis.infrastructure.http.response.AnalysisResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/transcriptions")
-public class AnalysisController {
+public class AnalysisController implements AnalysisControllerDocumentation {
 
     private final SummarizeTranscriptionPort summarizeTranscriptionPort;
 
